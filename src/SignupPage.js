@@ -335,7 +335,7 @@ function SignupPage() {
                  className="flex-1 flex items-center justify-center gap-3 bg-white border border-gray-200 rounded-xl py-2 sm:py-3 shadow-sm hover:shadow-md transition-colors text-sm text-gray-800"
                >
                  <img
-                   src="https://developers.google.com/identity/images/g-logo.png"
+                   src="/images/g-logo.png"
                    alt="Google logo"
                    className="w-5 h-5"
                  />
@@ -357,9 +357,9 @@ function SignupPage() {
             Already have an account? <Link to="/" className="text-[#5EE6FE] font-semibold">Login</Link>
           </p>
 
-          <a href="#" className="text-xs sm:text-sm text-gray-500 mt-1 hover:underline">
+          <Link to="/home" className="text-xs sm:text-sm text-gray-500 mt-4 hover:underline inline-block">
             Continue as a guest.
-          </a>
+          </Link>
         </div>
       </div>
 

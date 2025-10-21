@@ -244,7 +244,7 @@ function LoginPage() {
             {/* google */}
             <div className="flex items-center justify-center gap-2 bg-white border border-gray-300 rounded-lg py-2 sm:py-3 cursor-pointer hover:bg-gray-100 transition-colors font-sansation">
               <img
-                  src="https://developers.google.com/identity/images/g-logo.png"
+                  src="/images/g-logo.png"
                   alt="Google logo"
                   className="w-5 h-5"
                 />
@@ -256,9 +256,9 @@ function LoginPage() {
             Don't have an account? <Link to="/signup" className="text-[#5EE6FE] font-semibold">Sign up</Link>
           </p>
 
-          <a href="" className="text-xs sm:text-sm text-gray-500 mt-4 hover:underline">
+          <Link to="/home" className="text-xs sm:text-sm text-gray-500 mt-4 hover:underline inline-block">
             Continue as a guest.
-          </a>
+          </Link>
         </div>
       </div>
 
