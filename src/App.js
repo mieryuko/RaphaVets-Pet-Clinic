@@ -4,7 +4,8 @@ import LoginPage from "./LoginPage";
 import SignupPage from "./SignupPage";
 import HomePage from "./guest-pages/HomePage";
 
-import Home from "./user-pages/Home";
+import Home from "./user-pages/pages/Home";
+import Profile from "./user-pages/pages/Profile";
 
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
         <Route path="/home" element={<HomePage />} />
 
         <Route path="/user-home" element={<Home />} />
+        <Route path="/profile" element={<Profile />} />
       </Routes>
     </BrowserRouter>
   );
