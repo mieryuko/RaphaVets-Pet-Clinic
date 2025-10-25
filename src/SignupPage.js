@@ -1,8 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import api from "./api/axios";
 
 function SignupPage() {
+
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -17,17 +19,45 @@ function SignupPage() {
   const hasSpecial = /[*\-@\$]/.test(password);
   const matches = password !== "" && password === confirm;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setFpEmail(email);
-    setSending(true);
-    setTimeout(() => {
-      setSending(false);
+
+    // Basic validations first
+    if (!firstName || !lastName || !email || !password || !confirm) {
+      return alert("Please fill out all fields.");
+    }
+    if (password !== confirm) {
+      return alert("Passwords do not match.");
+    }
+    if (!hasUpper || !hasLower || !hasLength || !hasSpecial) {
+      return alert("Password does not meet all requirements.");
+    }
+
+    try {
+      // ✅ Step 1: Check if email already exists
+      const check = await api.post("/auth/check-email", { email });
+
+      if (check.data.exists) {
+        return alert("This email is already registered. Please use a different one.");
+      }
+
+      // ✅ Step 2: Proceed only if email not registered
+      setPendingUser({ firstName, lastName, email, password });
+      setFpEmail(email);
       setVerifyModalOpen(true);
       setSeconds(60);
-      setTimeout(() => inputsRef.current[0]?.focus(), 120);
-    }, 800);
+
+      // ✅ Step 3: Send verification code
+      await api.post("/auth/send-code", { email });
+      console.log("✅ Verification code sent to:", email);
+
+    } catch (err) {
+      console.error("❌ Error during signup:", err);
+      alert(err.response?.data?.message || "An error occurred. Please try again.");
+    }
   };
+
+
 
   const itemClass = (ok) =>
     `flex items-start gap-2 text-xs ${ok ? "text-green-600" : "text-gray-400"}`;
@@ -41,6 +71,8 @@ function SignupPage() {
   const inputsRef = useRef([]);
   const [seconds, setSeconds] = useState(60);
   const timerRef = useRef(null);
+
+  const [pendingUser, setPendingUser] = useState(null);
 
   useEffect(() => {
     if (!verifyModalOpen) {
@@ -108,14 +140,42 @@ function SignupPage() {
     setTimeout(() => inputsRef.current[0]?.focus(), 80);
   };
 
-  const confirmCode = (e) => {
-    e?.preventDefault();
+  const confirmCode = async (e) => {
+    e.preventDefault();
     const code = codeDigits.join("");
-    if (code.length !== DIGITS) return;
-    // TODO: verify with backend
-    setVerifyModalOpen(false);
-    setCodeDigits(Array(DIGITS).fill(""));
+    if (code.length !== 6) return alert("Please enter all 6 digits.");
+
+    try {
+      const res = await api.post("/auth/verify-code", { email: fpEmail, code });
+
+      if (res.data.success) {
+        const registerRes = await api.post("/auth/register", pendingUser);
+        console.log("✅ User registered:", registerRes.data);
+        alert("Account created successfully!");
+        setVerifyModalOpen(false);
+      } else {
+        alert("Invalid code.");
+      }
+    } catch (err) {
+      console.error("❌ Verification error:", err);
+
+      if (err.response) {
+        const { status, data } = err.response;
+
+        if (status === 400 && data.message === "Email already registered") {
+          alert("This email is already registered.");
+        } else if (status === 400 && data.message === "Invalid email or password") {
+          alert("Invalid email or password.");
+        } else {
+          alert(data.message || "Something went wrong. Try again.");
+        }
+      } else {
+        alert("Network error. Please try again.");
+      }
+    }
   };
+
+
   // end verification modal
 
   return (

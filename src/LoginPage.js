@@ -1,8 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
-
+import { Link, useNavigate } from "react-router-dom";
+import api from "./api/axios";
 function LoginPage() {
+
+  const navigate = useNavigate();
+  const [loginData, setLoginData] = useState( { email: "", password: "" });
+  const [loading, setLoading] = useState(false);
   // forgot-password / verification modal state
   const [emailModalOpen, setEmailModalOpen] = useState(false);
   const [verifyModalOpen, setVerifyModalOpen] = useState(false);
@@ -46,16 +50,57 @@ function LoginPage() {
     setEmailModalOpen(true);
   };
 
+  // send verification code
   const submitEmail = async (e) => {
     e?.preventDefault();
     if (!fpEmail) return;
     setSending(true);
-    await new Promise((r) => setTimeout(r, 800));
-    setSending(false);
-    setEmailModalOpen(false);
-    setVerifyModalOpen(true);
-    setSeconds(60);
-    setTimeout(() => inputsRef.current[0]?.focus(), 120);
+
+    try {
+      // 1️⃣ Check if email exists
+      const checkRes = await api.post("/auth/check-email", { email: fpEmail });
+      if (!checkRes.data.exists) {
+        alert("❌ Account not found");
+        return;
+      }
+
+      // 2️⃣ Send verification code
+      const res = await api.post("/auth/send-code", { email: fpEmail });
+      if (res.data.success) {
+        alert("✅ Verification code sent to your email");
+        setEmailModalOpen(false);
+        setVerifyModalOpen(true);
+        setSeconds(60);
+        setTimeout(() => inputsRef.current[0]?.focus(), 120);
+      } else {
+        alert(res.data.message || "Failed to send code");
+      }
+    } catch (err) {
+      console.error("❌ Error sending code:", err);
+      alert(err.response?.data?.message || "Server error");
+    } finally {
+      setSending(false);
+    }
+  };
+
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    if (!loginData.email || !loginData.password)
+      return alert("Please fill in all fields.");
+    setLoading(true);
+    try {
+      const res = await api.post("/auth/login", loginData);
+      alert("✅ Login successful!");
+      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("user", JSON.stringify(res.data.user));
+      navigate("/user-home");
+    } catch (err) {
+      console.error("❌ Login error:", err);
+      alert(err.response?.data?.message || "Server error");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleDigitInput = (idx, val) => {
@@ -89,22 +134,50 @@ function LoginPage() {
     e.preventDefault();
   };
 
-  const resendCode = async () => {
-    if (seconds > 0) return;
-    setSending(true);
-    await new Promise((r) => setTimeout(r, 800));
-    setSending(false);
-    setSeconds(60);
-    setCodeDigits(Array(DIGITS).fill(""));
-    setTimeout(() => inputsRef.current[0]?.focus(), 80);
-  };
-
-  const confirmCode = (e) => {
+  // confirm verification code
+  const confirmCode = async (e) => {
     e?.preventDefault();
     const code = codeDigits.join("");
     if (code.length !== DIGITS) return;
-    setVerifyModalOpen(false);
-    setCodeDigits(Array(DIGITS).fill(""));
+
+    setSending(true);
+    try {
+      const res = await api.post("/auth/verify-code", { email: fpEmail, code });
+      if (res.data.success) {
+        alert("✅ Code verified. You can now reset your password.");
+        setVerifyModalOpen(false);
+        setCodeDigits(Array(DIGITS).fill(""));
+      } else {
+        alert(res.data.message || "Invalid code");
+      }
+    } catch (err) {
+      console.error("❌ Code verification error:", err);
+      alert(err.response?.data?.message || "Server error");
+    } finally {
+      setSending(false);
+    }
+  };
+
+  // resend code
+  const resendCode = async () => {
+    if (seconds > 0) return;
+    setSending(true);
+    try {
+      const res = await api.post("/auth/send-code", { email: fpEmail });
+      if (res.data.success) {
+        alert("✅ Verification code resent to your email");
+        setSeconds(60);
+        setCodeDigits(Array(DIGITS).fill(""));
+        setTimeout(() => inputsRef.current[0]?.focus(), 80);
+      } else {
+        alert(res.data.message || "Failed to resend code");
+      }
+    } catch (err) {
+      console.error("❌ Resend code error:", err);
+      alert(err.response?.data?.message || "Server error");
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
@@ -182,7 +255,7 @@ function LoginPage() {
             Login to your account to continue
           </div>       
 
-          <form className="flex flex-col gap-3 sm:gap-4 w-full px-4 sm:px-6" >
+          <form onSubmit={handleLogin} className="flex flex-col gap-3 sm:gap-4 w-full px-4 sm:px-6">
 
             {/* email */}
             <div className="flex items-center bg-[#EAEAEA] rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-[#5EE6FE]">
@@ -190,8 +263,15 @@ function LoginPage() {
                 <i className="fa-solid fa-user text-[#626262]"></i>
                 <div className="w-[1px] h-6 bg-gray-300 mx-2"></div>
               </div>
-              <input type="email" placeholder="abcd@xyz.com" className="flex-1 py-2 sm:py-3 pr-3 outline-none bg-[#EAEAEA] text-gray-700 text-sm sm:text-base"/>
-            </div>
+                <input
+                  type="email"
+                  autoComplete="email"
+                  value={loginData.email}
+                  onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
+                  placeholder="abcd@xyz.com"
+                  className="flex-1 py-2 sm:py-3 pr-3 outline-none bg-[#EAEAEA] text-gray-700 text-sm sm:text-base"
+                />            
+              </div>
 
             {/* password */}
             <div className="flex items-center bg-[#EAEAEA] border-gray-300 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-[#5EE6FE] font-sansation">
@@ -200,7 +280,14 @@ function LoginPage() {
                 <div className="w-[1px] h-6 bg-gray-300 mx-2"></div>
               </div>
 
-              <input type="password" placeholder="Password" className="flex-1 py-2 sm:py-3 pr-3 outline-none bg-[#EAEAEA] text-[#404A4C] text-sm sm:text-base"/>
+                <input
+                  type="password"
+                  autoComplete="current-password"
+                  value={loginData.password}
+                  onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+                  placeholder="Password"
+                  className="flex-1 py-2 sm:py-3 pr-3 outline-none bg-[#EAEAEA] text-[#404A4C] text-sm sm:text-base"
+                />
 
               <button
                 type="button"
@@ -227,12 +314,13 @@ function LoginPage() {
               </button>
             </div>
 
-            <Link
-              to = "/user-home"
+            <button
+              type="submit"
+              disabled={loading}
               className="text-center bg-[#5EE6FE] text-white font-semibold py-2 sm:py-3 rounded-xl mt-1 hover:bg-[#388A98] transition-colors"
             >
-              Login
-            </Link>
+              {loading ? "Logging in..." : "Login"}
+            </button>
 
             {/* divider */}
             <div className="flex items-center my-1">
