@@ -3,6 +3,9 @@ import { useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import Header from "../template/Header";
 import SideBar from "../template/SideBar";
+import DietFeedingSection from "../components/pet-details/DietFeedingSection";
+import HealthTrackerSection from "../components/pet-details/HealthTracker";
+import BehaviorNotesSection from "../components/pet-details/BehaviorNote";
 
 function PetDetails() {
   const { state } = useLocation();
@@ -18,6 +21,10 @@ function PetDetails() {
 
   const [isMenuOpen, setIsMenuOpen] = useState(true);
   const [activeTab, setActiveTab] = useState("Appointments");
+  const [showMenu, setShowMenu] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showHealthModal, setShowHealthModal] = useState(false);
+
 
   const tabs = ["Appointments", "Medical Records", "Diet & Feeding", "Health Tracker", "Behavior Notes"];
 
@@ -80,14 +87,14 @@ function PetDetails() {
 
           {/* TABS */}
           <div className="bg-white rounded-2xl shadow-[0_0_10px_rgba(0,0,0,0.1)]">
-            <div className="flex flex-wrap gap-5 px-6 py-3 border-b border-gray-200">
+            <div className="flex flex-wrap gap-6 px-6 py-3 border-b border-gray-200">
               {tabs.map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`transition-all duration-300 font-medium ${
+                  className={`relative pb-2 transition-all font-semibold ${
                     activeTab === tab
-                      ? "text-[#5EE6FE] border-b-2 border-[#5EE6FE]"
+                      ? "text-[#5EE6FE] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-[#5EE6FE]"
                       : "text-gray-500 hover:text-[#5EE6FE]"
                   }`}
                 >
@@ -96,82 +103,127 @@ function PetDetails() {
               ))}
             </div>
 
+
             {/* TAB CONTENT */}
-            <motion.div
-              key={activeTab}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-              className="p-6 min-h-[300px]"
-            >
-              {activeTab === "Appointments" && (
-                <div className="flex flex-col gap-4">
-                  <div className="p-4 rounded-2xl bg-[#EAFBFD] shadow-sm flex justify-between items-center">
-                    <span className="text-gray-700 font-medium">No upcoming appointments</span>
-                    <button className="bg-[#5EE6FE] text-white px-4 py-2 rounded-lg hover:bg-[#3ecbe0] transition-all">
-                      Book Appointment
-                    </button>
-                  </div>
-                </div>
-              )}
+<motion.div
+  key={activeTab}
+  initial={{ opacity: 0, y: 10 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.3 }}
+  className="p-6 min-h-[350px] relative"
+>
+  {/* --- APPOINTMENTS --- */}
+  {activeTab === "Appointments" && (
+    <div className="flex flex-col gap-4">
+      <div className="p-4 rounded-2xl bg-[#EAFBFD] shadow-sm flex justify-between items-center">
+        <span className="text-gray-700 font-medium">No upcoming appointments.</span>
+        <button className="bg-[#5EE6FE] text-white px-4 py-2 rounded-lg hover:bg-[#3ecbe0] transition-all">
+          Book Appointment
+        </button>
+      </div>
+    </div>
+  )}
 
-              {activeTab === "Medical Records" && (
-                <div className="flex flex-col gap-4">
-                  <div className="p-4 rounded-2xl bg-[#F5F7F8] shadow-sm text-gray-600 text-sm">
-                    No medical records yet.
-                  </div>
-                </div>
-              )}
+  {/* --- DIET & FEEDING --- */}
+  {activeTab === "Diet & Feeding" && (
+    <DietFeedingSection />
+  )}
 
-              {activeTab === "Diet & Feeding" && (
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div className="p-4 bg-white/60 border border-white/50 rounded-xl shadow-md">
-                    <h4 className="font-semibold text-gray-800 mb-2">Feeding Schedule</h4>
-                    <p className="text-gray-600 text-sm">8:00 AM • Chicken Meal</p>
-                    <p className="text-gray-600 text-sm">6:00 PM • Kibble + Water</p>
-                  </div>
-                  <div className="p-4 bg-white/60 border border-white/50 rounded-xl shadow-md">
-                    <h4 className="font-semibold text-gray-800 mb-2">Diet Notes</h4>
-                    <p className="text-gray-600 text-sm">
-                      Avoid dairy and chocolate. Provide filtered water only.
-                    </p>
-                  </div>
-                </div>
-              )}
+  {/* --- HEALTH TRACKER --- */}
+  {activeTab === "Health Tracker" && (
+    <HealthTrackerSection />
+  )}
 
-              {activeTab === "Health Tracker" && (
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div className="p-4 bg-white/60 border border-white/50 rounded-xl shadow-md">
-                    <h4 className="font-semibold text-gray-800 mb-2">Weight</h4>
-                    <p className="text-gray-600 text-sm">Last recorded: 6.5 kg</p>
-                  </div>
-                  <div className="p-4 bg-white/60 border border-white/50 rounded-xl shadow-md">
-                    <h4 className="font-semibold text-gray-800 mb-2">Vaccination Status</h4>
-                    <p className="text-gray-600 text-sm">Up-to-date</p>
-                  </div>
-                </div>
-              )}
+  {/* --- BEHAVIOR NOTES --- */}
+  {activeTab === "Behavior Notes" && (
+    <BehaviorNotesSection />
+  )}
+</motion.div>
 
-              {activeTab === "Behavior Notes" && (
-                <div className="p-4 bg-white/60 border border-white/50 rounded-xl shadow-md text-gray-700 text-sm">
-                  <p>No notes yet. Add training updates or habits here.</p>
-                </div>
-              )}
-            </motion.div>
+
           </div>
 
           {/* FLOATING ACTION BUTTONS */}
-          <div className="fixed bottom-8 right-6 flex flex-col items-end gap-3 z-50">
-            <button className="bg-[#5EE6FE] text-white p-4 rounded-full shadow-lg hover:bg-[#3ecbe0] hover:scale-110 transition-all duration-300">
-              <i className="fa-solid fa-plus"></i>
-            </button>
-            <button className="bg-white text-[#5EE6FE] border border-[#5EE6FE] p-4 rounded-full shadow-lg hover:bg-[#5EE6FE] hover:text-white hover:scale-110 transition-all duration-300">
-              <i className="fa-solid fa-pen"></i>
-            </button>
-            <button className="bg-white text-[#5EE6FE] border border-[#5EE6FE] p-4 rounded-full shadow-lg hover:bg-[#5EE6FE] hover:text-white hover:scale-110 transition-all duration-300">
-              <i className="fa-solid fa-stethoscope"></i>
+          <div className="fixed bottom-14 right-14 flex flex-col items-end gap-3 z-50">
+            {/* Add Menu Buttons */}
+            {showMenu && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className="flex flex-col items-end gap-3"
+              >
+                <button
+                  onClick={() => setShowHealthModal(true)}
+                  className="relative bg-white text-[#5EE6FE] border border-[#5EE6FE] p-4 rounded-full shadow-lg hover:bg-[#5EE6FE] hover:text-white hover:scale-110 transition-all duration-300"
+                >
+                  <i className="fa-solid fa-stethoscope"></i>
+                  <span className="absolute right-full mr-3 bg-[#5EE6FE] text-white text-xs py-1 px-2 rounded-md opacity-0 group-hover:opacity-100 transition-all">
+                    Health Check
+                  </span>
+                </button>
+
+                <button
+                  onClick={() => setShowEditModal(true)}
+                  className="relative bg-white text-[#5EE6FE] border border-[#5EE6FE] p-4 rounded-full shadow-lg hover:bg-[#5EE6FE] hover:text-white hover:scale-110 transition-all duration-300"
+                >
+                  <i className="fa-solid fa-pen"></i>
+                </button>
+              </motion.div>
+            )}
+
+            {/* Main + Button */}
+            <button
+              onClick={() => setShowMenu(!showMenu)}
+              className={`bg-[#5EE6FE] text-white p-5 rounded-full shadow-xl hover:bg-[#3ecbe0] transition-all duration-300 transform ${
+                showMenu ? "rotate-45" : "rotate-0"
+              }`}
+            >
+              <i className="fa-solid fa-plus text-lg"></i>
             </button>
           </div>
+
+          {/* Edit Pet Modal */}
+          {showEditModal && (
+            <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 animate-fadeIn">
+              <div className="bg-white rounded-2xl p-6 w-[90%] max-w-md shadow-xl relative">
+                <button
+                  onClick={() => setShowEditModal(false)}
+                  className="absolute top-3 right-4 text-gray-400 hover:text-gray-600 text-xl"
+                >
+                  ✕
+                </button>
+                <h3 className="text-xl font-bold text-gray-800 mb-4">Edit Pet Information</h3>
+                <input type="text" defaultValue={pet.name} className="w-full border border-gray-300 rounded-lg p-2 mb-3" />
+                <input type="text" defaultValue={pet.breed} className="w-full border border-gray-300 rounded-lg p-2 mb-3" />
+                <button className="bg-[#5EE6FE] text-white py-2 px-4 rounded-lg hover:bg-[#3ecbe0] transition-all">
+                  Save Changes
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Health Overview Modal */}
+          {showHealthModal && (
+            <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 animate-fadeIn">
+              <div className="bg-white rounded-2xl p-6 w-[90%] max-w-md shadow-xl relative">
+                <button
+                  onClick={() => setShowHealthModal(false)}
+                  className="absolute top-3 right-4 text-gray-400 hover:text-gray-600 text-xl"
+                >
+                  ✕
+                </button>
+                <h3 className="text-xl font-bold text-gray-800 mb-4">Health Summary</h3>
+                <ul className="text-gray-600 text-sm space-y-2">
+                  <li>• Weight: 6.5 kg</li>
+                  <li>• Last Vet Check: {pet.lastCheck || "2 months ago"}</li>
+                  <li>• Vaccination: Up to Date</li>
+                  <li>• Notes: No known allergies</li>
+                </ul>
+              </div>
+            </div>
+          )}
+
         </div>
       </div>
     </div>

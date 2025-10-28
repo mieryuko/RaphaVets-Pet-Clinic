@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+
 import Header from "../template/Header";
 import Sidebar from "../template/SideBar";
 import PetInfo from "../components/home/PetInfo";
 import AddPetModal from "../components/home/AddPetModal";
 import FloatingChatBox from "../components/FloatingChatBox";
+import Booking from "./Booking";
 
 function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(true);
@@ -17,6 +20,9 @@ function Home() {
   const [darkMode, setDarkMode] = useState(false);
   const [currentPetIndex, setCurrentPetIndex] = useState(0);
   const [chatType, setChatType] = useState(null);
+  const [isExpandedChat, setIsExpandedChat] = useState(false);
+
+  const navigate = useNavigate();
 
   // Load theme
   useEffect(() => {
@@ -101,7 +107,9 @@ function Home() {
             </div>
             <div className="flex flex-col">
               <div className="mt-2 text-[13px] flex flex-row justify-end items-center pr-5">
-                <button className="bg-[#d9d9d9] py-1 px-3 rounded-lg flex flex-row items-center gap-2 hover:bg-[#5EE6FE] hover:text-white transition-all duration-300 active:scale-95">
+                <button 
+                  onClick={() => navigate("/booking")}
+                  className="bg-[#d9d9d9] py-1 px-3 rounded-lg flex flex-row items-center gap-2 hover:bg-[#5EE6FE] hover:text-white transition-all duration-300 active:scale-95">
                   <i className="fa-solid fa-calendar-days"></i>
                   <span>Book</span>
                 </button>
@@ -133,24 +141,27 @@ function Home() {
           ></div>
           <div className="fixed bottom-32 right-8 sm:right-20 bg-white rounded-2xl shadow-xl p-4 z-50 w-52 flex flex-col gap-3 animate-popUp">
             <button
-              onClick={() => {
-                setIsChatOpen(false);
-                setChatType("ai");
-              }}
               className="bg-[#5EE6FE] text-white font-semibold py-2 rounded-lg hover:bg-[#3ecbe0] transition-all"
+              onClick={() => {
+                setIsExpandedChat(true);
+                setChatType("ai");
+                setIsChatOpen(false);
+              }}
             >
               Chat with AI
             </button>
             <button
-              onClick={() => {
-                setIsChatOpen(false);
-                setChatType("pro");
-              }}
               className="bg-[#EEF4F5] text-gray-700 font-semibold py-2 rounded-lg hover:bg-[#d9d9d9] transition-all"
+              onClick={() => {
+                setIsExpandedChat(true);
+                setChatType("pro");
+                setIsChatOpen(false);
+              }}
             >
               Chat with Professional
             </button>
           </div>
+
         </>
       )}
 

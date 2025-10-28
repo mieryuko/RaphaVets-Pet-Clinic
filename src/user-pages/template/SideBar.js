@@ -23,7 +23,7 @@ function SideBar({ isMenuOpen, setIsMenuOpen, pets, setShowModal }) {
         {isMenuOpen && (
           <>
             {/* PERSONAL */}
-            <div className="pb-4 flex flex-col border-b-[2px] border-[#5EE6FE]">
+            <div className="pb-4 flex flex-col border-b-[1px] border-[#5EE6FE]">
               <div>
                 <span className="font-[700] text-[20px]">Your pets</span>
               </div>
@@ -87,7 +87,7 @@ function SideBar({ isMenuOpen, setIsMenuOpen, pets, setShowModal }) {
             </div>
 
             {/* RESOURCES */}
-            <div className="pb-4 flex flex-col border-b-[2px] border-[#5EE6FE] mt-2">
+            <div className="pb-4 flex flex-col border-b-[1px] border-[#5EE6FE] mt-2">
               <span className="font-[700] text-[20px]">Resources</span>
               <div className="px-3 flex flex-col gap-2 mt-2">
                 <div className="text-[15px] flex items-center gap-2 hover:text-[#5EE6FE] cursor-pointer">
@@ -102,7 +102,7 @@ function SideBar({ isMenuOpen, setIsMenuOpen, pets, setShowModal }) {
             </div>
 
             {/* INFORMATION */}
-            <div className="pb-4 flex flex-col border-b-[2px] border-[#5EE6FE] mt-2">
+            <div className="pb-4 flex flex-col border-b-[1px] border-[#5EE6FE] mt-2">
               <span className="font-[700] text-[20px]">Information</span>
               <div className="px-3 flex flex-col gap-2 mt-2">
                 <div className="text-[15px] flex items-center gap-2 hover:text-[#5EE6FE] cursor-pointer">
