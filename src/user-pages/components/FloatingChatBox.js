@@ -33,8 +33,7 @@ function FloatingChatBox({ type, onClose }) {
 
   return (
     <AnimatePresence>
-      {/* When Expanded, dark overlay behind chat */}
-      {isExpanded && (
+\      {isExpanded && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 0.5 }}
@@ -119,7 +118,6 @@ function FloatingChatBox({ type, onClose }) {
 
         {/* INPUT AREA */}
         <div className="border-t border-gray-200 bg-white px-3 py-2 flex items-center gap-2">
-          {/* Upload Button (only for Professional chat) */}
           {type === "pro" && (
             <>
               <label className="cursor-pointer flex items-center justify-center w-9 h-9 rounded-lg bg-[#EEF4F5] hover:bg-[#5EE6FE] hover:text-white transition-all">

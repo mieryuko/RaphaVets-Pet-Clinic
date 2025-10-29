@@ -1,3 +1,5 @@
+/* dl muna sa terminal npm install date-fns */
+
 import React, { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -17,11 +19,6 @@ import {
   parseISO,
 } from "date-fns";
 
-/*
-  NOTE: date-fns is used here for clarity. If you don't have date-fns installed,
-  either install it (`npm i date-fns`) or replace the simple helper logic with native Date utilities.
-  If you prefer not to install, tell me and I'll provide a version without date-fns.
-*/
 
 const SERVICE_TYPES = [
   { id: "consult", label: "Consultation", note: "General check-up" },
@@ -41,29 +38,23 @@ function Booking() {
   const navigate = useNavigate();
   const [showCancelModal, setShowCancelModal] = useState(false);
 
-  // Steps: 1 select service, 2 pick date/time, 3 details, 4 review, 5 success
   const [step, setStep] = useState(1);
 
-  // selection state
   const [selectedService, setSelectedService] = useState(null);
 
-  // calendar state
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null);
 
-  // time slot
   const [selectedTime, setSelectedTime] = useState("");
 
-  // details
   const [petName, setPetName] = useState("");
   const [ownerName, setOwnerName] = useState("");
   const [ownerContact, setOwnerContact] = useState("");
 
-  // confirm
   const [confirmed, setConfirmed] = useState(false);
   const [showToast, setShowToast] = useState(false);
 
-  // generate calendar matrix for the month using date-fns
+  // generate calendar using date-fns
   const calendar = useMemo(() => {
     const startMonth = startOfMonth(currentMonth);
     const endMonth = endOfMonth(currentMonth);
@@ -83,15 +74,12 @@ function Booking() {
     return rows;
   }, [currentMonth]);
 
-  // Mock available time slots: simple weekday/weekend differentiation
-  // Replace with backend availability as needed
   function getTimeSlotsForDate(date) {
     if (!date) return [];
     // disabled past dates
     const now = new Date();
     if (isBefore(date, new Date(now.getFullYear(), now.getMonth(), now.getDate()))) return [];
 
-    // Weekdays: more slots, weekends: fewer
     const weekdaySlots = [
       "09:00 AM",
       "09:30 AM",
@@ -104,7 +92,7 @@ function Booking() {
       "04:00 PM",
     ];
     const weekendSlots = ["10:00 AM", "11:00 AM", "02:00 PM", "03:00 PM"];
-    const day = date.getDay(); // 0 Sun - 6 Sat
+    const day = date.getDay(); 
     return day === 0 || day === 6 ? weekendSlots : weekdaySlots;
   }
 
@@ -128,14 +116,12 @@ function Booking() {
 
   // on confirm
   const handleConfirm = () => {
-    // In future: post to backend
     setConfirmed(true);
     setShowToast(true);
     setStep(5);
     setTimeout(() => setShowToast(false), 3500);
   };
 
-  // automatically go to step 2 when service selected
   useEffect(() => {
     if (selectedService) setStep(2);
   }, [selectedService]);
@@ -150,32 +136,50 @@ function Booking() {
   return (
     <div className="min-h-screen bg-[#FBFBFB] flex items-start justify-center py-10 px-4">
       <div className="w-full max-w-5xl">
-        {/* header */}
-        <div className="flex items-center justify-between mb-6 gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-800">Book Appointment</h1>
-            <p className="text-sm text-gray-500 mt-1">Choose a service, pick a date & time, then confirm.</p>
+        {/* HEADER */}
+        <motion.header
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="sticky top-0 z-40 w-full flex items-center justify-between backdrop-blur-lg bg-white/70 border border-white/50 shadow-md rounded-2xl px-6 py-4 mb-8"
+        >
+          {/* LEFT: LOGO + NAME */}
+          <div className="flex items-center gap-3">
+              <img src="./images/logo.png" alt="Sortify Logo" className="w-8 h-8 object-contain" />
+            <h1 className="text-xl font-bold text-gray-800">RaphaVets Pet Clinic</h1>
           </div>
 
+          {/* CENTER: PAGE TITLE */}
+          <div className="hidden sm:block text-center">
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-700">
+              Book an Appointment
+            </h2>
+            <p className="text-sm text-gray-500">Schedule your pet’s next visit easily</p>
+          </div>
+
+          {/* RIGHT: ACTION BUTTONS */}
           <div className="flex items-center gap-3">
             <button
               onClick={() => setShowCancelModal(true)}
-              className="px-3 py-2 bg-white text-gray-700 rounded-lg border border-gray-100 shadow-sm hover:shadow-md transition"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-100 transition-all duration-300"
             >
-              Cancel
+              <i className="fa-solid fa-xmark"></i>
+              <span>Cancel</span>
             </button>
 
             <button
               onClick={resetBooking}
-              className="px-3 py-2 bg-white text-gray-700 rounded-lg border border-gray-100 shadow-sm hover:shadow-md transition"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#5EE6FE] text-white font-semibold hover:bg-[#3ecbe0] shadow-md transition-all duration-300"
             >
-              Reset
+              <i className="fa-solid fa-rotate-right"></i>
+              <span>Reset</span>
             </button>
           </div>
-        </div>
+        </motion.header>
+
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* left column: stepper + main content */}
+          {/* left column */}
           <div className="lg:col-span-2 space-y-6">
             {/* Stepper */}
             <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
@@ -196,18 +200,18 @@ function Booking() {
               <StepPill number={4} active={step === 4} done={step > 4}>Review</StepPill>
             </div>
 
-            {/* Step content card */}
+            {/* step content card */}
             <motion.div
               layout
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm"
             >
-              {/* === STEP 1: service selection === */}
+              {/* STEP 1 */}
               {step === 1 && (
                 <div className="space-y-4">
                   <h2 className="text-lg font-semibold text-gray-800">Choose a service</h2>
-                  <p className="text-sm text-gray-500">Tap a card to choose — no dropdowns.</p>
+                  <p className="text-sm text-gray-500">Tap a card to choose.</p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
                     {SERVICE_TYPES.map((t) => (
                       <motion.button
@@ -238,7 +242,7 @@ function Booking() {
                 </div>
               )}
 
-              {/* === STEP 2: calendar & timeslot === */}
+              {/* STEP 2 */}
               {step === 2 && (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                   <div className="lg:col-span-2">
@@ -304,7 +308,7 @@ function Booking() {
                         <div className="text-xs text-gray-500 mb-2">{format(selectedDate, "EEEE, MMM d")}</div>
                         <div className="grid grid-cols-2 gap-2">
                           {getTimeSlotsForDate(selectedDate).map((slot) => {
-                            const disabled = false; // placeholder for future slot busy logic
+                            const disabled = false; 
                             const active = selectedTime === slot;
                             return (
                               <button
@@ -339,7 +343,7 @@ function Booking() {
                 </div>
               )}
 
-              {/* === STEP 3: details form === */}
+              {/* STEP 3 */}
               {step === 3 && (
                 <div className="space-y-4">
                   <h2 className="text-lg font-semibold text-gray-800">Pet & Owner details</h2>
@@ -400,7 +404,7 @@ function Booking() {
                 </div>
               )}
 
-              {/* === STEP 4: review & confirm === */}
+              {/* STEP 4 */}
               {step === 4 && (
                 <div className="space-y-4">
                   <h2 className="text-lg font-semibold text-gray-800">Review appointment</h2>
@@ -442,11 +446,11 @@ function Booking() {
                 </div>
               )}
 
-              {/* === STEP 5: success === */}
+              {/* STEP 5 */}
               {step === 5 && confirmed && (
                 <div className="text-center py-8">
                   <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="inline-block bg-[#E6FFFB] text-[#0f766e] px-4 py-3 rounded-lg mb-4 shadow-sm">
-                    ✅ Appointment booked
+                    Appointment booked
                   </motion.div>
                   <h3 className="text-xl font-semibold text-gray-800">All set!</h3>
                   <p className="text-gray-500 mt-2">We've emailed the appointment details and added a record to your account.</p>
@@ -460,7 +464,6 @@ function Booking() {
             </motion.div>
           </div>
 
-          {/* Right column: summary / helpful info */}
           <aside className="space-y-4">
             <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
               <div className="text-sm text-gray-500">Appointment summary</div>
@@ -535,7 +538,6 @@ function Booking() {
   );
 }
 
-/* Small helper components */
 
 function StepPill({ number, active, done, children }) {
   return (

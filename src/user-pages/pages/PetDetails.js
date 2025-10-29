@@ -112,7 +112,7 @@ function PetDetails() {
   transition={{ duration: 0.3 }}
   className="p-6 min-h-[350px] relative"
 >
-  {/* --- APPOINTMENTS --- */}
+  {/* APPOINTMENTS */}
   {activeTab === "Appointments" && (
     <div className="flex flex-col gap-4">
       <div className="p-4 rounded-2xl bg-[#EAFBFD] shadow-sm flex justify-between items-center">
@@ -124,17 +124,17 @@ function PetDetails() {
     </div>
   )}
 
-  {/* --- DIET & FEEDING --- */}
+  {/* DIET & FEEDING */}
   {activeTab === "Diet & Feeding" && (
     <DietFeedingSection />
   )}
 
-  {/* --- HEALTH TRACKER --- */}
+  {/* HEALTH TRACKER */}
   {activeTab === "Health Tracker" && (
     <HealthTrackerSection />
   )}
 
-  {/* --- BEHAVIOR NOTES --- */}
+  {/* BEHAVIOR NOTES */}
   {activeTab === "Behavior Notes" && (
     <BehaviorNotesSection />
   )}

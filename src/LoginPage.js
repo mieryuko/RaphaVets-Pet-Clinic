@@ -234,7 +234,7 @@ function LoginPage() {
 
       {/* bottom */}
       <div
-        className="hidden md:block md:fixed bottom-0 left-[18%] w-[260px] h-[480px] bg-[#5EE6FE] rounded-tl-[125px] rounded-tr-[125px] transform -rotate-[41.73deg] -translate-x-[-10px] translate-y-[150px] z-30 pointer-events-none"
+        className="hidden md:block md:fixed bottom-0 left-[18%] w-[260px] h-[480px] bg-[#5EE6FE] rounded-tl-[125px] rounded-tr-[125px] transform -rotate-[41.73deg] -translate-x-[-100px] translate-y-[150px] z-30 pointer-events-none"
         style={{ background: "linear-gradient(5deg, #6aa5afff, #5EE6FE)" }}
       />
 
@@ -245,137 +245,173 @@ function LoginPage() {
       {/* wrapper */}
       <div
         className="relative z-20 w-full md:w-auto min-h-screen flex flex-col items-center justify-center
-                    py-4 sm:py-8 md:py-0
-                    md:absolute md:top-1/2 md:right-8 lg:right-24 md:-translate-y-1/2"
+                    md:absolute md:top-1/2 md:right-8 lg:right-24 md:-translate-y-1/2 overflow-hidden"
       >
- 
-        {/* cat image */}
-        <div className="hidden sm:flex justify-center w-full z-40 pointer-events-none">
-          <img
-            src="/images/cat_peeking.png"
-            alt="Cat"
-            className="w-[80px] -mb-1 sm:-mb-2 md:-mb-4 sm:w-[100px] md:w-[120px] lg:w-[140px] object-contain drop-shadow-lg"
-          />
-        </div>
- 
-        {/* login form */}
+
+        {/* mobile top section */}
         <div
-          className="bg-[#F3F3F3] border-[1.5px] border-[#5EE6FE] shadow-2xl rounded-3xl 
-                      w-[95%] sm:w-[88%] md:w-[480px] lg:w-[560px] max-w-[560px]
-                      flex flex-col items-center justify-start relative z-10
-                      pt-4 sm:pt-6 md:pt-6 p-5 sm:p-7 md:p-6 lg:p-8
-                      gap-3 sm:gap-4 md:gap-3 text-sm
-                      max-h-[calc(100vh-90px)] sm:max-h-[calc(100vh-110px)] md:max-h-[calc(100vh-140px)] overflow-y-auto"
-          style={{ boxSizing: "border-box", scrollBehavior: "smooth", WebkitOverflowScrolling: "touch" }}
+          className="absolute top-0 left-0 w-full h-[32%] md:hidden overflow-hidden rounded-b-[40px] z-[5]"
+          style={{
+            background: "linear-gradient(145deg,#5EE6FE 0%,#42C4D6 40%,#2FA394 100%)",
+          }}
         >
- 
-          {/* welcome txt */}
-          <div className="w-full flex items-center mb-2 px-2 sm:px-0 sm:py-2 md:py-3">
-            <div className="flex-1 h-[3px] bg-[#5EE6FE]" />
-            <h1 className="mx-3 sm:mx-6 text-[20px] sm:text-[20px] md:text-[25px] font-bold text-gray-800" style={{ fontFamily: "'Baloo Chettan 2'" }}>
-              Welcome
-            </h1>
-            <div className="flex-1 h-[3px] bg-[#5EE6FE]" />
-          </div> 
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `
+                radial-gradient(circle at 20% 20%, rgba(255,255,255,0.25) 0%, transparent 25%),
+                radial-gradient(circle at 80% 40%, rgba(255,255,255,0.25) 0%, transparent 20%),
+                radial-gradient(circle at 50% 80%, rgba(255,255,255,0.25) 0%, transparent 20%)`,
+              backgroundSize: "100% 100%",
+              backgroundRepeat: "no-repeat",
+            }}
+          />
 
-          <div className="text-gray-600 text-center mb-6 text-sm sm:text-base">
-            Login to your account to continue
-          </div>       
-
-          <form onSubmit={handleLogin} className="flex flex-col gap-3 sm:gap-4 w-full px-4 sm:px-6">
-            <FormMessage type={formMessage.type} message={formMessage.message} />
-
-            {/* email */}
-            <div className="flex items-center bg-[#EAEAEA] rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-[#5EE6FE]">
-              <div className="flex items-center px-3 text-gray-500">
-                <i className="fa-solid fa-user text-[#626262]"></i>
-                <div className="w-[1px] h-6 bg-gray-300 mx-2"></div>
-              </div>
-                <input
-                  type="email"
-                  autoComplete="email"
-                  value={loginData.email}
-                  onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
-                  placeholder="abcd@xyz.com"
-                  className="flex-1 py-2 sm:py-3 pr-3 outline-none bg-[#EAEAEA] text-gray-700 text-sm sm:text-base"
-                />            
-              </div>
-
-            {/* password */}
-            <div className="flex items-center bg-[#EAEAEA] border-gray-300 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-[#5EE6FE] font-sansation">
-              <div className="flex items-center px-3 text-gray-500">
-                <i className="fa-solid fa-lock text-[#626262]"></i>
-                <div className="w-[1px] h-6 bg-gray-300 mx-2"></div>
-              </div>
-
-                <input
-                  type="password"
-                  autoComplete="current-password"
-                  value={loginData.password}
-                  onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
-                  placeholder="Password"
-                  className="flex-1 py-2 sm:py-3 pr-3 outline-none bg-[#EAEAEA] text-[#404A4C] text-sm sm:text-base"
-                />
-
-              <button
-                type="button"
-                className="px-3 text-[#626262] hover:text-[#5EE6FE] focus:outline-none"
-                onClick={(e) => {
-                  const input = e.currentTarget.previousElementSibling;
-                  input.type = input.type === "password" ? "text" : "password";
-                  e.currentTarget.firstChild.classList.toggle("fa-eye");
-                  e.currentTarget.firstChild.classList.toggle("fa-eye-slash");
-                }}
-              >
-                <i className="fa-solid fa-eye-slash"></i>
-              </button>
-            </div>
-
-            {/* forgot password */}
-            <div className="text-right">
-              <button
-                type="button"
-                onClick={openForgot}
-                className="text-xs sm:text-sm text-[#4E4E4E] hover:underline focus:outline-none"
-              >
-                Forgot Password?
-              </button>
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="text-center bg-[#5EE6FE] text-white font-semibold py-2 sm:py-3 rounded-xl mt-1 hover:bg-[#388A98] transition-colors"
-            >
-              {loading ? "Logging in..." : "Login"}
-            </button>
-
-            {/* divider */}
-            <div className="flex items-center my-1">
-              <div className="flex-grow h-[1px] bg-gray-300"></div>
-              <span className="px-3 text-gray-500 text-sm">or</span>
-              <div className="flex-grow h-[1px] bg-gray-300"></div>
-            </div>
-
-            {/* google */}
-            <div className="flex items-center justify-center gap-2 bg-white border border-gray-300 rounded-lg py-2 sm:py-3 cursor-pointer hover:bg-gray-100 transition-colors font-sansation">
-              <img
-                  src="/images/g-logo.png"
-                  alt="Google logo"
-                  className="w-5 h-5"
-                />
-              <span className="text-[#404A4C] text-sm sm:text-base">Continue with Google account</span>
-            </div>
-          </form>
-
-          <p className="text-xs sm:text-sm text-gray-500 mt-4">
-            Don't have an account? <Link to="/signup" className="text-[#5EE6FE] font-semibold">Sign up</Link>
-          </p>
-
-          <Link to="/home" className="text-xs sm:text-sm text-gray-500 mt-4 hover:underline inline-block">
-            Continue as a guest.
-          </Link>
+          <svg
+            viewBox="0 0 1440 120"
+            className="absolute bottom-0 left-0 w-full h-[70px]"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              fill="#F3F3F3"
+              d="M0,64L60,69.3C120,75,240,85,360,96C480,107,600,117,720,101.3C840,85,960,43,1080,32C1200,21,1320,43,1380,53.3L1440,64V120H0Z"
+            />
+          </svg>
         </div>
+
+        <div className="flex flex-col items-center justify-end w-full min-h-screen md:min-h-0 md:justify-center md:scale-[0.9] origin-top z-10">
+
+          {/* cat image */}
+          <div className="hidden sm:flex justify-center w-full z-40 pointer-events-none">
+            <img
+              src="/images/cat_peeking.png"
+              alt="Cat"
+              className="w-[80px] -mb-1 sm:-mb-2 md:-mb-4 sm:w-[100px] md:w-[120px] lg:w-[140px] object-contain drop-shadow-lg"
+            />
+          </div>
+
+          {/* login form */}
+          <div
+            className="bg-[#F3F3F3] border-t-0 md:border-[1.5px] border-[#5EE6FE] shadow-none md:shadow-2xl 
+                      w-full sm:w-[90%] md:w-[480px] lg:w-[560px] max-w-[560px]
+                      flex flex-col items-center justify-start relative
+                      pt-8 sm:pt-10 md:pt-6 p-5 sm:p-6 md:p-6 lg:p-8
+                      gap-2 text-sm rounded-t-[40px] md:rounded-3xl overflow-hidden"
+            style={{
+              minHeight: "75vh",
+              boxSizing: "border-box",
+              scrollBehavior: "smooth",
+              WebkitOverflowScrolling: "touch",
+            }}
+          >
+              {/* welcome txt */}
+              <div className="w-full flex items-center mb-2 px-2 sm:px-0 sm:py-2 md:py-3">
+                <div className="flex-1 h-[3px] bg-[#5EE6FE]" />
+                <h1 className="mx-3 sm:mx-6 text-[20px] sm:text-[20px] md:text-[25px] font-bold text-gray-800" style={{ fontFamily: "'Baloo Chettan 2'" }}>
+                  Welcome
+                </h1>
+                <div className="flex-1 h-[3px] bg-[#5EE6FE]" />
+              </div> 
+
+              <div className="text-gray-600 text-center mb-6 text-sm sm:text-base">
+                Login to your account to continue
+              </div>       
+
+              <form onSubmit={handleLogin} className="flex flex-col gap-3 sm:gap-4 w-full px-4 sm:px-6">
+                <FormMessage type={formMessage.type} message={formMessage.message} />
+
+                {/* email */}
+                <div className="flex items-center bg-[#EAEAEA] rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-[#5EE6FE]">
+                  <div className="flex items-center px-3 text-gray-500">
+                    <i className="fa-solid fa-user text-[#626262]"></i>
+                    <div className="w-[1px] h-6 bg-gray-300 mx-2"></div>
+                  </div>
+                    <input
+                      type="email"
+                      autoComplete="email"
+                      value={loginData.email}
+                      onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
+                      placeholder="abcd@xyz.com"
+                      className="flex-1 py-2 sm:py-3 pr-3 outline-none bg-[#EAEAEA] text-gray-700 text-sm sm:text-base"
+                    />            
+                  </div>
+
+                {/* password */}
+                <div className="flex items-center bg-[#EAEAEA] border-gray-300 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-[#5EE6FE] font-sansation">
+                  <div className="flex items-center px-3 text-gray-500">
+                    <i className="fa-solid fa-lock text-[#626262]"></i>
+                    <div className="w-[1px] h-6 bg-gray-300 mx-2"></div>
+                  </div>
+
+                    <input
+                      type="password"
+                      autoComplete="current-password"
+                      value={loginData.password}
+                      onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+                      placeholder="Password"
+                      className="flex-1 py-2 sm:py-3 pr-3 outline-none bg-[#EAEAEA] text-[#404A4C] text-sm sm:text-base"
+                    />
+
+                  <button
+                    type="button"
+                    className="px-3 text-[#626262] hover:text-[#5EE6FE] focus:outline-none"
+                    onClick={(e) => {
+                      const input = e.currentTarget.previousElementSibling;
+                      input.type = input.type === "password" ? "text" : "password";
+                      e.currentTarget.firstChild.classList.toggle("fa-eye");
+                      e.currentTarget.firstChild.classList.toggle("fa-eye-slash");
+                    }}
+                  >
+                    <i className="fa-solid fa-eye-slash"></i>
+                  </button>
+                </div>
+
+                {/* forgot password */}
+                <div className="text-right">
+                  <button
+                    type="button"
+                    onClick={openForgot}
+                    className="text-xs sm:text-sm text-[#4E4E4E] hover:underline focus:outline-none"
+                  >
+                    Forgot Password?
+                  </button>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="text-center bg-[#5EE6FE] text-white font-semibold py-2 sm:py-3 rounded-xl mt-1 hover:bg-[#388A98] transition-colors"
+                >
+                  {loading ? "Logging in..." : "Login"}
+                </button>
+
+                {/* divider */}
+                <div className="flex items-center my-1">
+                  <div className="flex-grow h-[1px] bg-gray-300"></div>
+                  <span className="px-3 text-gray-500 text-sm">or</span>
+                  <div className="flex-grow h-[1px] bg-gray-300"></div>
+                </div>
+
+                {/* google */}
+                <div className="flex items-center justify-center gap-2 bg-white border border-gray-300 rounded-lg py-2 sm:py-3 cursor-pointer hover:bg-gray-100 transition-colors font-sansation">
+                  <img
+                      src="/images/g-logo.png"
+                      alt="Google logo"
+                      className="w-5 h-5"
+                    />
+                  <span className="text-[#404A4C] text-sm sm:text-base">Continue with Google account</span>
+                </div>
+              </form>
+
+              <p className="text-xs sm:text-sm text-gray-500 mt-4">
+                Don't have an account? <Link to="/signup" className="text-[#5EE6FE] font-semibold">Sign up</Link>
+              </p>
+
+              <Link to="/home" className="text-xs sm:text-sm text-gray-500 mt-4 hover:underline inline-block">
+                Continue as a guest.
+              </Link>
+            </div>
+          </div>
       </div>
 
       {/* forgot password email modal */}
