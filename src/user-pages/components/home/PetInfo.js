@@ -20,7 +20,7 @@ function PetInfo({ pets, setShowModal, currentPetIndex, setCurrentPetIndex }) {
                 onClick={() => setShowModal(true)}
                 className="relative bg-white py-2 px-6 text-[13px] font-semibold text-gray-700 rounded-lg border border-[#5EE6FE] shadow-sm transition-all duration-300 hover:-translate-y-[2px] hover:shadow-[0_4px_15px_rgba(94,230,254,0.4)] hover:bg-[#5EE6FE] hover:text-white active:translate-y-[1px]"
               >
-                Add my pet
+                How to add my pet?
               </button>
             </div>
           </div>

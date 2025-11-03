@@ -32,7 +32,7 @@ CREATE TABLE `account_tbl` (
   `roleID` int(11) NOT NULL,
   `firstName` varchar(250) NOT NULL,
   `lastName` varchar(250) NOT NULL,
-  `eMail` varchar(250) NOT NULL,
+  `email` varchar(255) DEFAULT NULL,
   `password` varchar(250) NOT NULL,
   `createdAt` datetime NOT NULL DEFAULT current_timestamp(),
   `lastUpdatedAt` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
@@ -246,7 +246,7 @@ ALTER TABLE `role_tbl`
 -- AUTO_INCREMENT for table `account_tbl`
 --
 ALTER TABLE `account_tbl`
-  MODIFY `accId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `accId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `allergen_tbl`

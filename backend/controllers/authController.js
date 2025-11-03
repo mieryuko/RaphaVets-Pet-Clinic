@@ -48,30 +48,24 @@ export const checkEmailExists = async (req, res) => {
 };
 
 export const loginUser = async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) 
-    return res.status(400).json({ errors: errors.array() });
-
   const { email, password } = req.body;
 
   try {
-    // Check if user exists
     const [rows] = await pool.query("SELECT * FROM account_tbl WHERE email = ?", [email]);
     if (rows.length === 0) {
       return res.status(400).json({ message: "Invalid email or password" });
     }
 
     const user = rows[0];
-
-    // Check password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid email or password" });
     }
 
-    // Create token
+    console.log("🧠 User from DB:", user);
+
     const token = jwt.sign(
-      { id: user.accId, email: user.email },
+      { id: user.accId, email: user.email, role: user.userType }, // ✅ include role
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
@@ -83,6 +77,7 @@ export const loginUser = async (req, res) => {
         id: user.accId,
         name: `${user.firstName} ${user.lastName}`,
         email: user.email,
+        role: user.userType, // ✅ include role in response
       },
     });
   } catch (error) {

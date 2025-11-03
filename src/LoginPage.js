@@ -102,7 +102,15 @@ function LoginPage() {
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("user", JSON.stringify(res.data.user));
 
-      setTimeout(() => navigate("/user-home"), 1000);
+      // ✅ Redirect based on role
+      setTimeout(() => {
+        const role = res.data.user.role;
+        if (role === "admin") {
+          navigate("/admin-pages");
+        } else {
+          navigate("/user-home");
+        }
+      }, 1000);
     } catch (err) {
       console.error("❌ Login error:", err);
       setFormMessage({

@@ -24,6 +24,7 @@ function SideBar({ isMenuOpen, setIsMenuOpen, pets, setShowModal }) {
           <>
             {/* PERSONAL */}
             <div className="pb-4 flex flex-col border-b-[1px] border-[#5EE6FE]">
+              {/*
               <div>
                 <span className="font-[700] text-[20px]">Your pets</span>
               </div>
@@ -52,7 +53,7 @@ function SideBar({ isMenuOpen, setIsMenuOpen, pets, setShowModal }) {
                   </button>
                   <span className="text-[12px] mt-1">Add new</span>
                 </div>
-              </div>
+              </div> */}
 
               {/* Sidebar links */}
               <div className="flex flex-col gap-2 mt-4">
