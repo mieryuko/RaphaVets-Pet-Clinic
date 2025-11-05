@@ -16,9 +16,11 @@ export default function Sidebar() {
   return (
     <aside className="w-20 md:w-64 bg-white border-r h-screen sticky top-0">
       <div className="px-3 py-6 flex items-center gap-3">
-        <div className="bg-[#2FA394] text-white font-bold rounded-xl w-10 h-10 flex items-center justify-center">R</div>
+        <div className="bg-[#2FA394] text-white font-bold rounded-xl w-10 h-10 flex items-center justify-center">Rdsad</div>
         <div className="hidden md:block">
-          <div className="font-semibold">RaphaVets</div>
+          <div className="font-semibold">
+            RaphaVets Pet Clinic
+          </div>
           <div className="text-xs text-gray-500">Admin</div>
         </div>
       </div>
@@ -38,6 +40,7 @@ export default function Sidebar() {
           </NavLink>
         ))}
       </nav>
+      
     </aside>
   );
 }

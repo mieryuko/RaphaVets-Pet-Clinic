@@ -1,30 +1,126 @@
-import React from "react";
+import React, { useState } from "react";
 
 function SecurityPrivacy() {
   const fields = [
-    { label: "Current Password", placeholder: "Enter current password" },
-    { label: "New Password", placeholder: "Enter new password" },
-    { label: "Confirm New Password", placeholder: "Re-enter new password" },
+    { label: "Current Password", placeholder: "Enter current password", key: "current" },
+    { label: "New Password", placeholder: "Enter new password", key: "new" },
+    { label: "Confirm New Password", placeholder: "Re-enter new password", key: "confirm" },
   ];
+
+  const [values, setValues] = useState({
+    current: "",
+    new: "",
+    confirm: "",
+  });
+
+  const [showPassword, setShowPassword] = useState({
+    current: false,
+    new: false,
+    confirm: false,
+  });
+
+  const handleChange = (key, val) => {
+    setValues((prev) => ({ ...prev, [key]: val }));
+  };
+
+  const togglePassword = (key) => {
+    setShowPassword((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  // validations derived from "new" and "confirm"
+  const password = values.new;
+  const confirm = values.confirm;
+
+  const hasUpper = /[A-Z]/.test(password);
+  const hasLower = /[a-z]/.test(password);
+  const hasLength = password.length >= 8;
+  const hasSpecial = /[*\-@\$]/.test(password);
+  const matches = password !== "" && password === confirm;
+
+  const itemClass = (condition) =>
+    `flex items-start gap-1 ${condition ? "text-green-500" : "text-gray-400"}`;
 
   return (
     <div className="space-y-5">
       <h2 className="text-lg font-semibold text-[#5EE6FE] mb-2">Security Options</h2>
+
       <div className="space-y-4">
-        {fields.map((item, i) => (
-          <div key={i}>
+        {fields.map((item) => (
+          <div key={item.key}>
             <label className="block text-gray-600 text-sm mb-1">{item.label}</label>
-            <input
-              type="password"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-[#5EE6FE] focus:border-[#5EE6FE]"
-              placeholder={item.placeholder}
-            />
+
+            {/* password input with eye icon */}
+            <div className="relative">
+              <input
+                type={showPassword[item.key] ? "text" : "password"}
+                value={values[item.key]}
+                onChange={(e) => handleChange(item.key, e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-1 focus:ring-[#5EE6FE] focus:border-[#5EE6FE]"
+                placeholder={item.placeholder}
+              />
+
+              <i
+                className={`fa-solid ${
+                  showPassword[item.key] ? "fa-eye-slash" : "fa-eye"
+                } absolute right-3 top-3 text-gray-500 cursor-pointer hover:text-[#5EE6FE]`}
+                onClick={() => togglePassword(item.key)}
+              ></i>
+            </div>
+
+            {/* Password requirements only for New Password */}
+            {item.key === "new" && (
+              <div className="mt-1 sm:mt-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-2 gap-y-1 text-gray-400 text-xs">
+                  <div className={itemClass(hasUpper)}>
+                    <i
+                      className={`fa-solid ${hasUpper ? "fa-check" : "fa-circle"} mt-1 text-[10px]`}
+                    />
+                    <span className="text-[11px]">Password must contain at least one uppercase letter.</span>
+                  </div>
+
+                  <div className={itemClass(hasLength)}>
+                    <i
+                      className={`fa-solid ${hasLength ? "fa-check" : "fa-circle"} mt-1 text-[10px]`}
+                    />
+                    <span className="text-[11px]">Password must be at least 8 characters long.</span>
+                  </div>
+
+                  <div className={itemClass(hasLower)}>
+                    <i
+                      className={`fa-solid ${hasLower ? "fa-check" : "fa-circle"} mt-1 text-[10px]`}
+                    />
+                    <span className="text-[11px]">Password must contain at least one lowercase letter.</span>
+                  </div>
+
+                  <div className={itemClass(hasSpecial)}>
+                    <i
+                      className={`fa-solid ${hasSpecial ? "fa-check" : "fa-circle"} mt-1 text-[10px]`}
+                    />
+                    <span className="text-[11px]">
+                      Password must include at least one special character (*, -, @, $).
+                    </span>
+                  </div>
+
+                  <div className={itemClass(matches)}>
+                    <i
+                      className={`fa-solid ${matches ? "fa-check" : "fa-circle"} mt-1 text-[10px]`}
+                    />
+                    <span className="text-[11px]">Password must match the retyped password.</span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         ))}
       </div>
 
       <div className="text-right">
-        <button className="px-6 py-2 bg-[#5EE6FE] text-white rounded-lg font-semibold hover:bg-[#47c0d7] transition-all duration-300">
+        <button
+          onClick={() => {
+            /* handle update password submit */
+          }}
+          className="px-6 py-2 bg-[#5EE6FE] text-white rounded-lg font-semibold hover:bg-[#47c0d7] transition-all duration-300"
+        >
           Update Password
         </button>
       </div>

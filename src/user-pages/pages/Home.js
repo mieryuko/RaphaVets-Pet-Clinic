@@ -174,7 +174,7 @@ function Home() {
       )}
 
 
-      {/* ADD PET MODAL */}
+      {/* ADD PET MODAL 
       {showModal && (
         <AddPetModal
           newPet={newPet}
@@ -185,7 +185,7 @@ function Home() {
           handlePhotoChange={handlePhotoChange}
           setShowModal={setShowModal}
         />
-      )}
+      )}*/}
 
       {/* SUCCESS MESSAGE */}
       {showSuccess && (

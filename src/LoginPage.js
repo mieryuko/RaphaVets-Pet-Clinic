@@ -411,10 +411,12 @@ function LoginPage() {
                 </div>
               </form>
 
+              {/* signup link 
               <p className="text-xs sm:text-sm text-gray-500 mt-4">
                 Don't have an account? <Link to="/signup" className="text-[#5EE6FE] font-semibold">Sign up</Link>
               </p>
-
+              */}
+              
               <Link to="/home" className="text-xs sm:text-sm text-gray-500 mt-4 hover:underline inline-block">
                 Continue as a guest.
               </Link>

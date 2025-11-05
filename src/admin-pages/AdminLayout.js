@@ -40,7 +40,8 @@ export default function AdminLayout() {
           open ? "translate-x-0" : "-translate-x-full"
         } fixed md:static md:translate-x-0 z-40 w-64 bg-white shadow-lg border-r border-gray-100 transition-transform duration-300`}
       >
-        <div className="flex items-center justify-between p-4 border-b border-gray-100">
+        <div className="flex items-center justify-center p-4 border-b border-gray-100">
+          <img src="/images/logo.png" alt="RaphaVets Logo" className="w-10 h-8"/>
           <h1 className="text-xl font-bold text-[#2FA394]">RaphaVets</h1>
           <button
             className="md:hidden text-gray-500"
