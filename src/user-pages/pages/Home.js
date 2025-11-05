@@ -18,16 +18,43 @@ function Home() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [showPhotoOptions, setShowPhotoOptions] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
-  const [currentPetIndex, setCurrentPetIndex] = useState(0);
   const [chatType, setChatType] = useState(null);
   const [isExpandedChat, setIsExpandedChat] = useState(false);
-
   const [appointmentFilter, setAppointmentFilter] = useState("Upcoming");
+
+  const [selectedAppointment, setSelectedAppointment] = useState(null); // <-- for modal
+  const [showDetailsModal, setShowDetailsModal] = useState(false); // <-- toggle modal
+
   const appointments = [
-    { id: 1, petName: "Miguel", type: "General Checkup", date: "Nov 10, 2025", status: "Upcoming" },
-    { id: 2, petName: "Mark", type: "Vaccination", date: "Nov 12, 2025", status: "Upcoming" },
-    { id: 3, petName: "Jordan", type: "Grooming", date: "Oct 25, 2025", status: "Done" },
+    {
+      id: 1,
+      petName: "Miguel",
+      ownerName: "Fionah Beltran",
+      type: "General Checkup",
+      date: "Nov 10, 2025 - 10:00 AM",
+      status: "Upcoming",
+      notes: "Bring previous medical records.",
+    },
+    {
+      id: 2,
+      petName: "Mark",
+      ownerName: "John Cruz",
+      type: "Vaccination",
+      date: "Nov 12, 2025 - 1:30 PM",
+      status: "Upcoming",
+      notes: "Rabies and deworming included.",
+    },
+    {
+      id: 3,
+      petName: "Jordan",
+      ownerName: "Mary Santos",
+      type: "Grooming",
+      date: "Oct 25, 2025 - 9:00 AM",
+      status: "Done",
+      notes: "Full grooming session completed.",
+    },
   ];
+
   const filteredAppointments = appointments.filter(
     (a) => appointmentFilter === "All" || a.status === appointmentFilter
   );
@@ -63,6 +90,17 @@ function Home() {
     }
   };
 
+  // Handle View Details button
+  const handleViewDetails = (appointment) => {
+    setSelectedAppointment(appointment);
+    setShowDetailsModal(true);
+  };
+
+  const closeModal = () => {
+    setShowDetailsModal(false);
+    setSelectedAppointment(null);
+  };
+
   return (
     <div
       className={`font-sansation min-h-screen relative ${
@@ -89,7 +127,9 @@ function Home() {
             <div className="bg-[#FCE7F3] text-[#045D56] p-5 rounded-xl shadow-lg flex flex-col justify-between cursor-pointer hover:scale-105 transition-all">
               <div>
                 <h3 className="font-bold text-lg mb-2">Daily Walks</h3>
-                <p className="text-sm">Take your dog for at least 30 minutes of walking to keep them healthy.</p>
+                <p className="text-sm">
+                  Take your dog for at least 30 minutes of walking to keep them healthy.
+                </p>
               </div>
               <div className="mt-3 flex justify-end text-2xl">
                 <i className="fa-solid fa-dumbbell"></i>
@@ -143,7 +183,7 @@ function Home() {
               {activeTab === "Appointment" && (
                 <div className="flex flex-col flex-1 gap-3">
                   <div className="flex gap-3 mb-3">
-                    {["Upcoming", "Done", "All"].map((status) => (
+                    {["Upcoming", "Pending", "Done", "All"].map((status) => (
                       <button
                         key={status}
                         onClick={() => setAppointmentFilter(status)}
@@ -159,88 +199,190 @@ function Home() {
                     ))}
                   </div>
 
-                  {filteredAppointments.length === 0 ? (
-                    <div className="flex-1 flex items-center justify-center text-gray-400 text-sm">
-                      No {appointmentFilter.toLowerCase()} appointments
-                    </div>
-                  ) : (
-                    <div className="flex flex-col gap-4 overflow-y-auto">
-                      {filteredAppointments.map((appt) => (
-                        <div
-                          key={appt.id}
-                          className="bg-white/70 backdrop-blur-md border border-[#5EE6FE]/30 p-4 rounded-xl flex justify-between items-center shadow-md hover:shadow-lg hover:bg-[#EFFFFF]/60 transition-all cursor-pointer"
-                        >
+                  {filteredAppointments.map((appt) => {
+                    const datePart = appt.date.split(" - ")[0];
+                    const parsedDate = new Date(datePart + " 2025")
+
+                    // Fallback in case parsing still fails
+                    const isValidDate = !isNaN(parsedDate);
+
+                    return (
+                      <div
+                        key={appt.id}
+                        className="bg-white/70 backdrop-blur-md border border-[#5EE6FE]/30 p-4 rounded-xl flex justify-between items-center shadow-md hover:shadow-lg hover:bg-[#EFFFFF]/60 transition-all cursor-pointer"
+                      >
+                        {/* LEFT SIDE: DATE STACK */}
+                        <div className="flex flex-col items-center justify-center w-16 text-center bg-[#EFFFFF] rounded-lg py-2 border border-[#5EE6FE]/20 shadow-sm">
+                          {isValidDate ? (
+                            <>
+                              <span className="text-xs font-semibold text-[#5EE6FE] uppercase tracking-wide">
+                                {parsedDate.toLocaleString("default", { month: "short" })}
+                              </span>
+                              <span className="text-xl font-bold text-gray-800 leading-tight">
+                                {parsedDate.getDate()}
+                              </span>
+                              <span className="text-[10px] text-gray-500 capitalize">
+                                {parsedDate.toLocaleString("default", { weekday: "long" })}
+                              </span>
+                            </>
+                          ) : (
+                            <span className="text-xs text-gray-500">Invalid Date</span>
+                          )}
+                        </div>
+
+                        {/* RIGHT SIDE: APPOINTMENT DETAILS */}
+                        <div className="flex justify-between items-center flex-1 ml-4">
                           <div>
                             <p className="font-semibold text-gray-800">
                               {appt.petName} — {appt.type}
                             </p>
-                            <p className="text-xs text-gray-500 flex items-center gap-1">
-                              <i className="fa-regular fa-calendar"></i> {appt.date}
+                            <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
+                              <i className="fa-solid fa-clock text-[#5EE6FE]"></i>
+                              {appt.date.split(" - ")[1] || "10:00 AM"} &nbsp;•&nbsp;{" "}
+                              {appt.status || "Upcoming"}
                             </p>
                           </div>
-                          <button className="bg-[#5EE6FE] text-white px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-[#3ecbe0] transition">
+                          <button
+                            onClick={() => handleViewDetails(appt)}
+                            className="bg-[#5EE6FE] text-white px-4 py-2 rounded-lg text-xs font-semibold hover:bg-[#3ecbe0] transition-all"
+                          >
                             View Details
                           </button>
                         </div>
-                      ))}
-                    </div>
-                  )}
+                      </div>
+                    );
+                  })}
                 </div>
               )}
 
               {/* --- MEDICAL REPORTS TAB --- */}
               {activeTab === "Medical Reports" && (
-                <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {[
-                    { pet: "Buddy", test: "Heartworm Test", result: "Negative", date: "Nov 01, 2025" },
-                    { pet: "Luna", test: "Blood Test", result: "Normal", date: "Oct 25, 2025" },
-                  ].map((report, i) => (
+                    { title: "Vaccination Record", date: "October 15, 2025", icon: "fa-syringe" },
+                    { title: "Deworming Certificate", date: "September 10, 2025", icon: "fa-capsules" },
+                    { title: "Annual Health Report", date: "June 22, 2025", icon: "fa-file-medical" },
+                  ].map((record, index) => (
                     <div
-                      key={i}
-                      className="bg-white/70 backdrop-blur-md border border-orange-300/40 p-4 rounded-xl flex justify-between items-center shadow-md hover:shadow-xl hover:bg-[#FFF8E7]/60 transition-all cursor-pointer"
+                      key={index}
+                      className="bg-white/70 backdrop-blur-md border border-[#5EE6FE]/30 p-5 rounded-xl shadow-md hover:shadow-lg hover:bg-[#EFFFFF]/60 transition-all"
                     >
-                      <div>
-                        <p className="font-semibold text-gray-800">{report.pet} — {report.test}</p>
-                        <p className="text-xs text-gray-500">
-                          Result: <span className="font-medium text-orange-600">{report.result}</span> | {report.date}
-                        </p>
+                      <div className="flex items-center gap-3 mb-3">
+                        <i className={`fa-solid ${record.icon} text-[#5EE6FE] text-lg`}></i>
+                        <h3 className="font-semibold text-gray-800">{record.title}</h3>
                       </div>
-                      <button className="bg-[#FFA500] text-white px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-[#e59400] transition">
-                        Download PDF
+                      <p className="text-sm text-gray-500 mb-4 flex items-center gap-1">
+                        <i className="fa-regular fa-calendar"></i> {record.date}
+                      </p>
+                      <button
+                        onClick={() => alert(`Downloading ${record.title} PDF...`)}
+                        className="bg-[#5EE6FE] text-white px-4 py-2 rounded-lg font-medium text-sm hover:bg-[#3ecbe0] transition-all"
+                      >
+                        <i className="fa-solid fa-download mr-2"></i>Download PDF
                       </button>
                     </div>
                   ))}
-                </>
+                </div>
               )}
 
               {/* --- LAB RECORDS TAB --- */}
               {activeTab === "Lab Records" && (
-                <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {[
-                    { pet: "Buddy", test: "CBC", date: "Oct 28, 2025" },
-                    { pet: "Luna", test: "Urinalysis", date: "Oct 20, 2025" },
-                  ].map((lab, i) => (
+                    { title: "Blood Test Results", date: "November 1, 2025", icon: "fa-vial" },
+                    { title: "Urine Analysis", date: "October 5, 2025", icon: "fa-flask" },
+                    { title: "X-ray Findings", date: "August 30, 2025", icon: "fa-x-ray" },
+                  ].map((lab, index) => (
                     <div
-                      key={i}
-                      className="bg-white/70 backdrop-blur-md border border-purple-300/40 p-4 rounded-xl flex justify-between items-center shadow-md hover:shadow-xl hover:bg-[#F9F1FF]/60 transition-all cursor-pointer"
+                      key={index}
+                      className="bg-white/70 backdrop-blur-md border border-[#5EE6FE]/30 p-5 rounded-xl shadow-md hover:shadow-lg hover:bg-[#EFFFFF]/60 transition-all"
                     >
-                      <div>
-                        <p className="font-semibold text-gray-800">{lab.pet} — {lab.test}</p>
-                        <p className="text-xs text-gray-500">
-                          Completed: {lab.date}
-                        </p>
+                      <div className="flex items-center gap-3 mb-3">
+                        <i className={`fa-solid ${lab.icon} text-[#5EE6FE] text-lg`}></i>
+                        <h3 className="font-semibold text-gray-800">{lab.title}</h3>
                       </div>
-                      <button className="bg-[#9C27B0] text-white px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-[#7B1FA2] transition">
-                        View Record
+                      <p className="text-sm text-gray-500 mb-4 flex items-center gap-1">
+                        <i className="fa-regular fa-calendar"></i> {lab.date}
+                      </p>
+                      <button
+                        onClick={() => alert(`Downloading ${lab.title} PDF...`)}
+                        className="bg-[#5EE6FE] text-white px-4 py-2 rounded-lg font-medium text-sm hover:bg-[#3ecbe0] transition-all"
+                      >
+                        <i className="fa-solid fa-download mr-2"></i>Download PDF
                       </button>
                     </div>
                   ))}
-                </>
+                </div>
               )}
             </div>
           </div>
+
         </div>
       </div>
+
+      {/* --- VIEW DETAILS MODAL --- */}
+      {showDetailsModal && selectedAppointment && (
+        <>
+          <div
+            onClick={closeModal}
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 animate-fadeIn"
+          ></div>
+          <div className="fixed inset-0 flex items-center justify-center z-50 animate-popUp">
+            <div className="bg-white/90 backdrop-blur-md p-6 rounded-2xl shadow-2xl w-[90%] sm:w-[400px] text-gray-800 relative">
+              <button
+                onClick={closeModal}
+                className="absolute top-3 right-4 text-gray-500 hover:text-gray-800 text-xl"
+              >
+                ×
+              </button>
+              <h2 className="text-lg font-bold mb-4 text-center text-[#00C3E3]">
+                Appointment Details
+              </h2>
+
+              <div className="space-y-3 text-sm">
+                <p>
+                  <span className="font-semibold">Pet Name:</span> {selectedAppointment.petName}
+                </p>
+                <p>
+                  <span className="font-semibold">Owner Name:</span> {selectedAppointment.ownerName}
+                </p>
+                <p>
+                  <span className="font-semibold">Service:</span> {selectedAppointment.type}
+                </p>
+                <p>
+                  <span className="font-semibold">Date & Time:</span> {selectedAppointment.date}
+                </p>
+                <p>
+                  <span className="font-semibold">Status:</span>{" "}
+                  <span
+                    className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                      selectedAppointment.status === "Upcoming"
+                        ? "bg-[#E0F9FF] text-[#00B8D4]"
+                        : "bg-green-100 text-green-700"
+                    }`}
+                  >
+                    {selectedAppointment.status}
+                  </span>
+                </p>
+                {selectedAppointment.notes && (
+                  <p>
+                    <span className="font-semibold">Notes:</span> {selectedAppointment.notes}
+                  </p>
+                )}
+              </div>
+
+              <div className="mt-5 flex justify-center">
+                <button
+                  onClick={closeModal}
+                  className="bg-[#5EE6FE] text-white px-5 py-2 rounded-lg font-semibold hover:bg-[#3ecbe0] transition-all"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Floating Chat Button */}
       <button

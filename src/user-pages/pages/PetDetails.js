@@ -1,10 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import Header from "../template/Header";
 import SideBar from "../template/SideBar";
 import DietFeedingSection from "../components/pet-details/DietFeedingSection";
-import HealthTrackerSection from "../components/pet-details/HealthTracker";
 import BehaviorNotesSection from "../components/pet-details/BehaviorNote";
 
 function PetDetails() {
@@ -19,23 +18,33 @@ function PetDetails() {
     health: "N/A",
   };
 
+  const [appointmentFilter, setAppointmentFilter] = useState("Upcoming");
+
+  const [appointments, setAppointments] = useState([
+    { id: 1, petName: pet.name, type: "Grooming Session", date: "July 19 - 10:00 AM", status: "Upcoming" },
+    { id: 2, petName: pet.name, type: "Vet Checkup", date: "August 1 - 2:00 PM", status: "Pending" },
+    { id: 3, petName: pet.name, type: "Vaccination", date: "September 10 - 11:00 AM", status: "Done" },
+  ]);
+
+  const filteredAppointments = appointments.filter(appt => 
+    appointmentFilter === "All" ? true : appt.status === appointmentFilter
+  );
+
+  const handleViewDetails = (appt) => {
+    alert(`Viewing details for ${appt.type} on ${appt.date}`);
+  };
+
   const [isMenuOpen, setIsMenuOpen] = useState(true);
   const [activeTab, setActiveTab] = useState("Appointments");
-  const [showMenu, setShowMenu] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [showHealthModal, setShowHealthModal] = useState(false);
 
-
-  const tabs = ["Appointments", "Medical Records", "Diet & Feeding", "Health Tracker", "Behavior Notes"];
+  const tabs = ["Appointments", "Medical History", "Diet & Feeding", "Behavior Notes"];
 
   return (
-    <div className="font-sansation min-h-screen bg-[#FBFBFB] relative">
-      {/* HEADER */}
-      <Header setIsMenuOpen={setIsMenuOpen}/>
+    <div className="font-sansation min-h-screen bg-gradient-to-b from-[#FDFBFB] to-[#EBEDEE] relative">
+      <Header setIsMenuOpen={setIsMenuOpen} />
 
-      {/* MAIN LAYOUT */}
       <div className="flex flex-row gap-5 px-5 sm:px-12 animate-fadeSlideUp">
-        {/* SIDEBAR */}
         <SideBar
           isMenuOpen={isMenuOpen}
           setIsMenuOpen={setIsMenuOpen}
@@ -45,57 +54,69 @@ function PetDetails() {
 
         {/* PAGE CONTENT */}
         <div
-          className={`transition-all duration-500 ease-in-out flex flex-col gap-7 rounded-xl p-5 w-full ${
+          className={`transition-all duration-500 ease-in-out flex flex-col gap-6 rounded-xl p-5 w-full ${
             !isMenuOpen ? "md:w-full" : "md:w-[calc(100%-250px)]"
           }`}
         >
-          {/* PET HEADER SECTION */}
+          {/* 🐶 PET HEADER SECTION */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            className="relative overflow-hidden rounded-3xl shadow-[0_0_15px_rgba(0,0,0,0.15)] backdrop-blur-md bg-white/30 border border-white/40"
+            className="relative overflow-hidden rounded-3xl bg-white shadow-lg border border-gray-100 flex flex-col sm:flex-row items-center justify-between px-6 py-5"
           >
-            <div className="flex flex-col sm:flex-row items-center sm:items-center justify-between gap-5 p-6">
-              <div className="flex items-center gap-5">
-                <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-[#5EE6FE]">
+            {/* Left side: Photo and Details */}
+            <div className="flex items-center gap-6">
+              {/* Profile Picture */}
+              <div className="relative">
+                <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-[#00B8D4] bg-gray-200 flex items-center justify-center">
                   <img
-                    src={pet.photo}
-                    alt={pet.name}
+                    src={pet?.photo || "/images/dog-profile.png"}
+                    alt={pet?.name || "Pet Name"}
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-800">{pet.name}</h2>
-                  <p className="text-gray-500 text-sm">
-                    {pet.breed} • {pet.gender} • {pet.age}
-                  </p>
-                </div>
               </div>
 
-              <div className="flex flex-wrap justify-center sm:justify-end gap-4 text-sm">
-                <div className="px-4 py-2 bg-white/60 border border-white/50 rounded-xl shadow-sm text-gray-700">
-                  <i className="fa-solid fa-heartbeat text-[#5EE6FE] mr-2"></i>
-                  {pet.health || "Healthy"}
-                </div>
-                <div className="px-4 py-2 bg-white/60 border border-white/50 rounded-xl shadow-sm text-gray-700">
-                  <i className="fa-solid fa-calendar-check text-[#5EE6FE] mr-2"></i>
-                  Last Check: {pet.lastCheck || "N/A"}
-                </div>
+              {/* Pet Info */}
+              <div>
+                <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
+                  {pet?.name || "Pet Name"}
+                  {/* Edit Icon */}
+                  <button
+                    onClick={() => setShowEditModal(true)}
+                    className="text-gray-400 hover:text-[#00B8D4] transition-all"
+                  >
+                    <i className="fa-solid fa-pen text-base"></i>
+                  </button>
+                </h2>
+                <p className="text-gray-500 text-sm">
+                  {pet?.breed || "Chow Chow"} • {pet?.gender || "Male"} • {pet?.age || "2 years old"}
+                </p>
+              </div>
+            </div>
+
+            {/* Right side: Status Cards */}
+            <div className="flex flex-wrap justify-center sm:justify-end gap-4 text-sm mt-4 sm:mt-0">
+
+              <div className="px-4 py-2 bg-[#FFF7E6] rounded-xl shadow-sm text-gray-700">
+                <i className="fa-solid fa-calendar-check text-[#00B8D4] mr-2"></i>
+                Last Check: {pet?.lastCheck || "N/A"}
               </div>
             </div>
           </motion.div>
 
-          {/* TABS */}
-          <div className="bg-white rounded-2xl shadow-[0_0_10px_rgba(0,0,0,0.1)]">
-            <div className="flex flex-wrap gap-6 px-6 py-3 border-b border-gray-200">
+
+          {/* 🩵 MODERNIZED TABS */}
+          <div className="bg-white rounded-2xl shadow-md border border-gray-100">
+            <div className="flex flex-wrap gap-6 px-6 py-4 border-b border-gray-100">
               {tabs.map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
                   className={`relative pb-2 transition-all font-semibold ${
                     activeTab === tab
-                      ? "text-[#5EE6FE] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-[#5EE6FE]"
-                      : "text-gray-500 hover:text-[#5EE6FE]"
+                      ? "text-[#00B8D4] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-[#00B8D4]"
+                      : "text-gray-500 hover:text-[#00B8D4]"
                   }`}
                 >
                   {tab}
@@ -103,87 +124,124 @@ function PetDetails() {
               ))}
             </div>
 
-
             {/* TAB CONTENT */}
-<motion.div
-  key={activeTab}
-  initial={{ opacity: 0, y: 10 }}
-  animate={{ opacity: 1, y: 0 }}
-  transition={{ duration: 0.3 }}
-  className="p-6 min-h-[350px] relative"
->
-  {/* APPOINTMENTS */}
-  {activeTab === "Appointments" && (
-    <div className="flex flex-col gap-4">
-      <div className="p-4 rounded-2xl bg-[#EAFBFD] shadow-sm flex justify-between items-center">
-        <span className="text-gray-700 font-medium">No upcoming appointments.</span>
-        <button className="bg-[#5EE6FE] text-white px-4 py-2 rounded-lg hover:bg-[#3ecbe0] transition-all">
-          Book Appointment
-        </button>
-      </div>
-    </div>
-  )}
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="p-6 min-h-[350px]"
+            >
+              {activeTab === "Appointments" && (
+              <div className="px-6  rounded-2xl bg-white shadow-lg flex flex-col h-[350px]">
+                {/* Appointment Status Filters */}
+                <div className="flex gap-3 mb-3">
+                  {["Upcoming", "Pending", "Done", "All"].map((status) => (
+                    <button
+                      key={status}
+                      onClick={() => setAppointmentFilter(status)}
+                      className={`px-3 py-1 rounded-full text-sm font-medium transition 
+                        ${
+                          appointmentFilter === status
+                            ? "bg-[#00B8D4] text-white shadow"
+                            : "bg-gray-100 text-gray-600 hover:bg-[#d3f2fa]"
+                        }`}
+                    >
+                      {status}
+                    </button>
+                  ))}
+                </div>
 
-  {/* DIET & FEEDING */}
-  {activeTab === "Diet & Feeding" && (
-    <DietFeedingSection />
-  )}
+                <div className="flex-1 overflow-y-auto flex flex-col gap-4">
+                  {filteredAppointments.map((appt) => {
+                    const datePart = appt.date.split(" - ")[0];
+                    const parsedDate = new Date(datePart + " 2025");
+                    const isValidDate = !isNaN(parsedDate);
 
-  {/* HEALTH TRACKER */}
-  {activeTab === "Health Tracker" && (
-    <HealthTrackerSection />
-  )}
+                    return (
+                      <div
+                        key={appt.id}
+                        className="bg-white/70 backdrop-blur-md border border-[#00B8D4]/30 p-4 rounded-xl flex justify-between items-center shadow-md hover:shadow-lg hover:bg-[#EFFFFF]/60 transition-all cursor-pointer"
+                      >
+                        {/* LEFT: Date */}
+                        <div className="flex flex-col items-center justify-center w-16 text-center bg-[#EFFFFF] rounded-lg py-2 border border-[#00B8D4]/20 shadow-sm">
+                          {isValidDate ? (
+                            <>
+                              <span className="text-xs font-semibold text-[#00B8D4] uppercase tracking-wide">
+                                {parsedDate.toLocaleString("default", { month: "short" })}
+                              </span>
+                              <span className="text-xl font-bold text-gray-800 leading-tight">
+                                {parsedDate.getDate()}
+                              </span>
+                              <span className="text-[10px] text-gray-500 capitalize">
+                                {parsedDate.toLocaleString("default", { weekday: "long" })}
+                              </span>
+                            </>
+                          ) : (
+                            <span className="text-xs text-gray-500">Invalid Date</span>
+                          )}
+                        </div>
 
-  {/* BEHAVIOR NOTES */}
-  {activeTab === "Behavior Notes" && (
-    <BehaviorNotesSection />
-  )}
-</motion.div>
-
-
-          </div>
-
-          {/* FLOATING ACTION BUTTONS */}
-          <div className="fixed bottom-14 right-14 flex flex-col items-end gap-3 z-50">
-            {/* Add Menu Buttons */}
-            {showMenu && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-                className="flex flex-col items-end gap-3"
-              >
-                <button
-                  onClick={() => setShowHealthModal(true)}
-                  className="relative bg-white text-[#5EE6FE] border border-[#5EE6FE] p-4 rounded-full shadow-lg hover:bg-[#5EE6FE] hover:text-white hover:scale-110 transition-all duration-300"
-                >
-                  <i className="fa-solid fa-stethoscope"></i>
-                  <span className="absolute right-full mr-3 bg-[#5EE6FE] text-white text-xs py-1 px-2 rounded-md opacity-0 group-hover:opacity-100 transition-all">
-                    Health Check
-                  </span>
-                </button>
-
-                <button
-                  onClick={() => setShowEditModal(true)}
-                  className="relative bg-white text-[#5EE6FE] border border-[#5EE6FE] p-4 rounded-full shadow-lg hover:bg-[#5EE6FE] hover:text-white hover:scale-110 transition-all duration-300"
-                >
-                  <i className="fa-solid fa-pen"></i>
-                </button>
-              </motion.div>
+                        {/* RIGHT: Appointment Details */}
+                        <div className="flex justify-between items-center flex-1 ml-4">
+                          <div>
+                            <p className="font-semibold text-gray-800">
+                              {appt.petName || pet.name} — {appt.type || "Grooming Session"}
+                            </p>
+                            <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
+                              <i className="fa-solid fa-clock text-[#00B8D4]"></i>
+                              {appt.date.split(" - ")[1] || "10:00 AM"} • {appt.status || "Upcoming"}
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => handleViewDetails(appt)}
+                            className="bg-[#00B8D4] text-white px-4 py-2 rounded-lg text-xs font-semibold hover:bg-[#029ab5] transition-all"
+                          >
+                            View Details
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             )}
 
-            {/* Main + Button */}
-            <button
-              onClick={() => setShowMenu(!showMenu)}
-              className={`bg-[#5EE6FE] text-white p-5 rounded-full shadow-xl hover:bg-[#3ecbe0] transition-all duration-300 transform ${
-                showMenu ? "rotate-45" : "rotate-0"
-              }`}
-            >
-              <i className="fa-solid fa-plus text-lg"></i>
-            </button>
+
+              {activeTab === "Medical History" && (
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {[1, 2].map((item) => (
+                    <div
+                      key={item}
+                      className="rounded-2xl bg-[#FFF8F9] p-5 shadow-sm border border-[#F3D6D8] flex flex-col justify-between"
+                    >
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-700">
+                          Vaccination Record
+                        </h3>
+                        <p className="text-gray-500 text-sm mt-1">
+                          April 5, 2025
+                        </p>
+                      </div>
+                      <button className="mt-4 bg-[#FFB6C1] text-white px-3 py-2 rounded-lg hover:bg-[#FF9FB0] transition-all">
+                        Download PDF
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {activeTab === "Diet & Feeding" && (
+                <DietFeedingSection />
+              )}
+
+              {activeTab === "Behavior Notes" && (
+                <BehaviorNotesSection />
+              )}
+            </motion.div>
           </div>
 
-          {/* Edit Pet Modal */}
+          {/* ✏️ Edit Pet Modal */}
           {showEditModal && (
             <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 animate-fadeIn">
               <div className="bg-white rounded-2xl p-6 w-[90%] max-w-md shadow-xl relative">
@@ -194,36 +252,16 @@ function PetDetails() {
                   ✕
                 </button>
                 <h3 className="text-xl font-bold text-gray-800 mb-4">Edit Pet Information</h3>
-                <input type="text" defaultValue={pet.name} className="w-full border border-gray-300 rounded-lg p-2 mb-3" />
-                <input type="text" defaultValue={pet.breed} className="w-full border border-gray-300 rounded-lg p-2 mb-3" />
-                <button className="bg-[#5EE6FE] text-white py-2 px-4 rounded-lg hover:bg-[#3ecbe0] transition-all">
+                <input type="text" defaultValue={pet.name} placeholder="Pet Name" className="w-full border border-gray-300 rounded-lg p-2 mb-3" />
+                <input type="text" defaultValue={pet.breed} placeholder="Breed" className="w-full border border-gray-300 rounded-lg p-2 mb-3" />
+                <input type="text" defaultValue={pet.age} placeholder="Age" className="w-full border border-gray-300 rounded-lg p-2 mb-3" />
+                <input type="text" defaultValue={pet.gender} placeholder="Gender" className="w-full border border-gray-300 rounded-lg p-2 mb-3" />
+                <button className="bg-[#00B8D4] text-white py-2 px-4 rounded-lg hover:bg-[#029ab5] transition-all">
                   Save Changes
                 </button>
               </div>
             </div>
           )}
-
-          {/* Health Overview Modal */}
-          {showHealthModal && (
-            <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 animate-fadeIn">
-              <div className="bg-white rounded-2xl p-6 w-[90%] max-w-md shadow-xl relative">
-                <button
-                  onClick={() => setShowHealthModal(false)}
-                  className="absolute top-3 right-4 text-gray-400 hover:text-gray-600 text-xl"
-                >
-                  ✕
-                </button>
-                <h3 className="text-xl font-bold text-gray-800 mb-4">Health Summary</h3>
-                <ul className="text-gray-600 text-sm space-y-2">
-                  <li>• Weight: 6.5 kg</li>
-                  <li>• Last Vet Check: {pet.lastCheck || "2 months ago"}</li>
-                  <li>• Vaccination: Up to Date</li>
-                  <li>• Notes: No known allergies</li>
-                </ul>
-              </div>
-            </div>
-          )}
-
         </div>
       </div>
     </div>

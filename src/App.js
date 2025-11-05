@@ -34,7 +34,7 @@
           /*user*/
           <Route path="/user-home" element={<Home />} />
           <Route path="/profile" element={<Profile />} />
-          <Route path="/pet/:id" element={<PetDetails />} />
+          <Route path="/pet" element={<PetDetails />} />
           <Route path="/booking" element={<Booking />} />
           <Route path="/breed-detect" element={<BreedDetect />} />
           <Route path="/videos" element={<Videos />} />

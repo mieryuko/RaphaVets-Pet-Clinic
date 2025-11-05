@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation  } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
-function SideBar({ isMenuOpen, setIsMenuOpen, pets, setShowModal }) {
+function SideBar({ isMenuOpen, setIsMenuOpen, pets }) {
   const navigate = useNavigate();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const location = useLocation();
@@ -23,41 +23,44 @@ function SideBar({ isMenuOpen, setIsMenuOpen, pets, setShowModal }) {
         {isMenuOpen && (
           <>
             {/* PERSONAL */}
-            <div className="pb-4 flex flex-col border-b-[1px] border-[#5EE6FE]">
-              {/*
+            <div className="pb-4 flex flex-col border-b-[1px] border-[#A6E3E9]">
               <div>
-                <span className="font-[700] text-[20px]">Your pets</span>
+                <span className="font-[700] text-[20px] text-gray-700">Your Pets</span>
               </div>
+
+              {/* PET PROFILE CARDS (STATIC PLACEHOLDERS) */}
               <div className="flex overflow-x-auto px-2 gap-4 mt-3 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-                {pets.map((pet, index) => (
-                  <div key={index} onClick={() => navigate(`/pet/${index}`, { state: { pet } })}
-                       className="flex flex-col items-center flex-shrink-0">
-                    <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-[#5EE6FE]">
-                      <img
-                        src={pet.photo}
-                        alt={pet.name}
-                        className="w-full h-full object-cover"
-                      />
+                {[
+                  {
+                    name: "Miguel",
+                    image: "/images/dog-profile.png",
+                  },
+                ].map((pet, i) => (
+                  <div
+                    key={i}
+                    onClick={() => navigate("/pet", { state: { pet } })}
+                    className="flex flex-col items-center flex-shrink-0 cursor-pointer group"
+                  >
+                    <div className="w-16 h-16 rounded-full p-[3px] bg-gradient-to-br from-[#A7E9E3] via-[#FDE2E4] to-[#FFF5E4] shadow-sm hover:scale-110 transition-all duration-300">
+                      <div className="w-full h-full rounded-full overflow-hidden bg-[#FDFEFF] flex items-center justify-center border border-[#C9EAF2]">
+                        <img
+                          src={pet.image}
+                          alt={pet.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
                     </div>
-                    <span className="text-[12px] mt-1 truncate w-12 text-center">
+                    <span className="text-[12px] mt-1 text-gray-700 truncate w-14 text-center font-medium group-hover:text-[#00B8D4]">
                       {pet.name}
                     </span>
                   </div>
                 ))}
-                <div className="flex flex-col items-center flex-shrink-0">
-                  <button
-                    onClick={() => setShowModal(true)}
-                    className="text-3xl bg-white rounded-full border-2 border-[#5EE6FE] w-12 h-12 flex items-center justify-center hover:bg-[#5EE6FE] hover:text-white transition-all duration-300 hover:scale-110"
-                  >
-                    +
-                  </button>
-                  <span className="text-[12px] mt-1">Add new</span>
-                </div>
-              </div> */}
+              </div>
 
-              {/* Sidebar links */}
-              <div className="flex flex-col gap-2 mt-4">
-                <div onClick={() => navigate("/user-home")}
+              {/* Sidebar Links */}
+              <div className="flex flex-col gap-2 mt-3">
+                <div
+                  onClick={() => navigate("/user-home")}
                   className={`text-[15px] flex items-center gap-2 cursor-pointer transition-colors duration-300 ${
                     location.pathname === "/user-home"
                       ? "text-[#5EE6FE] font-semibold"
@@ -67,7 +70,7 @@ function SideBar({ isMenuOpen, setIsMenuOpen, pets, setShowModal }) {
                   <i className="fa-solid fa-house"></i>
                   <span>Home</span>
                 </div>
-                
+
                 <div
                   onClick={() => navigate("/profile")}
                   className={`text-[15px] flex items-center gap-2 cursor-pointer transition-colors duration-300 ${
@@ -95,10 +98,10 @@ function SideBar({ isMenuOpen, setIsMenuOpen, pets, setShowModal }) {
             </div>
 
             {/* RESOURCES */}
-            <div className="pb-4 flex flex-col border-b-[1px] border-[#5EE6FE] mt-2">
-              <span className="font-[700] text-[20px]">Resources</span>
+            <div className="pb-4 flex flex-col border-b-[1px] border-[#A6E3E9] mt-2">
+              <span className="font-[700] text-[20px] text-gray-700">Resources</span>
               <div className="px-3 flex flex-col gap-2 mt-2">
-                <div 
+                <div
                   onClick={() => navigate("/videos")}
                   className={`text-[15px] flex items-center gap-2 cursor-pointer transition-colors duration-300 ${
                     location.pathname === "/videos"
@@ -109,7 +112,8 @@ function SideBar({ isMenuOpen, setIsMenuOpen, pets, setShowModal }) {
                   <i className="fa-solid fa-film"></i>
                   <span>Videos</span>
                 </div>
-                <div 
+
+                <div
                   onClick={() => navigate("/pet-tips")}
                   className={`text-[15px] flex items-center gap-2 cursor-pointer transition-colors duration-300 ${
                     location.pathname === "/pet-tips"
@@ -124,8 +128,8 @@ function SideBar({ isMenuOpen, setIsMenuOpen, pets, setShowModal }) {
             </div>
 
             {/* INFORMATION */}
-            <div className="pb-4 flex flex-col border-b-[1px] border-[#5EE6FE] mt-2">
-              <span className="font-[700] text-[20px]">Information</span>
+            <div className="pb-4 flex flex-col border-b-[1px] border-[#A6E3E9] mt-2">
+              <span className="font-[700] text-[20px] text-gray-700">Information</span>
               <div className="px-3 flex flex-col gap-2 mt-2">
                 <div className="text-[15px] flex items-center gap-2 hover:text-[#5EE6FE] cursor-pointer">
                   <i className="fa-solid fa-circle-question"></i>
