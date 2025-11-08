@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import api from "../../../api/axios"; // make sure the path is correct
 
 function AccountInformation() {
   const [editableFields, setEditableFields] = useState({});
@@ -7,46 +7,35 @@ function AccountInformation() {
     firstName: "",
     lastName: "",
     email: "",
-    contact: "",
+    contactNo: "",
     address: "",
   });
 
-  const token = localStorage.getItem("token");
   const userId = localStorage.getItem("userId");
 
-  // 🔹 Load user data
+  // Load user data
   useEffect(() => {
-    if (!token || !userId) {
-      console.warn("⚠️ No token or userId found");
-      return;
-    }
+    if (!userId) return;
 
-    console.log("🔑 Token:", token);
-console.log("🧍 UserID:", userId);
-
-
-    axios
-      .get(`http://localhost:5000/api/users/${userId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then((res) => {
-        // ✅ Check backend response structure
-        // If your backend returns { user: { firstName, lastName, ... } }
+    const fetchUser = async () => {
+      try {
+        const res = await api.get(`/users/${userId}`);
         const user = res.data.user || res.data;
         setFormData({
           firstName: user.firstName || "",
           lastName: user.lastName || "",
           email: user.email || "",
-          contact: user.contact || "",
+          contactNo: user.contactNo || "",
           address: user.address || "",
         });
-      })
-      .catch((err) => {
+      } catch (err) {
         console.error("❌ Error fetching user info:", err.response?.data || err.message);
-      });
-  }, [token, userId]);
+      }
+    };
 
-  // 🔹 Handle input changes
+    fetchUser();
+  }, [userId]);
+
   const handleChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
@@ -55,23 +44,15 @@ console.log("🧍 UserID:", userId);
     setEditableFields((prev) => ({ ...prev, [field]: !prev[field] }));
   };
 
-  // 🔹 Save changes
   const handleSave = async () => {
-    if (!token || !userId) {
+    if (!userId) {
       alert("⚠️ Not logged in!");
       return;
     }
 
     try {
-      const res = await axios.put(
-        `http://localhost:5000/api/users/${userId}`,
-        formData,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
+      const res = await api.put(`/users/${userId}`, formData);
       alert("✅ " + (res.data.message || "Profile updated successfully!"));
-
-      // Optional: disable all edit modes again
       setEditableFields({});
     } catch (err) {
       console.error("❌ Error updating profile:", err.response?.data || err.message);
@@ -83,7 +64,7 @@ console.log("🧍 UserID:", userId);
     { label: "First Name", field: "firstName" },
     { label: "Last Name", field: "lastName" },
     { label: "Email Address", field: "email" },
-    { label: "Contact Number", field: "contact" },
+    { label: "Contact Number", field: "contactNo" },
     { label: "Address", field: "address" },
   ];
 

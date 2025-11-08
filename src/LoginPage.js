@@ -93,21 +93,26 @@ function LoginPage() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    if (!loginData.email || !loginData.password)
-      return setFormMessage({ message: "Please fill in all fields.", type: "error" });
     setLoading(true);
     try {
       const res = await api.post("/auth/login", loginData);
-      setFormMessage({ message: "✅ Login successful!", type: "success" });
+      console.log("Login response:", res.data); // Debug log
+
+      // Store all necessary data
       localStorage.setItem("token", res.data.token);
-      localStorage.setItem("user", JSON.stringify(res.data.user));
       localStorage.setItem("userId", res.data.user.id || res.data.user.accId);
-      
+      localStorage.setItem("userRole", res.data.user.role);
+      localStorage.setItem("user", JSON.stringify(res.data.user));
+
+      // IMPORTANT: ensure api instance sends the header for subsequent requests
+      api.defaults.headers.common['Authorization'] = `Bearer ${res.data.token}`;
+
+      setFormMessage({ message: "✅ Login successful!", type: "success" });
 
       // ✅ Redirect based on role
       setTimeout(() => {
         const role = res.data.user.role;
-        if (role == 2) {
+        if (role === 2) {
           navigate("/admin-pages");
         } else {
           navigate("/user-home");
@@ -115,6 +120,12 @@ function LoginPage() {
       }, 1000);
     } catch (err) {
       console.error("❌ Login error:", err);
+      // Clear any existing auth data on error
+      localStorage.removeItem("token");
+      localStorage.removeItem("userId");
+      localStorage.removeItem("userRole");
+      localStorage.removeItem("user");
+      
       setFormMessage({
         message: err.response?.data?.message || "Server error",
         type: "error",

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import api from "../../api/axios";
 import Header from "../template/Header";
 import SideBar from "../template/SideBar";
 
@@ -23,25 +23,14 @@ function Profile() {
     const fetchUserProfile = async () => {
       try {
         const token = localStorage.getItem("token");
-        const storedUser = localStorage.getItem("user");
-        const userId = storedUser ? JSON.parse(storedUser).id : null;
-        
-        console.log("🔑 token:", token);
-        console.log("👤 userId:", userId);
+        const userId = localStorage.getItem("userId");
 
-        if (!token || !userId) {
-          console.warn("⚠️ No token or userId found in localStorage");
-          return;
-        }
+        if (!token || !userId) return;
 
-        const res = await axios.get(`http://localhost:5000/api/users/${userId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        console.log("✅ API response:", res.data);
+        const res = await api.get(`/users/${userId}`);
         setUserData(res.data);
       } catch (error) {
-        console.error("❌ Error fetching user profile:", error.response?.data || error.message);
+        // handle error (optional): setUserData(null) or show UI feedback
       }
     };
 
