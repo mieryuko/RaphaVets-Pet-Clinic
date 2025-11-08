@@ -164,8 +164,8 @@ function Forum() {
           <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6 h-[calc(100vh-80px)]">
             {/* LEFT WRAPPER */}
             <div className="flex flex-col gap-4 p-4 bg-white rounded-xl overflow-y-auto">
-              <h1 className="font-baloo text-xl sm:text-3xl">Lost & Found Forum</h1>
-              <p className="text-gray-500 text-sm sm:text-base">
+              <h1 className="font-baloo text-xl sm:text-3xl px-2">Lost & Found Forum</h1>
+              <p className="text-gray-500 text-sm sm:text-base px-2">
                 Report missing pets or share details about pets you’ve found.
               </p>
 

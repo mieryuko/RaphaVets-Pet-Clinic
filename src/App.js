@@ -13,16 +13,15 @@
   import PetTips from "./user-pages/pages/PetTips";
   import Forum from "./user-pages/pages/Forum";
 
-  import Dashboard from "./admin-pages/Dashboard";
+  /*admin*/
   import AdminLayout from "./admin-pages/AdminLayout";
-  import Appointments from "./admin-pages/Appointments";
-  import Patients from "./admin-pages/Patients";
-  import MissingPets from "./admin-pages/MissingPets";
-  import ContentManager from "./admin-pages/ContentManager";
-  import RegressionTool from "./admin-pages/RegressionTool";
-  import Reports from "./admin-pages/Reports";
-  import ChatLogs from "./admin-pages/ChatLogs";
-  import Pets from "./admin-pages/Pets";
+  import Dashboard from "./admin-pages/pages/Dashboard";
+  import PetPatientManagement from "./admin-pages/pages/PetPatientManagement";
+  import Appointments from "./admin-pages/pages/Appointments";
+  import Tools from "./admin-pages/pages/Tools";
+  import ContentManager from "./admin-pages/pages/ContentManager";
+  import Reports from "./admin-pages/pages/Reports";
+  import AdminSettings from "./admin-pages/pages/AdminSetting";
 
   function App() {
     return (
@@ -44,15 +43,13 @@
 
           /*admin*/
           <Route path="/admin-pages" element={<AdminLayout />}>
-            <Route index element={<Dashboard />} />
-            <Route path="pets" element={<Pets />} />
-            <Route path="appointments" element={<Appointments />} />
-            <Route path="patients" element={<Patients />} />
-            <Route path="missing" element={<MissingPets />} />
-            <Route path="content" element={<ContentManager />} />
-            <Route path="regression" element={<RegressionTool />} />
-            <Route path="reports" element={<Reports />} />
-            <Route path="chatlogs" element={<ChatLogs />} />
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="patient-management" element={<PetPatientManagement />} />
+            <Route path="/admin-pages/appointments" element={<Appointments />} />
+            <Route path="/admin-pages/tools" element={<Tools />} />
+            <Route path="/admin-pages/content-manager" element={<ContentManager />} />
+            <Route path="/admin-pages/reports" element={<Reports />} />
+            <Route path="/admin-pages/settings" element={<AdminSettings />} />
           </Route>
 
         </Routes>
