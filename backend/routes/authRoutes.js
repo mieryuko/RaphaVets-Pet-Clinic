@@ -4,8 +4,11 @@ import {
   registerUser,
   loginUser,
   sendVerificationCode,
-  verifyCode, checkEmailExists
+  verifyCode, checkEmailExists,
+  logoutUser,
 } from "../controllers/authController.js";
+
+import { verifyToken } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -37,6 +40,8 @@ router.post("/send-code", sendVerificationCode);
 router.post("/verify-code", verifyCode);
 router.post("/check-email", checkEmailExists);
 
+// Logout route
+router.post("/logout", verifyToken, logoutUser);
 
 
 export default router;

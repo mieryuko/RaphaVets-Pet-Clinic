@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Nov 08, 2025 at 01:27 PM
+-- Generation Time: Nov 09, 2025 at 05:48 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -36,6 +36,9 @@ CREATE TABLE `account_tbl` (
   `password` varchar(250) NOT NULL,
   `createdAt` datetime NOT NULL DEFAULT current_timestamp(),
   `lastUpdatedAt` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `passwordChangeAt` datetime NOT NULL DEFAULT current_timestamp(),
+  `logInAt` datetime NOT NULL DEFAULT current_timestamp(),
+  `logOutAt` datetime NOT NULL DEFAULT current_timestamp(),
   `isDeleted` tinyint(1) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -43,10 +46,10 @@ CREATE TABLE `account_tbl` (
 -- Dumping data for table `account_tbl`
 --
 
-INSERT INTO `account_tbl` (`accId`, `roleID`, `firstName`, `lastName`, `email`, `password`, `createdAt`, `lastUpdatedAt`, `isDeleted`) VALUES
-(2, 1, 'Mark', 'Mapiliiiiiiiiiiiii', 'markmapili28@gmail.com', '$2b$10$BQZcuX9rPNcSwTmwmaIaE.lw/uT7.lQXIevkgG9f1pBY8fIpEZX0K', '0000-00-00 00:00:00', '2025-11-08 17:57:55', 0),
-(3, 2, 'Fionah Irish', 'Beltran', 'soupcuppy@gmail.com', '$2b$10$l/lPrlJ8Vho/LyqoOiq2sOlSSrZ1t.atCEgMaxBBOW05jri/FfwIS', '0000-00-00 00:00:00', '0000-00-00 00:00:00', 0),
-(5, 2, 'mark', 'mapili', 'markmapili72@gmail.com', '$2b$10$LMTrRhOAEKAweVGBy1NXQeGCWEzgN2d5WueonGDiRibvDGER08YVe', '0000-00-00 00:00:00', '0000-00-00 00:00:00', 0);
+INSERT INTO `account_tbl` (`accId`, `roleID`, `firstName`, `lastName`, `email`, `password`, `createdAt`, `lastUpdatedAt`, `passwordChangeAt`, `logInAt`, `logOutAt`, `isDeleted`) VALUES
+(2, 1, 'Mark', 'Mapiliiiiiiiiiiiii', 'markmapili28@gmail.com', '$2b$10$NNG154DuvS/ST/lInE1Pp.XyhniL6YtSE.3UaiAv6/OvON5uMi3MC', '0000-00-00 00:00:00', '2025-11-09 12:47:41', '2025-11-09 12:21:30', '2025-11-09 12:47:36', '2025-11-09 12:47:41', 0),
+(3, 2, 'Fionah Irish', 'Beltran', 'soupcuppy@gmail.com', '$2b$10$l/lPrlJ8Vho/LyqoOiq2sOlSSrZ1t.atCEgMaxBBOW05jri/FfwIS', '0000-00-00 00:00:00', '0000-00-00 00:00:00', '2025-11-09 12:21:30', '2025-11-09 12:20:21', '2025-11-09 12:20:21', 0),
+(5, 2, 'mark', 'mapili', 'markmapili72@gmail.com', '$2b$10$LMTrRhOAEKAweVGBy1NXQeGCWEzgN2d5WueonGDiRibvDGER08YVe', '0000-00-00 00:00:00', '0000-00-00 00:00:00', '2025-11-09 12:21:30', '2025-11-09 12:20:21', '2025-11-09 12:20:21', 0);
 
 -- --------------------------------------------------------
 
@@ -199,6 +202,28 @@ INSERT INTO `role_tbl` (`roleID`, `roleName`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `userpreference_tbl`
+--
+
+CREATE TABLE `userpreference_tbl` (
+  `userprefID` int(11) NOT NULL,
+  `accId` int(11) NOT NULL,
+  `appointmentReminders` tinyint(1) NOT NULL,
+  `petHealthUpd` tinyint(1) NOT NULL,
+  `promoEmail` tinyint(1) NOT NULL,
+  `clinicAnnouncement` tinyint(1) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `userpreference_tbl`
+--
+
+INSERT INTO `userpreference_tbl` (`userprefID`, `accId`, `appointmentReminders`, `petHealthUpd`, `promoEmail`, `clinicAnnouncement`) VALUES
+(1, 2, 1, 0, 1, 0);
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `vet_table`
 --
 
@@ -282,6 +307,13 @@ ALTER TABLE `role_tbl`
   ADD PRIMARY KEY (`roleID`);
 
 --
+-- Indexes for table `userpreference_tbl`
+--
+ALTER TABLE `userpreference_tbl`
+  ADD PRIMARY KEY (`userprefID`),
+  ADD KEY `accIdPreference` (`accId`);
+
+--
 -- Indexes for table `vet_table`
 --
 ALTER TABLE `vet_table`
@@ -347,6 +379,12 @@ ALTER TABLE `role_tbl`
   MODIFY `roleID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
+-- AUTO_INCREMENT for table `userpreference_tbl`
+--
+ALTER TABLE `userpreference_tbl`
+  MODIFY `userprefID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
 -- AUTO_INCREMENT for table `vet_table`
 --
 ALTER TABLE `vet_table`
@@ -388,6 +426,12 @@ ALTER TABLE `pet_allergies_tbl`
 --
 ALTER TABLE `pet_tbl`
   ADD CONSTRAINT `breedID_pet_fk` FOREIGN KEY (`breedID`) REFERENCES `breed_tbl` (`breedID`);
+
+--
+-- Constraints for table `userpreference_tbl`
+--
+ALTER TABLE `userpreference_tbl`
+  ADD CONSTRAINT `accIdPreference` FOREIGN KEY (`accId`) REFERENCES `account_tbl` (`accId`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `vet_table`

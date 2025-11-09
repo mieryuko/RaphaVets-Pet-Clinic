@@ -1,18 +1,62 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import api from "../../api/axios";
 
 function SideBar({ isMenuOpen, setIsMenuOpen, pets }) {
   const navigate = useNavigate();
-  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const location = useLocation();
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     setShowLogoutModal(false);
-    navigate("/home");
+
+    const token = localStorage.getItem("token");
+    const userId = localStorage.getItem("userId");
+
+    try {
+      if (token && userId) {
+        // Call backend to update logOutAt timestamp
+        await api.post(
+          `/auth/logout`,
+          {},
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+      }
+    } catch (err) {
+      console.error("❌ Error logging out:", err);
+    }
+
+    // Clear local storage
+    localStorage.removeItem("token");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("role"); // optional
+
+    // Redirect to login page
+    navigate("/");
   };
+
+  // Sidebar menu items
+  const menuItems = [
+    { label: "Home", path: "/user-home", icon: "fa-house" },
+    { label: "Profile", path: "/profile", icon: "fa-user" },
+    { label: "Try Breed Detect", path: "/breed-detect", icon: "fa-shield-dog" },
+  ];
+
+  const resourceItems = [
+    { label: "Videos", path: "/videos", icon: "fa-film" },
+    { label: "Pet Tips", path: "/pet-tips", icon: "fa-lightbulb" },
+  ];
+
+  const infoItems = [
+    { label: "FAQs", path: "#", icon: "fa-circle-question" },
+    { label: "Support", path: "#", icon: "fa-headset" },
+  ];
 
   return (
     <>
+      {/* Sidebar container */}
       <div
         className={`${
           isMenuOpen
@@ -24,18 +68,12 @@ function SideBar({ isMenuOpen, setIsMenuOpen, pets }) {
           <>
             {/* PERSONAL */}
             <div className="pb-4 flex flex-col border-b-[1px] border-[#A6E3E9]">
-              <div>
-                <span className="font-[700] text-[20px] text-gray-700">Your Pets</span>
-              </div>
+              <span className="font-[700] text-[20px] text-gray-700">
+                Your Pets
+              </span>
 
-              {/* PET PROFILE CARDS (STATIC PLACEHOLDERS) */}
               <div className="flex overflow-x-auto px-2 gap-4 mt-3 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-                {[
-                  {
-                    name: "Miguel",
-                    image: "/images/dog-profile.png",
-                  },
-                ].map((pet, i) => (
+                {pets?.map((pet, i) => (
                   <div
                     key={i}
                     onClick={() => navigate("/pet", { state: { pet } })}
@@ -59,41 +97,20 @@ function SideBar({ isMenuOpen, setIsMenuOpen, pets }) {
 
               {/* Sidebar Links */}
               <div className="flex flex-col gap-2 mt-3">
-                <div
-                  onClick={() => navigate("/user-home")}
-                  className={`text-[15px] flex items-center gap-2 cursor-pointer transition-colors duration-300 ${
-                    location.pathname === "/user-home"
-                      ? "text-[#5EE6FE] font-semibold"
-                      : "hover:text-[#5EE6FE] text-gray-700"
-                  }`}
-                >
-                  <i className="fa-solid fa-house"></i>
-                  <span>Home</span>
-                </div>
-
-                <div
-                  onClick={() => navigate("/profile")}
-                  className={`text-[15px] flex items-center gap-2 cursor-pointer transition-colors duration-300 ${
-                    location.pathname === "/profile"
-                      ? "text-[#5EE6FE] font-semibold"
-                      : "hover:text-[#5EE6FE] text-gray-700"
-                  }`}
-                >
-                  <i className="fa-solid fa-user"></i>
-                  <span>Profile</span>
-                </div>
-
-                <div
-                  onClick={() => navigate("/breed-detect")}
-                  className={`text-[15px] flex items-center gap-2 cursor-pointer transition-colors duration-300 ${
-                    location.pathname === "/breed-detect"
-                      ? "text-[#5EE6FE] font-semibold"
-                      : "hover:text-[#5EE6FE] text-gray-700"
-                  }`}
-                >
-                  <i className="fa-solid fa-shield-dog"></i>
-                  <span>Try Breed Detect</span>
-                </div>
+                {menuItems.map((item) => (
+                  <div
+                    key={item.path}
+                    onClick={() => navigate(item.path)}
+                    className={`text-[15px] flex items-center gap-2 cursor-pointer transition-colors duration-300 ${
+                      location.pathname === item.path
+                        ? "text-[#5EE6FE] font-semibold"
+                        : "hover:text-[#5EE6FE] text-gray-700"
+                    }`}
+                  >
+                    <i className={`fa-solid ${item.icon}`}></i>
+                    <span>{item.label}</span>
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -101,29 +118,20 @@ function SideBar({ isMenuOpen, setIsMenuOpen, pets }) {
             <div className="pb-4 flex flex-col border-b-[1px] border-[#A6E3E9] mt-2">
               <span className="font-[700] text-[20px] text-gray-700">Resources</span>
               <div className="px-3 flex flex-col gap-2 mt-2">
-                <div
-                  onClick={() => navigate("/videos")}
-                  className={`text-[15px] flex items-center gap-2 cursor-pointer transition-colors duration-300 ${
-                    location.pathname === "/videos"
-                      ? "text-[#5EE6FE] font-semibold"
-                      : "hover:text-[#5EE6FE] text-gray-700"
-                  }`}
-                >
-                  <i className="fa-solid fa-film"></i>
-                  <span>Videos</span>
-                </div>
-
-                <div
-                  onClick={() => navigate("/pet-tips")}
-                  className={`text-[15px] flex items-center gap-2 cursor-pointer transition-colors duration-300 ${
-                    location.pathname === "/pet-tips"
-                      ? "text-[#5EE6FE] font-semibold"
-                      : "hover:text-[#5EE6FE] text-gray-700"
-                  }`}
-                >
-                  <i className="fa-solid fa-lightbulb"></i>
-                  <span>Pet Tips</span>
-                </div>
+                {resourceItems.map((item) => (
+                  <div
+                    key={item.path}
+                    onClick={() => navigate(item.path)}
+                    className={`text-[15px] flex items-center gap-2 cursor-pointer transition-colors duration-300 ${
+                      location.pathname === item.path
+                        ? "text-[#5EE6FE] font-semibold"
+                        : "hover:text-[#5EE6FE] text-gray-700"
+                    }`}
+                  >
+                    <i className={`fa-solid ${item.icon}`}></i>
+                    <span>{item.label}</span>
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -131,14 +139,15 @@ function SideBar({ isMenuOpen, setIsMenuOpen, pets }) {
             <div className="pb-4 flex flex-col border-b-[1px] border-[#A6E3E9] mt-2">
               <span className="font-[700] text-[20px] text-gray-700">Information</span>
               <div className="px-3 flex flex-col gap-2 mt-2">
-                <div className="text-[15px] flex items-center gap-2 hover:text-[#5EE6FE] cursor-pointer">
-                  <i className="fa-solid fa-circle-question"></i>
-                  <span>FAQs</span>
-                </div>
-                <div className="text-[15px] flex items-center gap-2 hover:text-[#5EE6FE] cursor-pointer">
-                  <i className="fa-solid fa-headset"></i>
-                  <span>Support</span>
-                </div>
+                {infoItems.map((item) => (
+                  <div
+                    key={item.label}
+                    className="text-[15px] flex items-center gap-2 hover:text-[#5EE6FE] cursor-pointer"
+                  >
+                    <i className={`fa-solid ${item.icon}`}></i>
+                    <span>{item.label}</span>
+                  </div>
+                ))}
               </div>
             </div>
 

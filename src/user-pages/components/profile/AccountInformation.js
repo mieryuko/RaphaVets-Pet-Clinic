@@ -19,7 +19,7 @@ function AccountInformation() {
 
     const fetchUser = async () => {
       try {
-        const res = await api.get(`/users/${userId}`);
+        const res = await api.get(`/users/${userId}/profile`);
         const user = res.data.user || res.data;
         setFormData({
           firstName: user.firstName || "",
@@ -51,7 +51,7 @@ function AccountInformation() {
     }
 
     try {
-      const res = await api.put(`/users/${userId}`, formData);
+      const res = await api.put(`/users/${userId}/profile`, formData);
       alert("✅ " + (res.data.message || "Profile updated successfully!"));
       setEditableFields({});
     } catch (err) {

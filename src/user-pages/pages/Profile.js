@@ -27,7 +27,7 @@ function Profile() {
 
         if (!token || !userId) return;
 
-        const res = await api.get(`/users/${userId}`);
+        const res = await api.get(`/users/${userId}/profile`);
         setUserData(res.data);
       } catch (error) {
         // handle error (optional): setUserData(null) or show UI feedback

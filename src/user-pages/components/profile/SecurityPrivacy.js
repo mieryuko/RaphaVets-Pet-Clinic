@@ -1,6 +1,11 @@
 import React, { useState } from "react";
+import api from "../../../api/axios"; // your configured axios instance
+import { useNavigate } from "react-router-dom";
 
 function SecurityPrivacy() {
+  const navigate = useNavigate();
+  const userId = localStorage.getItem("userId"); // assumes you stored user ID after login
+
   const fields = [
     { label: "Current Password", placeholder: "Enter current password", key: "current" },
     { label: "New Password", placeholder: "Enter new password", key: "new" },
@@ -19,6 +24,8 @@ function SecurityPrivacy() {
     confirm: false,
   });
 
+  const [loading, setLoading] = useState(false);
+
   const handleChange = (key, val) => {
     setValues((prev) => ({ ...prev, [key]: val }));
   };
@@ -27,7 +34,7 @@ function SecurityPrivacy() {
     setShowPassword((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  // validations derived from "new" and "confirm"
+  // validation logic for new password
   const password = values.new;
   const confirm = values.confirm;
 
@@ -37,8 +44,44 @@ function SecurityPrivacy() {
   const hasSpecial = /[*\-@\$]/.test(password);
   const matches = password !== "" && password === confirm;
 
+  const allValid = hasUpper && hasLower && hasLength && hasSpecial && matches;
+
   const itemClass = (condition) =>
     `flex items-start gap-1 ${condition ? "text-green-500" : "text-gray-400"}`;
+
+  const handleUpdatePassword = async () => {
+    if (!values.current || !values.new || !values.confirm) {
+      alert("Please fill out all password fields.");
+      return;
+    }
+
+    if (!allValid) {
+      alert("Please meet all password requirements before updating.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await api.put(`/users/${userId}/change-password`, {
+        currentPassword: values.current,
+        newPassword: values.new,
+        confirmPassword: values.confirm,
+      });
+
+      alert(res.data.message || "Password updated successfully!");
+      setValues({ current: "", new: "", confirm: "" });
+    } catch (err) {
+      const message = err.response?.data?.message || "Error updating password.";
+      alert(message);
+
+      if (message.includes("unauthorized") || message.includes("token")) {
+        localStorage.removeItem("token");
+        navigate("/login");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="space-y-5">
@@ -75,21 +118,21 @@ function SecurityPrivacy() {
                     <i
                       className={`fa-solid ${hasUpper ? "fa-check" : "fa-circle"} mt-1 text-[10px]`}
                     />
-                    <span className="text-[11px]">Password must contain at least one uppercase letter.</span>
+                    <span className="text-[11px]">At least one uppercase letter.</span>
                   </div>
 
                   <div className={itemClass(hasLength)}>
                     <i
                       className={`fa-solid ${hasLength ? "fa-check" : "fa-circle"} mt-1 text-[10px]`}
                     />
-                    <span className="text-[11px]">Password must be at least 8 characters long.</span>
+                    <span className="text-[11px]">At least 8 characters long.</span>
                   </div>
 
                   <div className={itemClass(hasLower)}>
                     <i
                       className={`fa-solid ${hasLower ? "fa-check" : "fa-circle"} mt-1 text-[10px]`}
                     />
-                    <span className="text-[11px]">Password must contain at least one lowercase letter.</span>
+                    <span className="text-[11px]">At least one lowercase letter.</span>
                   </div>
 
                   <div className={itemClass(hasSpecial)}>
@@ -97,7 +140,7 @@ function SecurityPrivacy() {
                       className={`fa-solid ${hasSpecial ? "fa-check" : "fa-circle"} mt-1 text-[10px]`}
                     />
                     <span className="text-[11px]">
-                      Password must include at least one special character (*, -, @, $).
+                      Includes a special character (*, -, @, $).
                     </span>
                   </div>
 
@@ -105,7 +148,7 @@ function SecurityPrivacy() {
                     <i
                       className={`fa-solid ${matches ? "fa-check" : "fa-circle"} mt-1 text-[10px]`}
                     />
-                    <span className="text-[11px]">Password must match the retyped password.</span>
+                    <span className="text-[11px]">Matches confirmation password.</span>
                   </div>
                 </div>
               </div>
@@ -116,12 +159,13 @@ function SecurityPrivacy() {
 
       <div className="text-right">
         <button
-          onClick={() => {
-            /* handle update password submit */
-          }}
-          className="px-6 py-2 bg-[#5EE6FE] text-white rounded-lg font-semibold hover:bg-[#47c0d7] transition-all duration-300"
+          disabled={loading}
+          onClick={handleUpdatePassword}
+          className={`px-6 py-2 ${
+            loading ? "bg-gray-400" : "bg-[#5EE6FE] hover:bg-[#47c0d7]"
+          } text-white rounded-lg font-semibold transition-all duration-300`}
         >
-          Update Password
+          {loading ? "Updating..." : "Update Password"}
         </button>
       </div>
     </div>

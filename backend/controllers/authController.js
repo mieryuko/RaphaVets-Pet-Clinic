@@ -51,21 +51,35 @@ export const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const [rows] = await pool.query("SELECT * FROM account_tbl WHERE email = ?", [email]);
+    const [rows] = await pool.query(
+      "SELECT * FROM account_tbl WHERE email = ?",
+      [email]
+    );
+
     if (rows.length === 0) {
       return res.status(400).json({ message: "Invalid email or password" });
     }
 
     const user = rows[0];
+
+    // ✅ Check if account is deleted
+    if (user.isDeleted) {
+      return res.status(403).json({ message: "This account has been deleted" });
+    }
+
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid email or password" });
     }
 
-    console.log("🧠 User from DB:", user);
+    // ✅ Update login timestamp
+    await pool.query(
+      "UPDATE account_tbl SET logInAt = NOW() WHERE accId = ?",
+      [user.accId]
+    );
 
     const token = jwt.sign(
-      { id: user.accId, email: user.email, role: user.roleID }, // ✅ include role
+      { id: user.accId, email: user.email, role: user.roleID },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
@@ -77,14 +91,16 @@ export const loginUser = async (req, res) => {
         id: user.accId,
         name: `${user.firstName} ${user.lastName}`,
         email: user.email,
-        role: user.roleID, // ✅ include role in response
+        role: user.roleID,
       },
     });
+
   } catch (error) {
     console.error("❌ Login error:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
 
 let verificationCodes = {}; // temporary store (you can use Redis or DB for production)
 
@@ -133,5 +149,16 @@ export const verifyCode = async (req, res) => {
     return res.json({ success: true, message: "Code verified" });
   } else {
     return res.status(400).json({ success: false, message: "Invalid or expired code" });
+  }
+};
+
+export const logoutUser = async (req, res) => {
+  try {
+    const userId = req.user.id; // from verifyToken middleware
+    await pool.query("UPDATE account_tbl SET logOutAt = NOW() WHERE accId = ?", [userId]);
+    res.json({ message: "Logged out successfully" });
+  } catch (error) {
+    console.error("❌ Logout error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };

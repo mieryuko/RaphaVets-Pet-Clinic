@@ -1,21 +1,37 @@
 import React, { useState } from "react";
+import api from "../../../api/axios";
 
 function DeleteAccount() {
   const [password, setPassword] = useState("");
   const [showConfirm, setShowConfirm] = useState(false);
 
+  const userId = localStorage.getItem("userId");
+  const token = localStorage.getItem("token");
+
   const handleDelete = () => {
-    if (!password) {
-      setShowConfirm(false);
-      return alert("Please enter your password first.");
-    }
+    if (!password) return alert("Please enter your password first.");
     setShowConfirm(true);
   };
 
-  const confirmDelete = () => {
-    setShowConfirm(false);
-    // Future backend delete logic here
-    alert("Account deleted successfully (mock).");
+  const confirmDelete = async () => {
+    try {
+      setShowConfirm(false);
+
+      const res = await api.delete(`/users/${userId}/delete-account`, {
+        headers: { Authorization: `Bearer ${token}` },
+        data: { password }, // password verification
+      });
+
+      alert(res.data.message);
+
+      // Optional: log out and redirect
+      localStorage.removeItem("token");
+      localStorage.removeItem("userId");
+      window.location.href = "/";
+    } catch (err) {
+      console.error("❌ Delete account error:", err);
+      alert(err.response?.data?.message || "Failed to delete account");
+    }
   };
 
   return (
@@ -24,8 +40,7 @@ function DeleteAccount() {
         Delete Your Account
       </h2>
       <p className="text-sm text-gray-600">
-        This action is <span className="font-semibold">permanent</span>. All your data,
-        pet records, and history will be lost. Please confirm your password to continue.
+        This action is <span className="font-semibold">permanent</span>. All your data will be lost. Please confirm your password.
       </p>
 
       <div className="max-w-md mx-auto mt-5">
@@ -44,7 +59,6 @@ function DeleteAccount() {
         </button>
       </div>
 
-      {/* Confirmation Modal */}
       {showConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div

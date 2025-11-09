@@ -1,6 +1,13 @@
 import express from "express";
 import { verifyToken } from "../middleware/authMiddleware.js";
-import { getUserProfile, updateUserProfile } from "../controllers/userController.js";
+import {
+  getUserProfile,
+  updateUserProfile,
+  changeUserPassword,
+  getUserPreference,
+  updateUserPreference,
+  deleteUserAccount,
+} from "../controllers/userController.js";
 
 const router = express.Router();
 
@@ -8,12 +15,18 @@ router.get("/", (req, res) => {
   res.json({ message: "✅ /api/users root reached" });
 });
 
-// Protect these routes with verifyToken
-router.get("/:id", verifyToken, getUserProfile);
-router.put("/:id", verifyToken, updateUserProfile);
+// Profile routes
+router.get("/:id/profile", verifyToken, getUserProfile);
+router.put("/:id/profile", verifyToken, updateUserProfile);
 
-router.get("/test", (req, res) => {
-  res.json({ message: "User routes working!" });
-});
+// Password route
+router.put("/:id/change-password", verifyToken, changeUserPassword);
+
+// Notification preference routes
+router.get("/:id/preferences", verifyToken, getUserPreference);
+router.put("/:id/preferences", verifyToken, updateUserPreference);
+
+// DELETE user account
+router.delete("/:id/delete-account", verifyToken, deleteUserAccount);
 
 export default router;
