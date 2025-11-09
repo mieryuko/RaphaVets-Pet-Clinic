@@ -2,10 +2,10 @@ import { Home, Users, Calendar, Wrench, FileText, Settings, LogOut } from "lucid
 import { Link, useLocation } from "react-router-dom";
 
 const Sidebar = () => {
-  const location = useLocation(); // to highlight active menu
+  const location = useLocation(); 
   const menuItems = [
     { name: "Dashboard", icon: <Home size={18} />, path: "/admin-pages/dashboard" },
-    { name: "Patient & Pet Management", icon: <Users size={18} />, path: "/admin-pages/patient-management" },
+    { name: "Client & Pet Management", icon: <Users size={18} />, path: "/admin-pages/patient-management" },
     { name: "Appointments", icon: <Calendar size={18} />, path: "/admin-pages/appointments" },
     { name: "Tools", icon: <Wrench size={18} />, path: "/admin-pages/tools" },
     { name: "Content Manager", icon: <FileText size={18} />, path: "/admin-pages/content-manager" },
