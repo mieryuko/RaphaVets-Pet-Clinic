@@ -55,21 +55,6 @@ const ContentManagement = () => {
     }
   ]);
 
-  const [forumPosts, setForumPosts] = useState([
-    {
-      id: 1,
-      type: "missing",
-      petName: "Max",
-      petType: "Dog",
-      breed: "Golden Retriever",
-      location: "Central Park",
-      date: "2024-01-15",
-      status: "active",
-      user: "john_doe",
-      description: "Friendly golden retriever, last seen near the fountain..."
-    }
-  ]);
-
   const petCategories = ["Health", "Nutrition", "Exercise", "Hygiene", "Behavior"];
   const videoCategories = ["Training", "Health Tips", "Grooming", "Behavior"];
 
@@ -117,6 +102,45 @@ const ContentManagement = () => {
       setForumPosts(forumPosts.filter(post => post.id !== id));
     }
   };
+
+  const [forumPosts, setForumPosts] = useState([
+    {
+      id: 1,
+      type: "lost",
+      petName: "Max",
+      description: "Golden retriever lost near Central Park. Wearing blue collar.",
+      date: "2024-01-15",
+      user: "john_doe",
+      anonymous: false,
+      contactNumber: "+1 (555) 123-4567",
+      email: "john@email.com",
+      images: ["img1.jpg", "img2.jpg"]
+    },
+    {
+      id: 2,
+      type: "found",
+      petName: "Unknown Cat",
+      description: "Found Siamese cat near 5th Avenue. No collar.",
+      date: "2024-01-14",
+      user: "sarah_wilson",
+      anonymous: true,
+      contactNumber: "",
+      email: "",
+      images: ["img1.jpg"]
+    },
+    {
+      id: 3,
+      type: "lost",
+      petName: "Bella",
+      description: "Persian cat missing from Westside area. Very shy.",
+      date: "2024-01-13",
+      user: "mike_chen",
+      anonymous: false,
+      contactNumber: "+1 (555) 987-6543",
+      email: "mike@email.com",
+      images: []
+    }
+  ]);
 
   return (
     <div className="flex flex-col h-screen bg-[#FBFBFB] p-6 gap-2 font-sans">

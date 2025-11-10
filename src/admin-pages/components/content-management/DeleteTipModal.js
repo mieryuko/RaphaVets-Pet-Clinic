@@ -1,17 +1,16 @@
 import { useState } from "react";
 import { 
-  Search, Filter, Trash2, User, Phone, Mail, Calendar,
+  Search, Filter, Trash2, Archive, User, Phone, Mail, Calendar,
   Image as ImageIcon
 } from "lucide-react";
 
-const ForumPostsSection = ({ posts, onDelete }) => { // Remove onArchive from props
+const ForumPostsSection = ({ posts, onDelete, onArchive }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("All");
 
   const types = ["All", "Lost", "Found"];
 
-  // Add safety check
-  const filteredPosts = (posts || []).filter(post => {
+  const filteredPosts = posts.filter(post => {
     const matchesSearch = post.petName.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          post.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesType = typeFilter === "All" || post.type === typeFilter.toLowerCase();
@@ -143,9 +142,16 @@ const ForumPostsSection = ({ posts, onDelete }) => { // Remove onArchive from pr
                 </div>
               </div>
 
-              {/* Actions - Only Delete button */}
+              {/* Actions */}
               <div className="p-4 border-t border-gray-100 bg-gray-50 rounded-b-2xl">
-                <div className="flex justify-end">
+                <div className="flex justify-end gap-2">
+                  <button
+                    onClick={() => onArchive(post.id)}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors duration-200 text-sm font-medium"
+                  >
+                    <Archive size={14} />
+                    Archive
+                  </button>
                   <button
                     onClick={() => onDelete(post.id)}
                     className="flex items-center gap-2 px-3 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200 text-sm font-medium"

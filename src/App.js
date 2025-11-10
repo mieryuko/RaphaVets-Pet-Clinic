@@ -47,9 +47,9 @@
             <Route path="pet-management" element={<PetPatientManagement />} />
             <Route path="appointments" element={<Appointments />} />
             <Route path="tools" element={<Tools />} />
-            <Route path="/admin-pages/content-manager" element={<ContentManager />} />
-            <Route path="/admin-pages/reports" element={<Reports />} />
-            <Route path="/admin-pages/settings" element={<AdminSettings />} />
+            <Route path="content-manager" element={<ContentManager />} />
+            <Route path="reports" element={<Reports />} />
+            <Route path="settings" element={<AdminSettings />} />
           </Route>
 
         </Routes>

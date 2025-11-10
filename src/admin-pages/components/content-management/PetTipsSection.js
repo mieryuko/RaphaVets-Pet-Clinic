@@ -1,12 +1,16 @@
 import { useState } from "react";
 import { 
-  Plus, Edit, Trash2, Search, Filter, Eye
+  Plus, Edit2, Trash2, Search, Filter, Eye
 } from "lucide-react";
+
+import DeleteTipModal from './DeleteTipModal';
 
 const PetTipsSection = ({ petTips, onAdd, onEdit, onDelete }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [tipToDelete, setTipToDelete] = useState(null);
 
   const categories = ["All", "Health", "Nutrition", "Exercise", "Hygiene", "Behavior"];
   const statuses = ["All", "Published", "Draft", "Archived"];
@@ -34,6 +38,17 @@ const PetTipsSection = ({ petTips, onAdd, onEdit, onDelete }) => {
       month: 'short',
       day: 'numeric'
     });
+  };
+
+  const handleDeleteClick = (tip) => {
+    setTipToDelete(tip);
+    setDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = (tipId) => {
+    onDelete(tipId);
+    setDeleteModalOpen(false);
+    setTipToDelete(null);
   };
 
   return (
@@ -139,10 +154,10 @@ const PetTipsSection = ({ petTips, onAdd, onEdit, onDelete }) => {
                         className="text-blue-500 hover:text-blue-700 transition"
                         title="Edit"
                       >
-                        <Edit size={16} />
+                        <Edit2 size={16} />
                       </button>
                       <button
-                        onClick={() => onDelete(tip.id)}
+                        onClick={() => handleDeleteClick(tip)}
                         className="text-red-500 hover:text-red-700 transition"
                         title="Delete"
                       >
@@ -156,6 +171,13 @@ const PetTipsSection = ({ petTips, onAdd, onEdit, onDelete }) => {
           </tbody>
         </table>
       </div>
+
+      <DeleteTipModal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        tip={tipToDelete}
+      />
     </div>
   );
 };
