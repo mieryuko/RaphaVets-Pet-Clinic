@@ -8,8 +8,8 @@ import {
   PetTipModal,
   VideosSection,
   VideoModal,
-  ForumPostsSection
 } from "../components/content-management";
+import ForumPostsSection from "../components/content-management/ForumPostsSection";
 
 const ContentManagement = () => {
   const [activeTab, setActiveTab] = useState("pet-tips");
@@ -52,6 +52,45 @@ const ContentManagement = () => {
       title: "Basic Obedience Training",
       shortDescription: "Essential commands every dog should know",
       youtubeUrl: "https://youtube.com/watch?v=example"
+    }
+  ]);
+
+  const [forumPosts, setForumPosts] = useState([
+    {
+      id: 1,
+      type: "lost",
+      description: "Lost near Central Park area. Last seen wearing a blue collar with identification tags. Very friendly and responds to the name Max. Has a small white patch on chest.",
+      date: "2024-01-15",
+      realName: "John Doe",
+      anonymous: false,
+      contactNumber: "+1 (555) 123-4567",
+      email: "john@email.com",
+      images: ["img1.jpg", "img2.jpg", "img3.jpg"],
+      status: "active" // Added status field
+    },
+    {
+      id: 2,
+      type: "found",
+      description: "Found this beautiful Siamese cat near 5th Avenue. No collar or identification. Appears to be well-groomed and friendly. Currently being cared for while we look for the owner.",
+      date: "2024-01-14",
+      realName: "Sarah Wilson",
+      anonymous: true,
+      contactNumber: "+1 (555) 987-6543",
+      email: "sarah@email.com",
+      images: ["img1.jpg"],
+      status: "archived" // Added status field
+    },
+    {
+      id: 3,
+      type: "lost",
+      description: "My Persian cat went missing from the Westside area. She's very shy and might hide if approached. Has distinctive blue eyes and long white fur. Please contact immediately if spotted.",
+      date: "2024-01-13",
+      realName: "Mike Chen",
+      anonymous: false,
+      contactNumber: "+1 (555) 456-7890",
+      email: "mike@email.com",
+      images: [],
+      status: "active" // Added status field
     }
   ]);
 
@@ -103,51 +142,20 @@ const ContentManagement = () => {
     }
   };
 
-  const [forumPosts, setForumPosts] = useState([
-    {
-      id: 1,
-      type: "lost",
-      petName: "Max",
-      description: "Golden retriever lost near Central Park. Wearing blue collar.",
-      date: "2024-01-15",
-      user: "john_doe",
-      anonymous: false,
-      contactNumber: "+1 (555) 123-4567",
-      email: "john@email.com",
-      images: ["img1.jpg", "img2.jpg"]
-    },
-    {
-      id: 2,
-      type: "found",
-      petName: "Unknown Cat",
-      description: "Found Siamese cat near 5th Avenue. No collar.",
-      date: "2024-01-14",
-      user: "sarah_wilson",
-      anonymous: true,
-      contactNumber: "",
-      email: "",
-      images: ["img1.jpg"]
-    },
-    {
-      id: 3,
-      type: "lost",
-      petName: "Bella",
-      description: "Persian cat missing from Westside area. Very shy.",
-      date: "2024-01-13",
-      user: "mike_chen",
-      anonymous: false,
-      contactNumber: "+1 (555) 987-6543",
-      email: "mike@email.com",
-      images: []
-    }
-  ]);
+  const handleArchive = (id, newStatus) => {
+    setForumPosts(forumPosts.map(post => 
+      post.id === id ? { ...post, status: newStatus } : post
+    ));
+  };
+
+  console.log('ForumPostsSection component:', ForumPostsSection);
 
   return (
     <div className="flex flex-col h-screen bg-[#FBFBFB] p-6 gap-2 font-sans">
       <Header title="Content Management" />
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-2 overflow-auto">
         <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6 border border-blue-200">
           <div className="flex items-center justify-between">
             <div>
@@ -251,6 +259,7 @@ const ContentManagement = () => {
           <ForumPostsSection
             posts={forumPosts}
             onDelete={(id) => handleDelete(id, 'forum-posts')}
+            onArchive={handleArchive}
           />
         )}
       </div>
