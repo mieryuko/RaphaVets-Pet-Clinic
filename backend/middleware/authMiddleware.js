@@ -1,40 +1,45 @@
-import jwt from 'jsonwebtoken';
+import jwt from "jsonwebtoken";
 
 export const verifyToken = (req, res, next) => {
-  // Log full headers for debugging
-
-  // Get token from different possible sources
   const tokenHeader = req.headers.authorization;
   const queryToken = req.query.token;
 
-  // Try different token sources
   let token;
-  if (tokenHeader?.startsWith('Bearer ')) {
-    token = tokenHeader.split(' ')[1];
+  if (tokenHeader?.startsWith("Bearer ")) {
+    token = tokenHeader.split(" ")[1];
   } else if (queryToken) {
     token = queryToken;
   }
 
   if (!token) {
-    return res.status(401).json({ 
+    return res.status(401).json({
       message: "No token provided",
       tokenSources: {
         headerPresent: !!tokenHeader,
-        queryPresent: !!queryToken
-      }
+        queryPresent: !!queryToken,
+      },
     });
   }
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded;
+    req.user = { id: decoded.id }; // Set user object with id
     console.log("✅ Token verified for user:", decoded.id);
     next();
   } catch (error) {
-    console.error('Token verification failed:', error);
-    return res.status(401).json({ 
-      message: "Invalid token",
-      error: error.message 
+    console.error("❌ Token verification failed:", error);
+
+    if (error.name === "TokenExpiredError") {
+      return res.status(401).json({
+        message: "Token expired. Please login again.",
+        code: "TOKEN_EXPIRED",
+      });
+    }
+
+    return res.status(401).json({
+      message: "Invalid token.",
+      code: "TOKEN_INVALID",
+      error: error.message,
     });
   }
 };

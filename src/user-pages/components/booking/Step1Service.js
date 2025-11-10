@@ -1,7 +1,29 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import api from "../../../api/axios";
 
-export default function Step1Service({ serviceTypes, selectedService, setSelectedService }) {
+export default function Step1Service({ selectedService, setSelectedService }) {
+  const [serviceTypes, setServiceTypes] = useState([]);
+
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const res = await api.get("/appointment/services"); // use api instance
+        const mapped = res.data.map((s) => ({
+          id: s.serviceID,
+          label: s.service,
+          note: s.description,
+          duration: s.duration,
+        }));
+        setServiceTypes(mapped);
+      } catch (err) {
+        console.error("Failed to fetch services:", err);
+      }
+    };
+
+    fetchServices();
+  }, []);
+
   return (
     <div className="space-y-4">
       <h2 className="text-lg font-semibold text-gray-800">Choose a service</h2>
@@ -28,7 +50,7 @@ export default function Step1Service({ serviceTypes, selectedService, setSelecte
               </div>
             </div>
             <div className="absolute right-3 top-3 text-xs text-gray-400">
-              {t.id === "consult" ? "30–45 min" : "Varies"}
+              {t.duration}
             </div>
           </motion.button>
         ))}

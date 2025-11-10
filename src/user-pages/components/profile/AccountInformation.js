@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import api from "../../../api/axios"; // make sure the path is correct
+import api from "../../../api/axios";
 
 function AccountInformation() {
   const [editableFields, setEditableFields] = useState({});

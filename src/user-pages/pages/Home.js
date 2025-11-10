@@ -12,6 +12,9 @@ import MedicalReportsTab from "../components/home/MedicalReportsTab";
 import LabRecordsTab from "../components/home/LabRecordsTab";
 import ViewDetailsModal from "../components/home/ViewDetailsModal";
 
+import api from "../../api/axios";
+
+
 function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(true);
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -34,11 +37,31 @@ function Home() {
     localStorage.setItem("darkMode", darkMode);
   }, [darkMode]);
 
-  const appointments = [
-    { id: 1, petName: "Miguel", ownerName: "Fionah Beltran", type: "General Checkup", date: "Nov 10, 2025 - 10:00 AM", status: "Pending", notes: "Bring previous medical records." },
-    { id: 2, petName: "Mark", ownerName: "Vanerie Lyza", type: "Vaccination", date: "Nov 12, 2025 - 1:30 PM", status: "Upcoming", notes: "Rabies and deworming included." },
-    { id: 3, petName: "Jordan", ownerName: "Sarili ko lang", type: "Grooming", date: "Oct 25, 2025 - 9:00 AM", status: "Done", notes: "Full grooming session completed." },
-  ];
+  // const appointments = [
+  //   { id: 1, petName: "Miguel", ownerName: "Fionah Beltran", type: "General Checkup", date: "Nov 10, 2025 - 10:00 AM", status: "Pending", notes: "Bring previous medical records." },
+  //   { id: 2, petName: "Mark", ownerName: "Vanerie Lyza", type: "Vaccination", date: "Nov 12, 2025 - 1:30 PM", status: "Upcoming", notes: "Rabies and deworming included." },
+  //   { id: 3, petName: "Jordan", ownerName: "Sarili ko lang", type: "Grooming", date: "Oct 25, 2025 - 9:00 AM", status: "Done", notes: "Full grooming session completed." },
+  // ];
+
+  const [appointments, setAppointments] = useState([]);
+
+  useEffect(() => {
+    const fetchAppointments = async () => {
+      try {
+        const token = localStorage.getItem("token"); 
+        const res = await api.get("/appointment/user", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        setAppointments(res.data);
+      } catch (err) {
+        console.error("Error fetching appointments:", err);
+      }
+    };
+
+    fetchAppointments();
+  }, []);
+
 
   const filteredAppointments = appointments.filter(
     (a) => appointmentFilter === "All" || a.status === appointmentFilter

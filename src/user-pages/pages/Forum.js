@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Header from "../template/Header";
 import Sidebar from "../template/SideBar";
+import api from "../../api/axios";
+import { se } from "date-fns/locale";
 
 function Forum() {
   const [isMenuOpen, setIsMenuOpen] = useState(true);
@@ -36,13 +38,37 @@ function Forum() {
 
   const [newPost, setNewPost] = useState({ ...emptyPostTemplate });
 
+  
+  //** Sample posts data for testing **
   const [posts, setPosts] = useState([
     {
       id: 1,
       type: "Lost",
-      user: "Fionah Beltran",
+      user: "You",
       petName: "Luna",
-      images: [{ id: "sample-1", url: "/images/sad-dog.png", name: "sad-dog.png" }],
+      images: [
+        { id: "sample-1", url: "/images/sad-dog.png", name: "sad-dog.png" },
+        {
+          id: "sample-2",
+          url: "/images/dog-profile.png",
+          name: "dog-profile.png",
+        },
+        {
+          id: "sample-2",
+          url: "/images/dog-profile.png",
+          name: "dog-profile.png",
+        },
+        {
+          id: "sample-2",
+          url: "/images/dog-profile.png",
+          name: "dog-profile.png",
+        },
+        {
+          id: "sample-2",
+          url: "/images/dog-profile.png",
+          name: "dog-profile.png",
+        }
+      ],
       desc: "Lost near Pembo, Taguig. Gray fur, blue collar. Please message if found!",
       contact: "09123456789",
       date: "Nov 5, 2025",
@@ -52,13 +78,46 @@ function Forum() {
       type: "Found",
       user: "Jordan Frando",
       petName: "Unknown",
-      images: [{ id: "sample-2", url: "/images/dog-profile.png", name: "dog-profile.png" }],
+      images: [
+        {
+          id: "sample-2",
+          url: "/images/dog-profile.png",
+          name: "dog-profile.png",
+        },
+      ],
       desc: "Found wandering near 7th Street. No tag but very friendly.",
       contact: "jordan@example.com",
       date: "Nov 7, 2025",
     },
   ]);
+  
+ /*
+  const [posts, setPosts] = useState([]);
 
+  const fetchedOnce = useRef(false);
+
+  const fetchPosts = async () => {
+      try {
+        const res = await api.get("/forum"); // adjust the endpoint
+        const data = res.data.posts;
+
+        setPosts(data);
+        const message = res.data.message || "✅ Forum posts fetched successfully.";
+        console.log(message);
+        alert(message);
+      } catch (err) {
+        const message = err.response?.data?.message || "❌ Error fetching forum posts.";
+        console.error(message);
+        alert(message);
+      }
+    };
+
+  useEffect(() => {
+    if (fetchedOnce.current) return;
+    fetchedOnce.current = true;
+    fetchPosts();
+  }, []);
+  */
   useEffect(() => {
     const saved = localStorage.getItem("darkMode");
     if (saved) setDarkMode(saved === "true");
@@ -70,15 +129,17 @@ function Forum() {
   const filteredPosts = posts.filter((p) => {
     const matchesFilter = filter === "All" ? true : p.type === filter;
     const matchesSearch =
-      p.desc.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (p.user && p.user.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (p.petName && p.petName.toLowerCase().includes(searchQuery.toLowerCase()));
+      p.desc?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (p.user && p.user?.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (p.petName &&
+        p.petName?.toLowerCase().includes(searchQuery.toLowerCase()));
     return matchesFilter && matchesSearch;
   });
 
-
   const genId = (prefix = "") =>
-    `${prefix}${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+    `${prefix}${Date.now().toString(36)}-${Math.random()
+      .toString(36)
+      .slice(2, 8)}`;
 
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files || []);
@@ -93,6 +154,7 @@ function Forum() {
         id: genId("img-"),
         url: URL.createObjectURL(f),
         name: f.name || "image",
+        file: f,
       }));
 
       return { ...prev, images: [...(prev.images || []), ...created] };
@@ -106,7 +168,8 @@ function Forum() {
     setNewPost((prev) => ({
       ...prev,
       images: prev.images.filter((i) => {
-        if (i.id === imgId && i.id.startsWith("img-")) URL.revokeObjectURL(i.url);
+        if (i.id === imgId && i.id.startsWith("img-"))
+          URL.revokeObjectURL(i.url);
         return i.id !== imgId;
       }),
     }));
@@ -115,16 +178,38 @@ function Forum() {
   const handleCreateOrUpdatePost = () => {
     if (!newPost.desc.trim()) return;
 
-    if (newPost.id) {
-      setPosts((prev) => prev.map((p) => (p.id === newPost.id ? { ...newPost } : p)));
-    } else {
-      const newEntry = { ...newPost, id: Date.now() };
-      setPosts((prev) => [newEntry, ...prev]);
-    }
+    const formData = new FormData();
+    formData.append("postType", newPost.type);
+    formData.append("description", newPost.desc);
+    formData.append("contact", newPost.contact);
+    formData.append("email", newPost.email);
+    formData.append("isAnonymous", newPost.anonymous ? "1" : "0");
 
-    setShowCreateModal(false);
-    setNewPost({ ...emptyPostTemplate, user: newPost.user });
-    setInputKey(Date.now());
+    newPost.images.forEach((img) => {
+      if (img.file) {
+        formData.append("image", img.file);
+      }
+    });
+
+    api
+      .post("/forum", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      })
+      .then((res) => {
+        const createdPost = res.data;
+        console.log("✅ Post created:", createdPost);
+        
+        //fetchPosts();
+        setShowCreateModal(false);
+        setNewPost({ ...emptyPostTemplate, user: newPost.user });
+        setInputKey(Date.now());
+      })
+      .catch((err) => {
+        const message =
+          err.response?.data?.message || "❌ Error creating post.";
+        console.error(message);
+        alert(message);
+      });
   };
 
   const handleEditPost = (post) => {
@@ -135,13 +220,15 @@ function Forum() {
   };
 
   const handleMarkAsFound = (postId) => {
-    setPosts((prev) => prev.map((p) => (p.id === postId ? { ...p, type: "Found" } : p)));
+    setPosts((prev) =>
+      prev.map((p) => (p.id === postId ? { ...p, type: "Found" } : p))
+    );
     setShowViewModal(false);
 
     setSuccessMessage("Post has been marked as found.");
     setShowSuccess(true);
 
-      setTimeout(() => {
+    setTimeout(() => {
       setShowSuccess(false);
       setSuccessMessage("");
     }, 3000);
@@ -154,17 +241,31 @@ function Forum() {
   };
 
   return (
-    <div className={`font-sansation min-h-screen ${darkMode ? "bg-[#121212] text-white" : "bg-[#F7F9FA] text-gray-800"}`}>
-      <Header darkMode={darkMode} setDarkMode={setDarkMode} setIsMenuOpen={setIsMenuOpen} />
+    <div
+      className={`font-sansation min-h-screen ${
+        darkMode ? "bg-[#121212] text-white" : "bg-[#F7F9FA] text-gray-800"
+      }`}
+    >
+      <Header
+        darkMode={darkMode}
+        setDarkMode={setDarkMode}
+        setIsMenuOpen={setIsMenuOpen}
+      />
 
       <div className="flex flex-row gap-5 px-5 sm:px-12">
         <Sidebar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
 
-        <div className={`transition-all duration-500 flex flex-col gap-6 w-full ${!isMenuOpen ? "md:w-full" : "md:w-[calc(100%-260px)]"}`}>
+        <div
+          className={`transition-all duration-500 flex flex-col gap-6 w-full ${
+            !isMenuOpen ? "md:w-full" : "md:w-[calc(100%-260px)]"
+          }`}
+        >
           <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6 h-[calc(100vh-80px)]">
             {/* LEFT WRAPPER */}
             <div className="flex flex-col gap-4 p-4 bg-white rounded-xl overflow-y-auto">
-              <h1 className="font-baloo text-xl sm:text-3xl px-2">Lost & Found Forum</h1>
+              <h1 className="font-baloo text-xl sm:text-3xl px-2">
+                Lost & Found Forum
+              </h1>
               <p className="text-gray-500 text-sm sm:text-base px-2">
                 Report missing pets or share details about pets you’ve found.
               </p>
@@ -215,22 +316,30 @@ function Forum() {
                           className="rounded-lg w-full aspect-square object-cover cursor-zoom-in hover:opacity-90 transition-all"
                           onClick={(e) => {
                             e.stopPropagation();
-                            setLightbox({ open: true, src: img.url || img, alt: img.name || `pet-${i}` });
+                            setLightbox({
+                              open: true,
+                              src: img.url || img,
+                              alt: img.name || `pet-${i}`,
+                            });
                           }}
                         />
                       ))}
                     </div>
                   )}
 
-                  <p className="text-sm leading-relaxed text-gray-700 break-words">{post.desc}</p>
-                    {post.contact && (
-                      <p className="mt-2 text-xs text-gray-500 break-words">
-                        📞 Contact: <span className="font-medium">{post.contact}</span>
-                      </p>
-                    )}
+                  <p className="text-sm leading-relaxed text-gray-700 break-words">
+                    {post.desc}
+                  </p>
+                  {post.contact && (
+                    <p className="mt-2 text-xs text-gray-500 break-words">
+                      📞 Contact:{" "}
+                      <span className="font-medium">{post.contact}</span>
+                    </p>
+                  )}
                   {post.email && (
                     <p className="mt-1 text-xs text-gray-500 break-words">
-                      📧 Email: <span className="font-medium">{post.email}</span>
+                      📧 Email:{" "}
+                      <span className="font-medium">{post.email}</span>
                     </p>
                   )}
                 </div>
@@ -252,7 +361,6 @@ function Forum() {
                 />
               </div>
 
-
               <div className="flex gap-2 mt-4 sm:mt-0">
                 {["All", "Lost", "Found"].map((tab) => (
                   <button
@@ -271,8 +379,12 @@ function Forum() {
 
               {/* Create Post */}
               <div className="bg-gradient-to-br from-[#E3FAF7] to-[#FDE2E4] rounded-xl shadow-sm p-5 border border-gray-100">
-                <h3 className="font-semibold mb-2 text-gray-700">Create a Post</h3>
-                <p className="text-sm text-gray-600 mb-3">Help the community by posting about a lost or found pet.</p>
+                <h3 className="font-semibold mb-2 text-gray-700">
+                  Create a Post
+                </h3>
+                <p className="text-sm text-gray-600 mb-3">
+                  Help the community by posting about a lost or found pet.
+                </p>
                 <button
                   onClick={() => {
                     setNewPost({ ...emptyPostTemplate, user: "You" });
@@ -288,17 +400,24 @@ function Forum() {
               {/* Your Posts */}
               {userPosts.length > 0 && (
                 <div className="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
-                  <h3 className="font-semibold mb-3 text-gray-700">Your Posts</h3>
+                  <h3 className="font-semibold mb-3 text-gray-700">
+                    Your Posts
+                  </h3>
                   {userPosts.map((post) => (
-                    <div key={post.id} className="flex justify-between items-center border-b last:border-none pb-2 mb-2">
+                    <div
+                      key={post.id}
+                      className="flex justify-between items-center border-b last:border-none pb-2 mb-2"
+                    >
                       <span className="text-sm break-words">
-                        {post.desc.length > 15 ? `${post.desc.slice(0, 15)}...` : post.desc}
+                        {post.desc.length > 15
+                          ? `${post.desc.slice(0, 15)}...`
+                          : post.desc}
                       </span>
                       <div className="flex gap-2">
                         {post.type === "Lost" && (
                           <button
                             onClick={(e) => {
-                              e.stopPropagation(); 
+                              e.stopPropagation();
                               setPostToMarkFound(post.id);
                               setShowFoundConfirm(true);
                             }}
@@ -310,8 +429,8 @@ function Forum() {
                         )}
 
                         {post.type === "Lost" && (
-                          <button 
-                            onClick={() => handleEditPost(post)} 
+                          <button
+                            onClick={() => handleEditPost(post)}
                             className="text-lg text-blue-600 font-semibold hover:underline"
                             title="Edit"
                           >
@@ -332,7 +451,6 @@ function Forum() {
                       </div>
                     </div>
                   ))}
-
                 </div>
               )}
             </div>
@@ -347,40 +465,58 @@ function Forum() {
             <div className="flex flex-col lg:flex-row gap-6 h-full">
               {/* LEFT: Form */}
               <div className="lg:w-1/2 overflow-y-auto pr-2">
-                <h2 className="text-xl font-semibold mb-4 text-gray-800">{newPost.id ? "Edit Post" : "Create New Post"}</h2>
+                <h2 className="text-xl font-semibold mb-4 text-gray-800">
+                  {newPost.id ? "Edit Post" : "Create New Post"}
+                </h2>
 
-                <label className="block mb-2 text-sm font-medium text-gray-700">Type</label>
+                <label className="block mb-2 text-sm font-medium text-gray-700">
+                  Type
+                </label>
                 <select
                   value={newPost.type}
-                  onChange={(e) => setNewPost({ ...newPost, type: e.target.value })}
+                  onChange={(e) =>
+                    setNewPost({ ...newPost, type: e.target.value })
+                  }
                   className="w-full border border-gray-300 rounded-lg p-2 mb-4 text-gray-700 focus:ring-2 focus:ring-[#5EE6FE] outline-none"
                 >
                   <option value="Lost">Lost</option>
                   <option value="Found">Found</option>
                 </select>
 
-                <label className="block mb-2 text-sm font-medium text-gray-700">Description</label>
+                <label className="block mb-2 text-sm font-medium text-gray-700">
+                  Description
+                </label>
                 <textarea
                   value={newPost.desc}
-                  onChange={(e) => setNewPost({ ...newPost, desc: e.target.value })}
+                  onChange={(e) =>
+                    setNewPost({ ...newPost, desc: e.target.value })
+                  }
                   className="w-full border border-gray-300 rounded-lg p-2 mb-4 text-gray-700 focus:ring-2 focus:ring-[#5EE6FE] outline-none resize-none h-36"
                   placeholder="Describe the pet, location, and other details..."
                 />
 
-                <label className="block mb-2 text-sm font-medium text-gray-700">Contact</label>
+                <label className="block mb-2 text-sm font-medium text-gray-700">
+                  Contact
+                </label>
                 <input
                   type="text"
                   value={newPost.contact}
-                  onChange={(e) => setNewPost({ ...newPost, contact: e.target.value })}
+                  onChange={(e) =>
+                    setNewPost({ ...newPost, contact: e.target.value })
+                  }
                   className="w-full border border-gray-300 rounded-lg p-2 mb-4 text-gray-700 focus:ring-2 focus:ring-[#5EE6FE] outline-none"
                   placeholder="Phone number or email"
                 />
 
-                <label className="block mb-2 text-sm font-medium text-gray-700">Email</label>
+                <label className="block mb-2 text-sm font-medium text-gray-700">
+                  Email
+                </label>
                 <input
                   type="email"
                   value={newPost.email || ""}
-                  onChange={(e) => setNewPost({ ...newPost, email: e.target.value })}
+                  onChange={(e) =>
+                    setNewPost({ ...newPost, email: e.target.value })
+                  }
                   className="w-full border border-gray-300 rounded-lg p-2 mb-4 text-gray-700 focus:ring-2 focus:ring-[#5EE6FE] outline-none"
                   placeholder="Email address"
                 />
@@ -389,17 +525,27 @@ function Forum() {
                   <input
                     type="checkbox"
                     checked={newPost.anonymous}
-                    onChange={(e) => setNewPost({ ...newPost, anonymous: e.target.checked })}
+                    onChange={(e) =>
+                      setNewPost({ ...newPost, anonymous: e.target.checked })
+                    }
                     className="mr-2 w-4 h-4 text-[#5EE6FE] border-gray-300 rounded focus:ring-[#5EE6FE]"
                   />
-                  <label className="text-sm text-gray-700">Post anonymously</label>
+                  <label className="text-sm text-gray-700">
+                    Post anonymously
+                  </label>
                 </div>
 
                 <div className="flex justify-end gap-3 mt-4">
-                  <button onClick={() => setShowCreateModal(false)} className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition-all">
+                  <button
+                    onClick={() => setShowCreateModal(false)}
+                    className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition-all"
+                  >
                     Cancel
                   </button>
-                  <button onClick={handleCreateOrUpdatePost} className="px-4 py-2 rounded-lg bg-[#5EE6FE] text-white hover:bg-[#3ecbe0] font-semibold transition-all">
+                  <button
+                    onClick={handleCreateOrUpdatePost}
+                    className="px-4 py-2 rounded-lg bg-[#5EE6FE] text-white hover:bg-[#3ecbe0] font-semibold transition-all"
+                  >
                     {newPost.id ? "Update" : "Post"}
                   </button>
                 </div>
@@ -408,8 +554,12 @@ function Forum() {
               {/* RIGHT: Image Upload */}
               <div className="lg:w-1/2 bg-gray-50 rounded-lg p-4 flex flex-col gap-4">
                 <div className="flex items-center justify-between">
-                  <h4 className="font-semibold text-gray-700">Images (up to 5)</h4>
-                  <span className="text-xs text-gray-500">{newPost.images.length}/5</span>
+                  <h4 className="font-semibold text-gray-700">
+                    Images (up to 5)
+                  </h4>
+                  <span className="text-xs text-gray-500">
+                    {newPost.images.length}/5
+                  </span>
                 </div>
 
                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
@@ -419,7 +569,13 @@ function Forum() {
                         src={img.url || img}
                         alt={img.name || "preview"}
                         className="w-full h-full object-cover rounded-lg border border-gray-200 cursor-zoom-in hover:opacity-90"
-                        onClick={() => setLightbox({ open: true, src: img.url || img, alt: img.name || "preview" })}
+                        onClick={() =>
+                          setLightbox({
+                            open: true,
+                            src: img.url || img,
+                            alt: img.name || "preview",
+                          })
+                        }
                       />
                       <button
                         onClick={() => removeImageFromEditing(img.id)}
@@ -442,7 +598,8 @@ function Forum() {
                         key={inputKey}
                         id="multiImageInput"
                         type="file"
-                        accept="image/*"
+                        name="image"
+                        accept=".png, .jpg, .jpeg, .webp"
                         multiple
                         onChange={handleImageUpload}
                         className="hidden"
@@ -518,9 +675,9 @@ function Forum() {
                     setSuccessMessage("");
                   }, 3000);
                 }}
-                  className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 font-semibold transition-all"
-                  >
-                    Delete
+                className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 font-semibold transition-all"
+              >
+                Delete
               </button>
             </div>
           </div>
@@ -529,9 +686,7 @@ function Forum() {
 
       {showSuccess && (
         <div className="fixed top-5 right-5 z-50 w-80 bg-green-600 text-white rounded-xl shadow-lg overflow-hidden animate-popUp">
-          <div className="p-4">
-            {successMessage}
-          </div>
+          <div className="p-4">{successMessage}</div>
           {/* Bottom progress bar */}
           <div className="h-1 bg-white animate-progress"></div>
         </div>
@@ -550,7 +705,8 @@ function Forum() {
               Confirm Mark as Found
             </h3>
             <p className="text-sm text-gray-600 mb-6">
-              Are you sure this pet has been found? This will mark the post as "Found".
+              Are you sure this pet has been found? This will mark the post as
+              "Found".
             </p>
             <div className="flex justify-end gap-3">
               <button
@@ -572,7 +728,6 @@ function Forum() {
           </div>
         </div>
       )}
-
     </div>
   );
 }

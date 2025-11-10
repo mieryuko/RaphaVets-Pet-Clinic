@@ -81,7 +81,7 @@ export const loginUser = async (req, res) => {
     const token = jwt.sign(
       { id: user.accId, email: user.email, role: user.roleID },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: "7d" }
     );
 
     res.status(200).json({
@@ -154,11 +154,18 @@ export const verifyCode = async (req, res) => {
 
 export const logoutUser = async (req, res) => {
   try {
-    const userId = req.user.id; // from verifyToken middleware
-    await pool.query("UPDATE account_tbl SET logOutAt = NOW() WHERE accId = ?", [userId]);
-    res.json({ message: "Logged out successfully" });
+    const userId = req.userId; // optional, may be undefined
+
+    if (userId) {
+      // Update logout timestamp if possible
+      await pool.query("UPDATE account_tbl SET logOutAt = NOW() WHERE accId = ?", [userId]);
+    } else {
+      console.log("⚠️ No userId found (token may be expired). Proceeding with logout.");
+    }
+
+    return res.json({ message: "Logged out successfully" });
   } catch (error) {
     console.error("❌ Logout error:", error);
-    res.status(500).json({ message: "Server error" });
+    return res.status(500).json({ message: "Server error" });
   }
 };

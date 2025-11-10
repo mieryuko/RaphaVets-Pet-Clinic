@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import {
   startOfMonth,
   endOfMonth,
@@ -9,9 +10,6 @@ import {
   addDays,
   addMonths,
   subMonths,
-  format,
-  isSameMonth,
-  isSameDay,
   isBefore,
 } from "date-fns";
 
@@ -23,6 +21,7 @@ import Step4Review from "../components/booking/Step4Review";
 import Step5Success from "../components/booking/Step5Success";
 import AppointmentSummary from "../components/booking/AppointmentSummary";
 import TipsCard from "../components/booking/TipsCard";
+import api from "../../api/axios"; // your axios instance
 
 const SERVICE_TYPES = [
   { id: "consult", label: "Consultation", note: "General check-up" },
@@ -38,22 +37,64 @@ const SERVICE_TYPES = [
 ];
 
 const getTimeSlotsForDate = (date) => {
-  // Example static slots; you can customize later
   return ["09:00 AM", "10:00 AM", "11:00 AM", "01:00 PM", "02:00 PM", "03:00 PM"];
 };
-
 
 function Booking() {
   const navigate = useNavigate();
 
   const [step, setStep] = useState(1);
   const [selectedService, setSelectedService] = useState(null);
-  const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTime, setSelectedTime] = useState("");
+  const [selectedPet, setSelectedPet] = useState(null);
+  const [pets, setPets] = useState([]);
+  const [currentMonth, setCurrentMonth] = useState(new Date());
   const [confirmed, setConfirmed] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
+
+  // OWNER INFO
+  const [userData, setUserData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    contactNo: "",
+  });
+
+  // Fetch pets
+  useEffect(() => {
+    const fetchPets = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+        const res = await api.get("/pets", { headers: { Authorization: `Bearer ${token}` } });
+        setPets(res.data);
+      } catch (err) {
+        console.error("Failed to fetch pets:", err);
+      }
+    };
+    fetchPets();
+  }, []);
+
+  // Fetch user profile once
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const userId = localStorage.getItem("userId");
+        const token = localStorage.getItem("token");
+        if (!userId || !token) return;
+
+        const res = await api.get(`/users/${userId}/profile`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setUserData(res.data);
+      } catch (err) {
+        console.error("Failed to fetch user profile:", err);
+      }
+    };
+    fetchUserProfile();
+  }, []);
 
   // Calendar generation
   const calendar = useMemo(() => {
@@ -75,7 +116,6 @@ function Booking() {
     return rows;
   }, [currentMonth]);
 
-  // Navigation
   const prevMonth = () => setCurrentMonth((m) => subMonths(m, 1));
   const nextMonth = () => setCurrentMonth((m) => addMonths(m, 1));
   const goToStep = (s) => setStep(s);
@@ -85,15 +125,17 @@ function Booking() {
     setSelectedService(null);
     setSelectedDate(null);
     setSelectedTime("");
+    setSelectedPet(null);
     setConfirmed(false);
   };
 
   const handleConfirm = () => {
-    setConfirmed(true);
-    setShowToast(true);
-    setStep(5);
-    setTimeout(() => setShowToast(false), 3500);
-  };
+  console.log("handleConfirm called");
+  setConfirmed(true);
+  setStep(5);
+  console.log("Step after confirm:", step);
+};
+
 
   useEffect(() => {
     if (selectedService) setStep(2);
@@ -163,33 +205,70 @@ function Booking() {
             </div>
 
             <motion.div layout initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-              {step === 1 && <Step1Service serviceTypes={SERVICE_TYPES} selectedService={selectedService} setSelectedService={setSelectedService} goToStep={goToStep}/>}
-              {step === 2 && (
-              <Step2DateTime
-                selectedService={selectedService}
-                currentMonth={currentMonth}
-                calendar={calendar}
-                selectedDate={selectedDate}
-                setSelectedDate={setSelectedDate}
-                selectedTime={selectedTime}
-                setSelectedTime={setSelectedTime}
-                prevMonth={prevMonth}
-                nextMonth={nextMonth}
-                goToStep={goToStep}
-                isPast={isPast}
-                getTimeSlotsForDate={getTimeSlotsForDate} 
-              />
-            )}
+              {step === 1 && (
+                <Step1Service 
+                  serviceTypes={SERVICE_TYPES} 
+                  selectedService={selectedService} 
+                  setSelectedService={setSelectedService} 
+                  goToStep={goToStep}
+                />
+              )}
 
-              {step === 3 && <Step3Details goToStep={goToStep} />}
-              {step === 4 && <Step4Review selectedService={selectedService} selectedDate={selectedDate} selectedTime={selectedTime} handleConfirm={handleConfirm} goToStep={goToStep} />}
-              {step === 5 && confirmed && <Step5Success resetBooking={resetBooking} navigate={navigate} />}
+              {step === 2 && (
+                <Step2DateTime
+                  selectedService={selectedService}
+                  currentMonth={currentMonth}
+                  calendar={calendar}
+                  selectedDate={selectedDate}
+                  setSelectedDate={setSelectedDate}
+                  selectedTime={selectedTime}
+                  setSelectedTime={setSelectedTime}
+                  prevMonth={prevMonth}
+                  nextMonth={nextMonth}
+                  goToStep={goToStep}
+                  isPast={isPast}
+                  getTimeSlotsForDate={getTimeSlotsForDate} 
+                />
+              )}
+
+              {step === 3 && (
+                <Step3Details 
+                  goToStep={goToStep} 
+                  pets={pets} 
+                  selectedPet={selectedPet} 
+                  setSelectedPet={setSelectedPet} 
+                  userData={userData} 
+                />
+              )}
+
+              {step === 4 && (
+                <Step4Review 
+                  selectedService={selectedService} 
+                  selectedDate={selectedDate} 
+                  selectedTime={selectedTime} 
+                  selectedPet={selectedPet}
+                  handleConfirm={handleConfirm} 
+                  goToStep={goToStep} 
+                  ownerInfo={userData} 
+                />
+              )}
+
+              {step === 5 && confirmed && (
+                <Step5Success resetBooking={resetBooking} navigate={navigate} />
+              )}
             </motion.div>
           </div>
 
           {/* Right Column: Sidebar */}
           <aside className="space-y-4">
-            <AppointmentSummary step={step} selectedService={selectedService} selectedDate={selectedDate} selectedTime={selectedTime} />
+            <AppointmentSummary 
+              step={step} 
+              selectedService={selectedService} 
+              selectedDate={selectedDate} 
+              selectedTime={selectedTime} 
+              selectedPet={selectedPet} 
+              ownerInfo={userData} 
+            />
             <TipsCard />
           </aside>
         </div>
