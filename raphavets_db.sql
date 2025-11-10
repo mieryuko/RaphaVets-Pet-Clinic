@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Nov 09, 2025 at 03:53 PM
+-- Generation Time: Nov 10, 2025 at 04:57 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -101,18 +101,6 @@ CREATE TABLE `appointment_tbl` (
   `statusID` int(11) NOT NULL,
   `createdAt` datetime NOT NULL DEFAULT current_timestamp(),
   `lastUpdatedAt` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `breed_records_tbl`
---
-
-CREATE TABLE `breed_records_tbl` (
-  `recordID` int(11) NOT NULL,
-  `breedID` int(11) NOT NULL,
-  `imageName` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -371,12 +359,6 @@ ALTER TABLE `appointment_tbl`
   ADD KEY `serviceID_appointment_fk` (`serviceID`);
 
 --
--- Indexes for table `breed_records_tbl`
---
-ALTER TABLE `breed_records_tbl`
-  ADD PRIMARY KEY (`recordID`);
-
---
 -- Indexes for table `breed_tbl`
 --
 ALTER TABLE `breed_tbl`
@@ -477,12 +459,6 @@ ALTER TABLE `appointment_status_tbl`
 --
 ALTER TABLE `appointment_tbl`
   MODIFY `appointmentID` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `breed_records_tbl`
---
-ALTER TABLE `breed_records_tbl`
-  MODIFY `recordID` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `breed_tbl`

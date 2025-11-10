@@ -2,9 +2,7 @@
 import express from "express";
 import cors from "cors";
 import authRoutes from "./routes/authRoutes.js"; // ✅ fixed
-import userRoute from "./routes/userRoute.js";
-import forumRoutes from "./routes/forumRoutes.js";
-import authRoutes from "./routes/authRoutes.js"; 
+import forumRoutes from "./routes/forumRoutes.js"; 
 import userRoute from "./routes/userRoute.js"; 
 import appointmentRoute from "./routes/appointmentRoute.js";
 import petRoute from "./routes/petRoute.js";
@@ -16,7 +14,7 @@ app.use(express.json());
 // Routes
 //login route
 app.use("/api/auth", authRoutes);
-app.use("/api/users", userRoute); // ✅ mounts user routes here
+app.use("/api/users", userRoute);
 app.use("/api/forum", forumRoutes);
 //user route
 app.use("/api/users", userRoute);
