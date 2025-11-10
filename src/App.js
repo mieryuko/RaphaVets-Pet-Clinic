@@ -19,7 +19,7 @@
   import PetPatientManagement from "./admin-pages/pages/PetPatientManagement";
   import Appointments from "./admin-pages/pages/Appointments";
   import Tools from "./admin-pages/pages/DiagnosticTools";
-  import ContentManager from "./admin-pages/pages/ContentManager";
+  import ContentManager from "./admin-pages/pages/ContentManagement";
   import Reports from "./admin-pages/pages/Reports";
   import AdminSettings from "./admin-pages/pages/AdminSetting";
 

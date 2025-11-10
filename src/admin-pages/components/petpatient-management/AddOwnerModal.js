@@ -16,7 +16,6 @@ const AddOwnerModal = ({ isOpen, onClose, onSave, initialData }) => {
     type: "",
     breed: "",
     name: "",
-    age: "",
     sex: "",
     weight: "",
     color: "",
@@ -24,14 +23,13 @@ const AddOwnerModal = ({ isOpen, onClose, onSave, initialData }) => {
     notes: "",
   });
 
-  const [step, setStep] = useState("form"); // form, review, success
+  const [step, setStep] = useState("form");
 
   const dogBreeds = ["Labrador", "Golden Retriever", "Bulldog", "Poodle", "Beagle"];
   const catBreeds = ["Persian", "Siamese", "Maine Coon", "Sphynx", "Ragdoll"];
 
   useEffect(() => {
     if (initialData) {
-      // For owner modal
       setOwnerData({
         firstName: initialData.firstName || "",
         lastName: initialData.lastName || "",
@@ -47,7 +45,6 @@ const AddOwnerModal = ({ isOpen, onClose, onSave, initialData }) => {
           type: initialData.pets[0].type || "",
           breed: initialData.pets[0].breed || "",
           name: initialData.pets[0].name || "",
-          age: initialData.pets[0].age || "",
           sex: initialData.pets[0].sex || "",
           weight: initialData.pets[0].weight || "",
           color: initialData.pets[0].color || "",
@@ -58,7 +55,6 @@ const AddOwnerModal = ({ isOpen, onClose, onSave, initialData }) => {
     }
   }, [initialData]);
 
-  
   const handleOwnerChange = (field, value) => setOwnerData({ ...ownerData, [field]: value });
   const handlePetChange = (field, value) => {
     const updated = { ...petData, [field]: value };
@@ -73,7 +69,6 @@ const AddOwnerModal = ({ isOpen, onClose, onSave, initialData }) => {
       type: petData.type || "",
       breed: petData.breed || "",
       name: petData.name || "",
-      age: petData.age || "",
       sex: petData.sex || "",
       weight: petData.weight || "",
       color: petData.color || "",
@@ -98,7 +93,7 @@ const AddOwnerModal = ({ isOpen, onClose, onSave, initialData }) => {
   const handleClose = () => {
     setStep("form");
     setOwnerData({ firstName: "", lastName: "", email: "", phone: "", address: "", sex: "", dob: "" });
-    setPetData({ type: "", breed: "", name: "", age: "", sex: "", weight: "", color: "", dob: "", notes: "" });
+    setPetData({ type: "", breed: "", name: "", sex: "", weight: "", color: "", dob: "", notes: "" });
     onClose();
   };
 
@@ -107,144 +102,380 @@ const AddOwnerModal = ({ isOpen, onClose, onSave, initialData }) => {
   const breedOptions = petData.type === "Dog" ? dogBreeds : petData.type === "Cat" ? catBreeds : [];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="bg-[#F5F7FA] dark:bg-[#1C1C1E] w-[900px] rounded-2xl shadow-2xl p-6 flex flex-col relative">
-        <button onClick={handleClose} className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:hover:text-gray-200 transition">
-          <X size={24} />
-        </button>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+      <div className="bg-white w-[900px] h-[580px] rounded-2xl shadow-xl flex flex-col overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-2xl">
+          <h2 className="text-lg font-semibold text-gray-800">
+            {initialData ? "Edit Pet Owner" : "Add New Pet Owner"}
+          </h2>
+          <button 
+            onClick={handleClose}
+            className="p-1 hover:bg-white rounded-lg transition-colors duration-200"
+          >
+            <X size={18} className="text-gray-500" />
+          </button>
+        </div>
 
-        {step === "form" && (
-          <>
-            <h2 className="text-2xl font-semibold text-[#212529] dark:text-white mb-6">{initialData ? "Edit Pet Owner" : "Add Pet Owner"}</h2>
-
-            <div className="flex gap-6">
-              {/* Owner Info */}
-              <div className="flex-1 bg-white dark:bg-[#252525] p-5 rounded-xl flex flex-col gap-4 shadow-inner">
-                <h3 className="text-lg font-semibold text-[#212529] dark:text-white mb-2">Owner Information</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <input type="text" placeholder="First Name" value={ownerData.firstName} onChange={(e)=>handleOwnerChange("firstName", e.target.value)} className="input-field"/>
-                  <input type="text" placeholder="Last Name" value={ownerData.lastName} onChange={(e)=>handleOwnerChange("lastName", e.target.value)} className="input-field"/>
-                  <input type="email" placeholder="Email" value={ownerData.email} onChange={(e)=>handleOwnerChange("email", e.target.value)} className="input-field col-span-2"/>
-                  <input type="text" placeholder="Phone" value={ownerData.phone} onChange={(e)=>handleOwnerChange("phone", e.target.value)} className="input-field"/>
-                  <input type="text" placeholder="Address (Optional)" value={ownerData.address} onChange={(e)=>handleOwnerChange("address", e.target.value)} className="input-field col-span-2"/>
-                  <select value={ownerData.sex} onChange={(e)=>handleOwnerChange("sex", e.target.value)} className="input-field">
-                    <option value="">Select Sex</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                  </select>
-                  <div className="flex flex-col">
-                    <label className="text-sm text-gray-600 dark:text-gray-400">Date of Birth</label>
-                    <input type="date" value={ownerData.dob} onChange={(e)=>handleOwnerChange("dob", e.target.value)} className="input-field" />
+        {/* Content */}
+        <div className="flex-1 p-5 overflow-hidden">
+          {step === "form" && (
+            <div className="flex h-full gap-6">
+              {/* Owner Information - Left Side */}
+              <div className="flex-1 space-y-4 border-r border-gray-200 pr-6">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-5 bg-blue-500 rounded-full"></div>
+                    <h3 className="text-base font-semibold text-gray-800">Owner Information</h3>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-gray-700">First Name *</label>
+                        <input 
+                          type="text" 
+                          value={ownerData.firstName} 
+                          onChange={(e) => handleOwnerChange("firstName", e.target.value)}
+                          className="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="Enter first name"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-gray-700">Last Name *</label>
+                        <input 
+                          type="text" 
+                          value={ownerData.lastName} 
+                          onChange={(e) => handleOwnerChange("lastName", e.target.value)}
+                          className="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="Enter last name"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium text-gray-700">Email Address *</label>
+                      <input 
+                        type="email" 
+                        value={ownerData.email} 
+                        onChange={(e) => handleOwnerChange("email", e.target.value)}
+                        className="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Enter email address"
+                      />
+                    </div>
+                    
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium text-gray-700">Phone Number *</label>
+                      <input 
+                        type="text" 
+                        value={ownerData.phone} 
+                        onChange={(e) => handleOwnerChange("phone", e.target.value)}
+                        className="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Enter phone number"
+                      />
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-gray-700">Gender</label>
+                        <select 
+                          value={ownerData.sex} 
+                          onChange={(e) => handleOwnerChange("sex", e.target.value)}
+                          className="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        >
+                          <option value="">Select gender</option>
+                          <option value="Male">Male</option>
+                          <option value="Female">Female</option>
+                        </select>
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-gray-700">Date of Birth</label>
+                        <input 
+                          type="date" 
+                          value={ownerData.dob} 
+                          onChange={(e) => handleOwnerChange("dob", e.target.value)}
+                          className="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium text-gray-700">Address</label>
+                      <input 
+                        type="text" 
+                        value={ownerData.address} 
+                        onChange={(e) => handleOwnerChange("address", e.target.value)}
+                        className="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Enter address (optional)"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Pet Info */}
-              <div className="flex-1 bg-white dark:bg-[#252525] p-5 rounded-xl flex flex-col gap-4 shadow-inner">
-                <h3 className="text-lg font-semibold text-[#212529] dark:text-white mb-2">Pet Information</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <select value={petData.type} onChange={(e)=>handlePetChange("type", e.target.value)} className="input-field">
-                    <option value="">Select Type</option>
-                    <option value="Dog">Dog</option>
-                    <option value="Cat">Cat</option>
-                  </select>
-                  <select value={petData.breed} onChange={(e)=>handlePetChange("breed", e.target.value)} className="input-field" disabled={!petData.type}>
-                    <option value="">Select Breed</option>
-                    {breedOptions.map((b,i)=><option key={i} value={b}>{b}</option>)}
-                  </select>
-                  <input type="text" placeholder="Name" value={petData.name} onChange={(e)=>handlePetChange("name", e.target.value)} className="input-field"/>
-                  <input type="number" placeholder="Age" value={petData.age} onChange={(e)=>handlePetChange("age", e.target.value)} className="input-field"/>
-                  <select value={petData.sex} onChange={(e)=>handlePetChange("sex", e.target.value)} className="input-field">
-                    <option value="">Select Sex</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                  </select>
-                  <input type="number" placeholder="Weight (kg)" value={petData.weight} onChange={(e)=>handlePetChange("weight", e.target.value)} className="input-field"/>
-                  <input type="text" placeholder="Color" value={petData.color} onChange={(e)=>handlePetChange("color", e.target.value)} className="input-field"/>
-                  <div className="flex flex-col">
-                    <label className="text-sm text-gray-600 dark:text-gray-400">DOB (Month/Year)</label>
-                    <input type="month" value={petData.dob} onChange={(e)=>handlePetChange("dob", e.target.value)} className="input-field"/>
+              {/* Pet Information - Right Side */}
+              <div className="flex-1 space-y-4">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-5 bg-green-500 rounded-full"></div>
+                    <h3 className="text-base font-semibold text-gray-800">Pet Information</h3>
                   </div>
-                  <input type="text" placeholder="Notes (optional)" value={petData.notes} onChange={(e)=>handlePetChange("notes", e.target.value)} className="input-field col-span-2"/>
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-gray-700">Pet Type *</label>
+                        <select 
+                          value={petData.type} 
+                          onChange={(e) => handlePetChange("type", e.target.value)}
+                          className="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        >
+                          <option value="">Select type</option>
+                          <option value="Dog">Dog</option>
+                          <option value="Cat">Cat</option>
+                        </select>
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-gray-700">Breed *</label>
+                        <select 
+                          value={petData.breed} 
+                          onChange={(e) => handlePetChange("breed", e.target.value)}
+                          className="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                          disabled={!petData.type}
+                        >
+                          <option value="">Select breed</option>
+                          {breedOptions.map((breed, index) => (
+                            <option key={index} value={breed}>{breed}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium text-gray-700">Pet Name *</label>
+                      <input 
+                        type="text" 
+                        value={petData.name} 
+                        onChange={(e) => handlePetChange("name", e.target.value)}
+                        className="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        placeholder="Enter pet name"
+                      />
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-gray-700">Gender</label>
+                        <select 
+                          value={petData.sex} 
+                          onChange={(e) => handlePetChange("sex", e.target.value)}
+                          className="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        >
+                          <option value="">Select gender</option>
+                          <option value="Male">Male</option>
+                          <option value="Female">Female</option>
+                        </select>
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-gray-700">Weight (kg)</label>
+                        <input 
+                          type="number" 
+                          value={petData.weight} 
+                          onChange={(e) => handlePetChange("weight", e.target.value)}
+                          className="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                          placeholder="Enter weight"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-gray-700">Color</label>
+                        <input 
+                          type="text" 
+                          value={petData.color} 
+                          onChange={(e) => handlePetChange("color", e.target.value)}
+                          className="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                          placeholder="Enter color"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-gray-700">Date of Birth</label>
+                        <input 
+                          type="month" 
+                          value={petData.dob} 
+                          onChange={(e) => handlePetChange("dob", e.target.value)}
+                          className="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium text-gray-700">Additional Notes</label>
+                      <textarea 
+                        value={petData.notes} 
+                        onChange={(e) => handlePetChange("notes", e.target.value)}
+                        className="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+                        placeholder="Enter any additional notes (optional)"
+                        rows="2"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
+          )}
 
-            {/* Actions */}
-            <div className="mt-6 flex justify-end gap-3">
-              <button onClick={handleClose} className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#222] transition">Cancel</button>
-              <button onClick={handleNext} className="px-4 py-2 rounded-lg bg-[#5EE6FE] hover:bg-[#0B5ED7] text-white font-semibold transition">Next</button>
-            </div>
-          </>
-        )}
-
-        {step === "review" && (
-          <>
-            <h2 className="text-2xl font-semibold text-[#212529] dark:text-white mb-6">Review Details</h2>
-            <div className="flex gap-6">
-              <div className="flex-1 bg-white dark:bg-[#252525] p-5 rounded-xl flex flex-col gap-2 shadow-inner">
-                <h3 className="font-semibold text-[#212529] dark:text-white">Owner Info</h3>
-                <p>Full Name: {ownerData.firstName} {ownerData.lastName}</p>
-                <p>Email: {ownerData.email}</p>
-                <p>Phone: {ownerData.phone}</p>
-                <p>Address: {ownerData.address}</p>
-                <p>Sex: {ownerData.sex}</p>
-                <p>DOB: {ownerData.dob}</p>
+          {step === "review" && (
+            <div className="h-full flex flex-col">
+              <div className="text-center mb-2">
+                {/* <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                  <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                    <span className="text-white font-bold text-xs">✓</span>
+                  </div>
+                </div> */}
+                <h3 className="text-md font-semibold text-gray-800">Review Information</h3>
               </div>
-              <div className="flex-1 bg-white dark:bg-[#252525] p-5 rounded-xl flex flex-col gap-2 shadow-inner">
-                <h3 className="font-semibold text-[#212529] dark:text-white">Pet Info</h3>
-                <p>Type: {petData.type}</p>
-                <p>Breed: {petData.breed}</p>
-                <p>Name: {petData.name}</p>
-                <p>Age: {petData.age}</p>
-                <p>Sex: {petData.sex}</p>
-                <p>Weight: {petData.weight} kg</p>
-                <p>Color: {petData.color}</p>
-                <p>DOB: {petData.dob}</p>
-                <p>Notes: {petData.notes}</p>
+              
+              <div className="flex-1 grid grid-cols-2 gap-6">
+                {/* Owner Details Card */}
+                <div className="bg-white border border-gray-200 rounded-xl px-5 pt-4 pb-2 shadow-sm">
+                  <div className="flex items-center gap-2 mb-2 pb-1 border-b border-gray-100">
+                    <div className="w-2 h-4 bg-blue-500 rounded-full"></div>
+                    <h4 className="font-semibold text-gray-800 text-sm">Owner Details</h4>
+                  </div>
+                  <div className="space-y-1 text-sm">
+                    <div className="flex justify-between items-center py-2 border-b border-gray-50">
+                      <span className="text-gray-600 font-medium">Full Name:</span>
+                      <span className="text-gray-800 font-semibold">{ownerData.firstName} {ownerData.lastName}</span>
+                    </div>
+                    <div className="flex justify-between items-center py-2 border-b border-gray-50">
+                      <span className="text-gray-600 font-medium">Email:</span>
+                      <span className="text-gray-800 font-semibold">{ownerData.email || "-"}</span>
+                    </div>
+                    <div className="flex justify-between items-center py-2 border-b border-gray-50">
+                      <span className="text-gray-600 font-medium">Phone:</span>
+                      <span className="text-gray-800 font-semibold">{ownerData.phone || "-"}</span>
+                    </div>
+                    <div className="flex justify-between items-center py-2 border-b border-gray-50">
+                      <span className="text-gray-600 font-medium">Gender:</span>
+                      <span className="text-gray-800 font-semibold">{ownerData.sex || "-"}</span>
+                    </div>
+                    <div className="flex justify-between items-center py-2 border-b border-gray-50">
+                      <span className="text-gray-600 font-medium">Date of Birth:</span>
+                      <span className="text-gray-800 font-semibold">{ownerData.dob || "-"}</span>
+                    </div>
+                    <div className="flex justify-between items-start py-2">
+                      <span className="text-gray-600 font-medium">Address:</span>
+                      <span className="text-gray-800 font-semibold text-right max-w-[200px]">{ownerData.address || "-"}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Pet Details Card */}
+                <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+                  <div className="flex items-center gap-2 mb-2 pb-1 border-b border-gray-100">
+                    <div className="w-2 h-4 bg-green-500 rounded-full"></div>
+                    <h4 className="font-semibold text-gray-800 text-sm">Pet Details</h4>
+                  </div>
+                  <div className="space-y-1 text-sm">
+                    <div className="flex justify-between items-center py-2 border-b border-gray-50">
+                      <span className="text-gray-600 font-medium">Pet Name:</span>
+                      <span className="text-gray-800 font-semibold">{petData.name || "-"}</span>
+                    </div>
+                    <div className="flex justify-between items-center py-2 border-b border-gray-50">
+                      <span className="text-gray-600 font-medium">Type:</span>
+                      <span className="text-gray-800 font-semibold">{petData.type || "-"}</span>
+                    </div>
+                    <div className="flex justify-between items-center py-2 border-b border-gray-50">
+                      <span className="text-gray-600 font-medium">Breed:</span>
+                      <span className="text-gray-800 font-semibold">{petData.breed || "-"}</span>
+                    </div>
+                    <div className="flex justify-between items-center py-2 border-b border-gray-50">
+                      <span className="text-gray-600 font-medium">Gender:</span>
+                      <span className="text-gray-800 font-semibold">{petData.sex || "-"}</span>
+                    </div>
+                    <div className="flex justify-between items-center py-2 border-b border-gray-50">
+                      <span className="text-gray-600 font-medium">Weight:</span>
+                      <span className="text-gray-800 font-semibold">{petData.weight ? `${petData.weight} kg` : "-"}</span>
+                    </div>
+                    <div className="flex justify-between items-center py-2 border-b border-gray-50">
+                      <span className="text-gray-600 font-medium">Color:</span>
+                      <span className="text-gray-800 font-semibold">{petData.color || "-"}</span>
+                    </div>
+                    <div className="flex justify-between items-center py-2 border-b border-gray-50">
+                      <span className="text-gray-600 font-medium">Date of Birth:</span>
+                      <span className="text-gray-800 font-semibold">{petData.dob || "-"}</span>
+                    </div>
+                    <div className="flex justify-between items-start py-2">
+                      <span className="text-gray-600 font-medium">Notes:</span>
+                      <span className="text-gray-800 font-semibold text-right max-w-[200px]">{petData.notes || "-"}</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
+          )}
 
-            <div className="mt-6 flex justify-end gap-3">
-              <button onClick={() => setStep("form")} className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#222] transition">Back</button>
-              <button onClick={handleConfirm} className="px-4 py-2 rounded-lg bg-[#5EE6FE] hover:bg-[#0B5ED7] text-white font-semibold transition">Confirm</button>
+          {step === "success" && (
+            <div className="text-center py-8">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                  <span className="text-white font-bold text-base">✓</span>
+                </div>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">Owner Added Successfully!</h3>
+              <p className="text-sm text-gray-600 mb-6">
+                The system has sent a login link to the owner's email to access their account.
+              </p>
             </div>
-          </>
-        )}
+          )}
+        </div>
 
-        {step === "success" && (
-          <div className="flex flex-col items-center justify-center p-10">
-            <h2 className="text-2xl font-semibold text-[#212529] dark:text-white mb-4">Owner Added Successfully!</h2>
-            <p className="mb-4 text-gray-700 dark:text-gray-300 text-center">
-              The system has sent a login link to the owner's email to access their account.
-            </p>
-            <button onClick={handleClose} className="px-4 py-2 rounded-lg bg-[#5EE6FE] hover:bg-[#0B5ED7] text-white font-semibold transition">
-              Close
-            </button>
+        {/* Footer */}
+        <div className="border-t border-gray-200 p-4 bg-gray-50 rounded-b-2xl">
+          <div className="flex justify-end gap-2">
+            {step === "form" && (
+              <>
+                <button 
+                  onClick={handleClose}
+                  className="px-4 py-1.5 text-sm border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors duration-200"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={handleNext}
+                  className="px-4 py-1.5 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200 font-medium"
+                >
+                  Continue
+                </button>
+              </>
+            )}
+            
+            {step === "review" && (
+              <>
+                <button 
+                  onClick={() => setStep("form")}
+                  className="px-4 py-1.5 text-sm border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors duration-200"
+                >
+                  Back
+                </button>
+                <button 
+                  onClick={handleConfirm}
+                  className="px-4 py-1.5 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-200 font-medium"
+                >
+                  Confirm & Save
+                </button>
+              </>
+            )}
+            
+            {step === "success" && (
+              <button 
+                onClick={handleClose}
+                className="px-4 py-1.5 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200 font-medium"
+              >
+                Close
+              </button>
+            )}
           </div>
-        )}
-
-        {/* Input field style */}
-        <style jsx>{`
-          .input-field {
-            padding: 0.75rem;
-            border-radius: 0.75rem;
-            border: 1px solid #CED4DA;
-            background-color: #FFF;
-            color: #212529;
-            outline: none;
-            transition: all 0.2s;
-          }
-          .input-field:focus {
-            border-color: #20C997;
-            box-shadow: 0 0 0 3px rgba(32,201,151,0.2);
-          }
-          .dark .input-field {
-            background-color: #2A2A2A;
-            border-color: #495057;
-            color: #DEE2E6;
-          }
-        `}</style>
+        </div>
       </div>
     </div>
   );

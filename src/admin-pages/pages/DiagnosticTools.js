@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Header from "../template/Header";
-import { Search, Brain, AlertTriangle, CheckCircle, X, Tag } from "lucide-react";
+import { Search, Brain, AlertTriangle, CheckCircle, X, Tag, HelpCircle } from "lucide-react";
 import SuccessToast from "../../template/SuccessToast";
 
 const DiagnosticTool = () => {
@@ -11,7 +11,6 @@ const DiagnosticTool = () => {
   const [toast, setToast] = useState(null);
   const [selectedQuickSymptoms, setSelectedQuickSymptoms] = useState([]);
 
-  // Sample diagnostic data - in real app, this would come from your ML model
   const sampleDiagnoses = [
     {
       id: 1,
@@ -49,7 +48,6 @@ const DiagnosticTool = () => {
     "Eye discharge", "Ear scratching", "Bad breath", "Pale gums"
   ];
 
-  // Parse symptoms from comma-separated input
   const getSymptomsArray = () => {
     return symptomsInput
       .split(',')
@@ -61,12 +59,10 @@ const DiagnosticTool = () => {
     const symptomsArray = getSymptomsArray();
     
     if (selectedQuickSymptoms.includes(symptom)) {
-      // Remove symptom
       const newSymptoms = symptomsArray.filter(s => s !== symptom);
       setSymptomsInput(newSymptoms.join(', '));
       setSelectedQuickSymptoms(prev => prev.filter(s => s !== symptom));
     } else {
-      // Add symptom
       const newSymptoms = [...symptomsArray, symptom];
       setSymptomsInput(newSymptoms.join(', '));
       setSelectedQuickSymptoms(prev => [...prev, symptom]);
@@ -77,7 +73,6 @@ const DiagnosticTool = () => {
     const value = e.target.value;
     setSymptomsInput(value);
     
-    // Update selected quick symptoms based on input
     const symptomsArray = value.split(',').map(s => s.trim()).filter(s => s);
     setSelectedQuickSymptoms(commonSymptoms.filter(symptom => 
       symptomsArray.includes(symptom)
@@ -98,13 +93,26 @@ const DiagnosticTool = () => {
 
     setLoading(true);
     
-    // Simulate API call to your ML model
+    // Simulate API call - randomly decide if we should show "no diagnosis"
     setTimeout(() => {
-      setDiagnosisResults({
-        inputSymptoms: symptomsArray,
-        possibleDiagnoses: sampleDiagnoses,
-        analysisNotes: `Analyzed ${symptomsArray.length} symptom(s) using multiple regression model.`
-      });
+      const shouldShowNoDiagnosis = Math.random() > 0.7; // 30% chance of no diagnosis
+      
+      if (shouldShowNoDiagnosis) {
+        setDiagnosisResults({
+          inputSymptoms: symptomsArray,
+          possibleDiagnoses: [], // Empty array means no diagnoses found
+          analysisNotes: `Analyzed ${symptomsArray.length} symptom(s) but found no matching diagnoses.`,
+          noDiagnosisFound: true
+        });
+      } else {
+        setDiagnosisResults({
+          inputSymptoms: symptomsArray,
+          possibleDiagnoses: sampleDiagnoses,
+          analysisNotes: `Analyzed ${symptomsArray.length} symptom(s) using multiple regression model.`,
+          noDiagnosisFound: false
+        });
+      }
+      
       setLoading(false);
       setToast({ type: "success", message: "Analysis complete! Review the results below." });
     }, 2000);
@@ -140,26 +148,21 @@ const DiagnosticTool = () => {
 
   return (
     <div className="flex flex-col h-screen bg-[#FBFBFB] font-sans">
-      {/* Fixed Header */}
       <div className="p-6 pb-0">
         <Header title="Diagnostic Tool" />
       </div>
 
-      {/* Scrollable Content */}
       <div className="flex-1 overflow-y-auto p-6 pt-4">
         <div className="max-w-7xl mx-auto">
-          {/* Main Content Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Left Column - Symptom Input */}
             <div className="lg:col-span-2">
-              {/* Symptom Input Card */}
               <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
                 <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
                   <Search className="w-5 h-5 text-blue-500" />
                   Enter Symptoms
                 </h3>
                 
-                {/* Main Input Area */}
                 <div className="space-y-4">
                   <div className="relative">
                     <textarea
@@ -179,7 +182,6 @@ const DiagnosticTool = () => {
                     )}
                   </div>
 
-                  {/* Selected Symptoms Preview */}
                   {symptomsArray.length > 0 && (
                     <div className="p-3 bg-blue-50 rounded-xl border border-blue-100">
                       <p className="text-xs text-blue-600 mb-2 font-medium">Symptoms entered:</p>
@@ -198,7 +200,6 @@ const DiagnosticTool = () => {
                   )}
                 </div>
 
-                {/* Quick Add Symptoms */}
                 <div className="mt-6">
                   <h4 className="text-sm font-medium text-gray-700 mb-3">
                     Quick Add Common Symptoms
@@ -223,7 +224,6 @@ const DiagnosticTool = () => {
                   </div>
                 </div>
 
-                {/* Action Buttons */}
                 <div className="flex gap-3 mt-6 pt-4 border-t border-gray-100">
                   <button
                     onClick={resetAnalysis}
@@ -254,7 +254,6 @@ const DiagnosticTool = () => {
 
             {/* Right Column - Information Panel */}
             <div className="space-y-6">
-              {/* How It Works Panel */}
               <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
                 <h3 className="text-lg font-semibold text-gray-800 mb-4">How It Works</h3>
                 
@@ -285,7 +284,7 @@ const DiagnosticTool = () => {
                     </div>
                     <div>
                       <h4 className="font-medium text-gray-800 text-sm">Review Results</h4>
-                      <p className="text-gray-600 text-xs mt-1">Get possible diagnoses with confidence scores.</p>
+                      <p className="text-gray-600 text-xs mt-1">Get possible diagnoses or recommendations.</p>
                     </div>
                   </div>
                 </div>
@@ -297,7 +296,6 @@ const DiagnosticTool = () => {
                 </div>
               </div>
 
-              {/* Current Symptoms Summary */}
               {symptomsArray.length > 0 && (
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
                   <h3 className="text-lg font-semibold text-gray-800 mb-3">Current Analysis</h3>
@@ -316,7 +314,7 @@ const DiagnosticTool = () => {
             </div>
           </div>
 
-          {/* Rest of the results sections remain the same */}
+          {/* Results Section */}
           {diagnosisResults && (
             <div className="mt-6">
               <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
@@ -334,129 +332,68 @@ const DiagnosticTool = () => {
                   </p>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {diagnosisResults.possibleDiagnoses.map((diagnosis) => (
-                    <div
-                      key={diagnosis.id}
-                      className={`p-4 rounded-xl border cursor-pointer transition-all ${
-                        selectedDiagnosis?.id === diagnosis.id
-                          ? "border-blue-500 bg-blue-50 shadow-sm"
-                          : "border-gray-200 hover:border-blue-300 hover:bg-blue-25"
-                      }`}
-                      onClick={() => setSelectedDiagnosis(diagnosis)}
-                    >
-                      <div className="flex justify-between items-start mb-2">
-                        <h4 className="font-semibold text-gray-800">{diagnosis.condition}</h4>
-                        <div className="flex items-center gap-2">
-                          <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getSeverityColor(diagnosis.severity)}`}>
-                            {diagnosis.severity}
-                          </span>
-                          <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getConfidenceColor(diagnosis.confidence)}`}>
-                            {diagnosis.confidence}%
-                          </span>
-                        </div>
-                      </div>
-                      
-                      <p className="text-sm text-gray-600 mb-3">{diagnosis.description}</p>
-                      
-                      <div className="mb-2">
-                        <span className="text-xs text-gray-500">Matching symptoms:</span>
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          {diagnosis.symptoms.map((symptom, idx) => (
-                            <span
-                              key={idx}
-                              className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full"
-                            >
-                              {symptom}
+                {/* No Diagnosis Found Message */}
+                {diagnosisResults.noDiagnosisFound ? (
+                  <div className="text-center py-8">
+                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <HelpCircle className="w-8 h-8 text-gray-400" />
+                    </div>
+                    <h4 className="text-lg font-semibold text-gray-800 mb-2">No Specific Diagnosis Found</h4>
+                    <p className="text-gray-600 max-w-md mx-auto mb-6">
+                      The symptoms you entered don't match any specific conditions in our database. 
+                      This could be due to uncommon symptom combinations or the need for additional clinical evaluation.
+                    </p>
+                  </div>
+                ) : (
+                  /* Regular Diagnosis Results */
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {diagnosisResults.possibleDiagnoses.map((diagnosis) => (
+                      <div
+                        key={diagnosis.id}
+                        className={`p-4 rounded-xl border cursor-pointer transition-all ${
+                          selectedDiagnosis?.id === diagnosis.id
+                            ? "border-blue-500 bg-blue-50 shadow-sm"
+                            : "border-gray-200 hover:border-blue-300 hover:bg-blue-25"
+                        }`}
+                        onClick={() => setSelectedDiagnosis(diagnosis)}
+                      >
+                        <div className="flex justify-between items-start mb-2">
+                          <h4 className="font-semibold text-gray-800">{diagnosis.condition}</h4>
+                          <div className="flex items-center gap-2">
+                            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getSeverityColor(diagnosis.severity)}`}>
+                              {diagnosis.severity}
                             </span>
-                          ))}
+                            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getConfidenceColor(diagnosis.confidence)}`}>
+                              {diagnosis.confidence}%
+                            </span>
+                          </div>
                         </div>
-                      </div>
-
-                      <p className="text-sm text-gray-700">
-                        <strong>Suggested Treatment:</strong> {diagnosis.treatment}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Selected Diagnosis Details */}
-          {selectedDiagnosis && (
-            <div className="mt-6">
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-                <div className="flex justify-between items-start mb-6">
-                  <h3 className="text-xl font-semibold text-gray-800">Diagnosis Details</h3>
-                  <button
-                    onClick={() => setSelectedDiagnosis(null)}
-                    className="text-gray-400 hover:text-gray-600 transition"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                  <div className="space-y-4">
-                    <div>
-                      <h4 className="font-semibold text-gray-700 text-sm mb-2">Condition</h4>
-                      <p className="text-gray-800 text-lg font-medium">{selectedDiagnosis.condition}</p>
-                    </div>
-
-                    <div>
-                      <h4 className="font-semibold text-gray-700 text-sm mb-2">Confidence Level</h4>
-                      <div className="flex items-center gap-3">
-                        <div className="flex-1 bg-gray-200 rounded-full h-2">
-                          <div
-                            className={`h-2 rounded-full ${
-                              selectedDiagnosis.confidence >= 80 ? "bg-green-500" :
-                              selectedDiagnosis.confidence >= 60 ? "bg-yellow-500" : "bg-red-500"
-                            }`}
-                            style={{ width: `${selectedDiagnosis.confidence}%` }}
-                          ></div>
+                        
+                        <p className="text-sm text-gray-600 mb-3">{diagnosis.description}</p>
+                        
+                        <div className="mb-2">
+                          <span className="text-xs text-gray-500">Matching symptoms:</span>
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {diagnosis.symptoms.map((symptom, idx) => (
+                              <span
+                                key={idx}
+                                className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full"
+                              >
+                                {symptom}
+                              </span>
+                            ))}
+                          </div>
                         </div>
-                        <span className={`text-sm font-semibold ${getConfidenceColor(selectedDiagnosis.confidence)} px-2 py-1 rounded-full`}>
-                          {selectedDiagnosis.confidence}%
-                        </span>
+
+                        <p className="text-sm text-gray-700">
+                          <strong>Suggested Treatment:</strong> {diagnosis.treatment}
+                        </p>
                       </div>
-                    </div>
-
-                    <div>
-                      <h4 className="font-semibold text-gray-700 text-sm mb-2">Severity</h4>
-                      <span className={`px-3 py-1 rounded-full text-sm font-semibold ${getSeverityColor(selectedDiagnosis.severity)}`}>
-                        {selectedDiagnosis.severity}
-                      </span>
-                    </div>
-
-                    <div>
-                      <h4 className="font-semibold text-gray-700 text-sm mb-2">Common Symptoms</h4>
-                      <div className="flex flex-wrap gap-1">
-                        {selectedDiagnosis.symptoms.map((symptom, idx) => (
-                          <span
-                            key={idx}
-                            className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full"
-                          >
-                            {symptom}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
+                    ))}
                   </div>
+                )}
 
-                  <div className="space-y-4">
-                    <div>
-                      <h4 className="font-semibold text-gray-700 text-sm mb-2">Description</h4>
-                      <p className="text-gray-600 text-sm leading-relaxed">{selectedDiagnosis.description}</p>
-                    </div>
-
-                    <div>
-                      <h4 className="font-semibold text-gray-700 text-sm mb-2">Recommended Treatment</h4>
-                      <p className="text-gray-600 text-sm leading-relaxed">{selectedDiagnosis.treatment}</p>
-                    </div>
-                  </div>
-                </div>
-
+                {/* Disclaimer */}
                 <div className="mt-6 p-4 bg-amber-50 rounded-xl border border-amber-100">
                   <div className="flex items-start gap-2">
                     <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
