@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-// import api from "../../api/axios";
+import api from "../../api/axios";
 import { motion } from "framer-motion";
 import Header from "../template/Header";
 import SideBar from "../template/SideBar";
@@ -12,74 +12,68 @@ function PetDetails() {
 
   const [pet, setPet] = useState(null);
   const [appointments, setAppointments] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [appointmentFilter, setAppointmentFilter] = useState("Upcoming");
   const [isMenuOpen, setIsMenuOpen] = useState(true);
   const [activeTab, setActiveTab] = useState("Appointments");
   const [showEditModal, setShowEditModal] = useState(false);
   
-  // Add these states for the modal
+  // Modal and toast states
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
 
-  // Update tabs to match Home.js
   const tabs = ["Appointments", "Medical Reports", "Lab Records"];
 
-  // Mock data for design
-  const mockPet = {
-    id: 1,
-    name: "Buddy",
-    breed: "Golden Retriever",
-    gender: "Male",
-    age: "3 yrs",
-    image: "/images/dog-profile.png",
-    weight: "25 kg",
-    lastCheck: "Jan 15, 2024"
+  const calculateAge = (dob) => {
+    const birth = new Date(dob);
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+    return age + " yrs";
   };
 
-  const mockAppointments = [
-    {
-      id: 1,
-      petName: "Buddy",
-      type: "Vaccination",
-      date: "Feb 15, 2024 - 10:00 AM",
-      status: "Upcoming",
-      notes: "Annual vaccination including rabies shot"
-    },
-    {
-      id: 2,
-      petName: "Buddy", 
-      type: "Check-up",
-      date: "Mar 20, 2024 - 02:30 PM",
-      status: "Pending",
-      notes: "Routine health check and dental examination"
-    },
-    {
-      id: 3,
-      petName: "Buddy",
-      type: "Grooming",
-      date: "Jan 10, 2024 - 09:00 AM",
-      status: "Done",
-      notes: "Full grooming session with nail trimming"
-    }
-  ];
-
   useEffect(() => {
-    setLoading(true);
-    setTimeout(() => {
-      setPet(mockPet);
-      setAppointments(mockAppointments);
-      setLoading(false);
-    }, 500);
+    const fetchPetData = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await api.get(`/pets/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const petData = res.data;
+
+        const mappedPet = {
+          id: petData.petID,
+          name: petData.petName,
+          breed: petData.breed,
+          gender: petData.petGender || "N/A",
+          age: calculateAge(petData.dateOfBirth),
+          image: petData.imageName || "/images/dog-profile.png",
+          weight: petData.weight_kg,
+          lastCheck: petData.lastCheck || "N/A",
+        };
+        setPet(mappedPet);
+
+        const mappedAppointments = (petData.appointments || []).map((appt) => ({
+          ...appt,
+          dateObj: new Date(appt.date)
+        }));
+        setAppointments(mappedAppointments);
+      } catch (err) {
+        console.error("❌ Failed to fetch pet details:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPetData();
   }, [id]);
 
   const filteredAppointments = appointments.filter((appt) =>
     appointmentFilter === "All" ? true : appt.status === appointmentFilter
   );
 
-  // Update handleViewDetails to use the modal
   const handleViewDetails = (appt) => {
     setSelectedAppointment(appt);
     setShowDetailsModal(true);
@@ -90,26 +84,39 @@ function PetDetails() {
     setSelectedAppointment(null);
   };
 
-const handleSaveChanges = () => {
-  setShowEditModal(false);
-  setToastMessage("Profile picture updated successfully!");
-  setShowSuccessToast(true);
-};
+  const handleSaveChanges = () => {
+    setShowEditModal(false);
+    setToastMessage("Profile picture updated successfully!");
+    setShowSuccessToast(true);
+  };
+
+  if (loading)
+    return (
+      <div className="flex items-center justify-center h-screen text-gray-500">
+        Loading pet details...
+      </div>
+    );
+
+  if (!pet)
+    return (
+      <div className="flex items-center justify-center h-screen text-red-500">
+        Pet not found.
+      </div>
+    );
 
   return (
     <div className={`font-sansation min-h-screen bg-[#FBFBFB] relative ${(showEditModal || showDetailsModal) ? 'overflow-hidden' : ''}`}>
-      {/* Main content with conditional z-index */}
       <div className={`${(showEditModal || showDetailsModal) ? 'blur-sm' : ''}`}>
         <Header setIsMenuOpen={setIsMenuOpen} />
         <div className="flex flex-row gap-5 px-5 sm:px-12 animate-fadeSlideUp">
-          <SideBar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} pets={[mockPet]} setShowModal={() => {}} />
+          <SideBar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} pets={[pet]} setShowModal={() => {}} />
 
           <div
             className={`transition-all duration-500 ease-in-out flex flex-col gap-6 rounded-xl p-5 w-full ${
               !isMenuOpen ? "md:w-full" : "md:w-[calc(100%-250px)]"
             }`}
           >
-            {/* Pet Header - Keep your existing design */}
+            {/* Pet Header */}
             <motion.div
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
@@ -118,30 +125,30 @@ const handleSaveChanges = () => {
               <div className="flex items-center gap-6">
                 <div className="relative">
                   <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-[#00B8D4] bg-gray-200 flex items-center justify-center">
-                    <img src={mockPet.image} alt={mockPet.name} className="w-full h-full object-cover" />
+                    <img src={pet.image} alt={pet.name} className="w-full h-full object-cover" />
                   </div>
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
-                    {mockPet.name}
+                    {pet.name}
                     <button onClick={() => setShowEditModal(true)} className="text-gray-400 hover:text-[#00B8D4] transition-all">
                       <i className="fa-solid fa-pen text-base"></i>
                     </button>
                   </h2>
                   <p className="text-gray-500 text-sm">
-                    {mockPet.breed} • {mockPet.gender} • {mockPet.age}
+                    {pet.breed} • {pet.gender} • {pet.age}
                   </p>
                 </div>
               </div>
               <div className="flex flex-wrap justify-center sm:justify-end gap-4 text-sm mt-4 sm:mt-0">
                 <div className="px-4 py-2 bg-[#FFF7E6] rounded-xl shadow-sm text-gray-700">
                   <i className="fa-solid fa-calendar-check text-[#00B8D4] mr-2"></i>
-                  Last Check: {mockPet.lastCheck}
+                  Last Check: {pet.lastCheck}
                 </div>
               </div>
             </motion.div>
 
-            {/* Updated Tabs Section to match Home.js design */}
+            {/* Tabs Section */}
             <div className="px-6 py-4 rounded-2xl bg-white shadow-lg flex flex-col h-[350px]">
               {/* Tab Headers */}
               <div className="font-semibold flex gap-6 border-b pb-3 mb-4">
@@ -189,20 +196,20 @@ const handleSaveChanges = () => {
                         >
                           <div className="flex flex-col items-center justify-center w-16 text-center bg-[#EFFFFF] rounded-lg py-2 border border-[#5EE6FE]/20 shadow-sm">
                             <span className="text-xs font-semibold text-[#5EE6FE] uppercase tracking-wide">
-                              {new Date(appt.date.split(' - ')[0]).toLocaleString("default", { month: "short" })}
+                              {appt.dateObj?.toLocaleString("default", { month: "short" })}
                             </span>
                             <span className="text-xl font-bold text-gray-800 leading-tight">
-                              {new Date(appt.date.split(' - ')[0]).getDate()}
+                              {appt.dateObj?.getDate()}
                             </span>
                             <span className="text-[10px] text-gray-500 capitalize">
-                              {new Date(appt.date.split(' - ')[0]).toLocaleString("default", { weekday: "short" })}
+                              {appt.dateObj?.toLocaleString("default", { weekday: "short" })}
                             </span>
                           </div>
 
                           <div className="flex justify-between items-center flex-1 ml-4">
                             <div>
                               <p className="font-semibold text-gray-800">
-                                {appt.petName} — {appt.type}
+                                {pet.name} — {appt.type}
                               </p>
                               <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
                                 <i className="fa-solid fa-clock text-[#5EE6FE]"></i>
@@ -226,14 +233,14 @@ const handleSaveChanges = () => {
 
                 {activeTab === "Medical Reports" && (
                   <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {[1, 2].map((item) => (
+                    {(pet.medicalReports || []).map((report, index) => (
                       <div
-                        key={item}
+                        key={index}
                         className="rounded-2xl bg-[#FFF8F9] p-5 shadow-sm border border-[#F3D6D8] flex flex-col justify-between"
                       >
                         <div>
-                          <h3 className="text-lg font-semibold text-gray-700">Vaccination Record</h3>
-                          <p className="text-gray-500 text-sm mt-1">April 5, 2025</p>
+                          <h3 className="text-lg font-semibold text-gray-700">{report.title}</h3>
+                          <p className="text-gray-500 text-sm mt-1">{report.date}</p>
                         </div>
                         <button className="mt-4 bg-[#FFB6C1] text-white px-3 py-2 rounded-lg hover:bg-[#FF9FB0] transition-all">
                           Download PDF
@@ -245,14 +252,14 @@ const handleSaveChanges = () => {
 
                 {activeTab === "Lab Records" && (
                   <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {[1, 2, 3].map((item) => (
+                    {(pet.labRecords || []).map((record, index) => (
                       <div
-                        key={item}
+                        key={index}
                         className="rounded-2xl bg-[#E3FAF7] p-5 shadow-sm border border-[#A6E3E9] flex flex-col justify-between"
                       >
                         <div>
-                          <h3 className="text-lg font-semibold text-gray-700">Blood Test Results</h3>
-                          <p className="text-gray-500 text-sm mt-1">March 15, 2024</p>
+                          <h3 className="text-lg font-semibold text-gray-700">{record.title}</h3>
+                          <p className="text-gray-500 text-sm mt-1">{record.date}</p>
                         </div>
                         <button className="mt-4 bg-[#5EE6FE] text-white px-3 py-2 rounded-lg hover:bg-[#3ecbe0] transition-all">
                           View Report
@@ -296,8 +303,8 @@ const handleSaveChanges = () => {
                 <div className="relative">
                   <div className="w-20 h-20 rounded-full overflow-hidden border-3 border-[#00B8D4] bg-gray-200 flex items-center justify-center mb-3">
                     <img 
-                      src={mockPet.image} 
-                      alt={mockPet.name} 
+                      src={pet.image} 
+                      alt={pet.name} 
                       className="w-full h-full object-cover"
                       id="pet-profile-image"
                     />
@@ -332,28 +339,27 @@ const handleSaveChanges = () => {
               <div className="space-y-3 mb-4">
                 <div className="border border-gray-200 rounded-lg p-2 bg-gray-50">
                   <label className="text-xs text-gray-500 block mb-1">Pet Name</label>
-                  <p className="text-sm text-gray-800 font-medium">{mockPet.name}</p>
+                  <p className="text-sm text-gray-800 font-medium">{pet.name}</p>
                 </div>
                 
                 <div className="border border-gray-200 rounded-lg p-2 bg-gray-50">
                   <label className="text-xs text-gray-500 block mb-1">Breed</label>
-                  <p className="text-sm text-gray-800 font-medium">{mockPet.breed}</p>
+                  <p className="text-sm text-gray-800 font-medium">{pet.breed}</p>
                 </div>
                 
                 <div className="grid grid-cols-2 gap-2">
                   <div className="border border-gray-200 rounded-lg p-2 bg-gray-50">
                     <label className="text-xs text-gray-500 block mb-1">Age</label>
-                    <p className="text-sm text-gray-800 font-medium">{mockPet.age}</p>
+                    <p className="text-sm text-gray-800 font-medium">{pet.age}</p>
                   </div>
                   
                   <div className="border border-gray-200 rounded-lg p-2 bg-gray-50">
                     <label className="text-xs text-gray-500 block mb-1">Gender</label>
-                    <p className="text-sm text-gray-800 font-medium">{mockPet.gender}</p>
+                    <p className="text-sm text-gray-800 font-medium">{pet.gender}</p>
                   </div>
                 </div>
               </div>
 
-              {/* Action Buttons */}
               <div className="flex gap-2">
                 <button 
                   onClick={() => setShowEditModal(false)}
@@ -369,7 +375,6 @@ const handleSaveChanges = () => {
                 </button>
               </div>
 
-              {/* Note */}
               <p className="text-xs text-gray-400 text-center mt-3">
                 Contact support to update pet information
               </p>

@@ -93,7 +93,7 @@ function SideBar({ isMenuOpen, setIsMenuOpen }) {
                   pets.map((pet) => (
                     <div
                       key={pet.id}
-                      onClick={() => navigate(`/pet`)}
+                      onClick={() => navigate(`/pet/${pet.id}`)}
                       className="flex flex-col items-center flex-shrink-0 cursor-pointer group"
                     >
                       <div className="w-16 h-16 rounded-full p-[3px] bg-gradient-to-br from-[#A7E9E3] via-[#FDE2E4] to-[#FFF5E4] shadow-sm hover:scale-110 transition-all duration-300">
