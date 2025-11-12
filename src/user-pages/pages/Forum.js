@@ -176,7 +176,7 @@ function Forum() {
           if (i.id.startsWith("img-") && i.url){
             URL.revokeObjectURL(i.url);
           } else {
-            removedImages.push(i.id);
+            //removedImages.push(i.id);
           }
         } else {
           newImages.push(i);

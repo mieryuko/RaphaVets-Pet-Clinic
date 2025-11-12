@@ -15,7 +15,6 @@ function SideBar({ isMenuOpen, setIsMenuOpen }) {
     const fetchPets = async () => {
       const token = localStorage.getItem("token");
       console.log("Token being sent:", token); // <-- log token
-
       if (!token) return;
 
       try {
@@ -30,6 +29,7 @@ function SideBar({ isMenuOpen, setIsMenuOpen }) {
     };
 
     fetchPets();
+
   }, []);
   
 
@@ -102,7 +102,6 @@ function SideBar({ isMenuOpen, setIsMenuOpen }) {
                       <div className="w-16 h-16 rounded-full p-[3px] bg-gradient-to-br from-[#A7E9E3] via-[#FDE2E4] to-[#FFF5E4] shadow-sm hover:scale-110 transition-all duration-300">
                         <div className="w-full h-full rounded-full overflow-hidden bg-[#FDFEFF] flex items-center justify-center border border-[#C9EAF2]">
                           <img
-                          
                             src={`http://localhost:5000${pet.image}`}
                             alt={pet.name}
                             className="w-full h-full object-cover"

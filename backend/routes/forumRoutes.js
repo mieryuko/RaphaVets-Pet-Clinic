@@ -18,7 +18,7 @@ router.put('/:id', verifyToken, upload.array('image', 5), updatePost);
 router.delete('/:id', verifyToken, deletePost);
 
 router.get('/images/:filename', (req, res) => {
-    const filename = req.params.filename;
+    const filename = decodeURIComponent(req.params.filename);
     const imagePath = path.join(process.cwd(), '..', 'uploads/forum', filename);
     res.sendFile(imagePath, err => {
         if (err) {
