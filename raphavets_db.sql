@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Nov 11, 2025 at 11:52 AM
+-- Generation Time: Nov 12, 2025 at 11:31 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -47,7 +47,7 @@ CREATE TABLE `account_tbl` (
 --
 
 INSERT INTO `account_tbl` (`accId`, `roleID`, `firstName`, `lastName`, `email`, `password`, `createdAt`, `lastUpdatedAt`, `passwordChangeAt`, `logInAt`, `logOutAt`, `isDeleted`) VALUES
-(2, 1, 'Mark', 'Mapiliiiiiiiiiiiii', 'markmapili28@gmail.com', '$2b$10$NNG154DuvS/ST/lInE1Pp.XyhniL6YtSE.3UaiAv6/OvON5uMi3MC', '0000-00-00 00:00:00', '2025-11-09 19:26:19', '2025-11-09 12:21:30', '2025-11-09 19:26:19', '2025-11-09 19:26:09', 0),
+(2, 1, 'Mark', 'Mapiliiiiiiiiiiiii', 'markmapili28@gmail.com', '$2b$10$NNG154DuvS/ST/lInE1Pp.XyhniL6YtSE.3UaiAv6/OvON5uMi3MC', '0000-00-00 00:00:00', '2025-11-12 13:35:10', '2025-11-09 12:21:30', '2025-11-12 13:35:10', '2025-11-09 19:26:09', 0),
 (3, 2, 'Fionah Irish', 'Beltran', 'soupcuppy@gmail.com', '$2b$10$l/lPrlJ8Vho/LyqoOiq2sOlSSrZ1t.atCEgMaxBBOW05jri/FfwIS', '0000-00-00 00:00:00', '0000-00-00 00:00:00', '2025-11-09 12:21:30', '2025-11-09 12:20:21', '2025-11-09 12:20:21', 0),
 (5, 2, 'mark', 'mapili', 'markmapili72@gmail.com', '$2b$10$LMTrRhOAEKAweVGBy1NXQeGCWEzgN2d5WueonGDiRibvDGER08YVe', '0000-00-00 00:00:00', '2025-11-09 15:38:36', '2025-11-09 12:21:30', '2025-11-09 15:38:36', '2025-11-09 12:20:21', 0);
 
@@ -158,8 +158,34 @@ INSERT INTO `clientinfo_tbl` (`cliendInfoId`, `accId`, `address`, `contactNo`) V
 CREATE TABLE `forum_images_tbl` (
   `forumImageID` int(11) NOT NULL,
   `forumID` int(11) NOT NULL,
-  `imageName` varchar(255) NOT NULL
+  `imageName` varchar(255) NOT NULL,
+  `isDeleted` tinyint(1) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `forum_images_tbl`
+--
+
+INSERT INTO `forum_images_tbl` (`forumImageID`, `forumID`, `imageName`, `isDeleted`) VALUES
+(1, 2, 'image-1762858826305-982065420.jpg', 1),
+(2, 2, 'image-1762858826306-797215708.jpg', 1),
+(3, 3, 'image-1762858962364-675993991.jpeg', 1),
+(4, 4, 'image-1762860491543-336551134.png', 1),
+(5, 5, 'image-1762878564919-596408155.png', 1),
+(6, 6, 'image-1762878779749-771930796.jpeg', 1),
+(7, 7, 'image-1762878817463-839407871.png', 1),
+(8, 8, 'image-1762878922606-295985859.png', 1),
+(9, 9, 'image-1762880202374-527291952.jpeg', 1),
+(10, 10, 'image-1762880881486-33113444.jpeg', 1),
+(11, 11, 'image-1762881267978-109360591.jpeg', 1),
+(12, 12, 'image-1762883343023-809445452.jpeg', 1),
+(13, 13, 'image-1762888235903-34065093.png', 1),
+(14, 13, 'image-1762890147093-869791497.png', 1),
+(15, 14, 'image-1762890257174-434927200.png', 1),
+(16, 14, 'image-1762890268841-638899812.jpeg', 1),
+(17, 15, 'image-1762918604217-159052591.jpeg', 0),
+(18, 15, 'image-1762920116768-235807608.png', 0),
+(19, 15, 'image-1762920189690-705852010.png', 0);
 
 -- --------------------------------------------------------
 
@@ -175,10 +201,30 @@ CREATE TABLE `forum_posts_tbl` (
   `contact` varchar(13) NOT NULL,
   `email` varchar(255) NOT NULL,
   `createdAt` datetime NOT NULL DEFAULT current_timestamp(),
-  `lastUpdatedAt` datetime NOT NULL,
+  `lastUpdatedAt` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `isAnonymous` tinyint(1) NOT NULL,
   `isDeleted` tinyint(1) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `forum_posts_tbl`
+--
+
+INSERT INTO `forum_posts_tbl` (`forumID`, `accID`, `postType`, `description`, `contact`, `email`, `createdAt`, `lastUpdatedAt`, `isAnonymous`, `isDeleted`) VALUES
+(2, 2, 'Found', 'Hi Syug', '', 'cont@c.tin', '2025-11-11 19:00:26', '2025-11-12 00:46:46', 0, 1),
+(3, 2, 'Found', 'Mark as Found Test 1', '', 'cont@c.tmo', '2025-11-11 19:02:42', '2025-11-12 00:53:41', 0, 1),
+(4, 2, 'Found', 'Edit Timestamp check', '', 'timest@mp.check', '2025-11-11 19:28:11', '2025-11-12 00:53:51', 0, 1),
+(5, 2, 'Found', 'sada', '', 'cont@c.tc', '2025-11-12 00:29:25', '2025-11-12 00:53:57', 0, 1),
+(6, 2, 'Found', 'kupal', '09193344512', '', '2025-11-12 00:32:59', '2025-11-12 00:54:00', 0, 1),
+(7, 2, 'Found', 'Hell Yeahh', '', 'cont@ct.me', '2025-11-12 00:33:37', '2025-11-12 00:56:52', 0, 1),
+(8, 2, 'Lost', 'I am lost, trying to get found in an ocean of... People', '', 'cont@ct.me', '2025-11-12 00:35:22', '2025-11-12 00:56:58', 0, 1),
+(9, 2, 'Found', 'tubol sa daan', '', 'cont@ct.me', '2025-11-12 00:56:42', '2025-11-12 01:05:01', 0, 1),
+(10, 2, 'Lost', 'Ekis', '', 'cont@ct.me', '2025-11-12 01:08:01', '2025-11-12 01:14:36', 0, 1),
+(11, 2, 'Lost', 'dikoalam', '', 'c@t.me', '2025-11-12 01:14:28', '2025-11-12 01:14:45', 0, 1),
+(12, 2, 'Lost', 'Descriptive yarn', '', 'c@t.meow', '2025-11-12 01:49:03', '2025-11-12 01:49:15', 0, 1),
+(13, 2, 'Lost', 'Louvre', '09021920987', 'contact@me.com', '2025-11-12 03:10:35', '2025-11-12 03:43:43', 1, 1),
+(14, 2, 'Lost', 'Ihh ang bangis', '', 'cont@ct.me', '2025-11-12 03:44:17', '2025-11-12 11:35:31', 0, 1),
+(15, 2, 'Lost', 'bin', '', 'cont@ct.me', '2025-11-12 11:36:44', '2025-11-12 12:03:09', 1, 0);
 
 -- --------------------------------------------------------
 
@@ -218,7 +264,7 @@ CREATE TABLE `pet_tbl` (
 
 INSERT INTO `pet_tbl` (`petID`, `accID`, `petName`, `petGender`, `breedID`, `dateOfBirth`, `weight_kg`, `imageName`, `createdAt`, `lastUpdatedAt`, `isDeleted`) VALUES
 (1, 2, 'Mark', 'Male', 1, '2025-11-04', 14.00, 'dsad', '2025-11-09 15:58:25', '2025-11-11 15:22:28', 0),
-(2, 2, 'gaga', 'Male', 1, '2025-11-04', 13.00, 'dsad', '2025-11-09 18:22:51', '2025-11-11 15:22:28', 0);
+(2, 2, 'gaga', 'Male', 1, '2025-11-04', 13.00, 'petImage-1762919509884-349785887.png', '2025-11-09 18:22:51', '2025-11-12 11:51:49', 0);
 
 -- --------------------------------------------------------
 
@@ -486,13 +532,13 @@ ALTER TABLE `clientinfo_tbl`
 -- AUTO_INCREMENT for table `forum_images_tbl`
 --
 ALTER TABLE `forum_images_tbl`
-  MODIFY `forumImageID` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `forumImageID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT for table `forum_posts_tbl`
 --
 ALTER TABLE `forum_posts_tbl`
-  MODIFY `forumID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `forumID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT for table `pet_tbl`
