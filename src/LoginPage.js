@@ -692,7 +692,7 @@ function LoginPage() {
                 </div>
               </div>
 
-              <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+              {/* <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
                 <h5 className="font-semibold text-gray-700 text-sm mb-2">Available Services Include:</h5>
                 <ul className="text-gray-600 text-sm space-y-1">
                   <li>• Consultation & Check-ups</li>
@@ -701,7 +701,7 @@ function LoginPage() {
                   <li>• Dental Procedures</li>
                   <li>• And many more...</li>
                 </ul>
-              </div>
+              </div> */}
             </div>
 
             {/* Footer */}

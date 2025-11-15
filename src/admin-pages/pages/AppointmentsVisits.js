@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { format, isSameDay, parseISO, addMonths, subMonths } from "date-fns";
 import Header from "../template/Header";
-import { PlusCircle, Edit2, Trash2, Eye, Search, Plus } from "lucide-react";
+import { PlusCircle, Edit2, Trash2, Eye, Search, Plus, Calendar, Stethoscope } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import AppointmentRequestModal from "../components/appointments/AppointmentRequestModal";
@@ -14,18 +14,27 @@ const currentYear = new Date().getFullYear();
 const currentMonth = String(new Date().getMonth() + 1).padStart(2, "0");
 
 const sampleAppointments = [
-  { id: 1, petName: "Bogart", owner: "Mark Mapili", date: `${currentYear}-${currentMonth}-10`, time: "9:00 AM", status: "Completed" },
-  { id: 2, petName: "Tan tan", owner: "Miguel Rojero", date: `${currentYear}-${currentMonth}-12`, time: "11:30 AM", status: "Pending" },
-  { id: 3, petName: "Ming", owner: "Jordan Frando", date: `${currentYear}-${currentMonth}-15`, time: "1:00 PM", status: "Upcoming" },
-  { id: 4, petName: "Rocky", owner: "Anna Cruz", date: `${currentYear}-${currentMonth}-16`, time: "3:00 PM", status: "Pending" },
-  { id: 5, petName: "Snow", owner: "Ella Santos", date: `${currentYear}-${currentMonth}-18`, time: "10:00 AM", status: "Completed" },
-  { id: 6, petName: "Snow", owner: "Ella Santos", date: `${currentYear}-${currentMonth}-18`, time: "10:00 AM", status: "Pending" },
-  { id: 7, petName: "Snow", owner: "Ella Santos", date: `${currentYear}-${currentMonth}-18`, time: "10:00 AM", status: "Pending" },
-  { id: 8, petName: "Snow", owner: "Ella Santos", date: `${currentYear}-${currentMonth}-18`, time: "10:00 AM", status: "Pending" },
-  { id: 9, petName: "Snow", owner: "Ella Santos", date: `${currentYear}-${currentMonth}-18`, time: "10:00 AM", status: "Completed" },
-  { id: 10, petName: "Snow", owner: "Ella Santos", date: `${currentYear}-${currentMonth}-18`, time: "10:00 AM", status: "Pending" },
-  { id: 11, petName: "Snow", owner: "Ella Santos", date: `${currentYear}-${currentMonth}-18`, time: "10:00 AM", status: "Upcoming" },
-  { id: 12, petName: "Snow", owner: "Ella Santos", date: `${currentYear}-${currentMonth}-18`, time: "10:00 AM", status: "Pending" },
+  { id: 1, petName: "Bogart", owner: "Mark Mapili", date: `${currentYear}-${currentMonth}-10`, time: "9:00 AM", status: "Completed", visitType: "Scheduled" },
+  { id: 2, petName: "Tan tan", owner: "Miguel Rojero", date: `${currentYear}-${currentMonth}-12`, time: "11:30 AM", status: "Pending", visitType: "Scheduled" },
+  { id: 3, petName: "Ming", owner: "Jordan Frando", date: `${currentYear}-${currentMonth}-15`, time: "1:00 PM", status: "Upcoming", visitType: "Scheduled" },
+  { id: 4, petName: "Rocky", owner: "Anna Cruz", date: `${currentYear}-${currentMonth}-16`, time: "3:00 PM", status: "Pending", visitType: "Scheduled" },
+  { id: 5, petName: "Snow", owner: "Ella Santos", date: `${currentYear}-${currentMonth}-18`, time: "10:00 AM", status: "Completed", visitType: "Scheduled" },
+  { id: 6, petName: "Snow", owner: "Ella Santos", date: `${currentYear}-${currentMonth}-18`, time: "10:00 AM", status: "Pending", visitType: "Scheduled" },
+  { id: 7, petName: "Snow", owner: "Ella Santos", date: `${currentYear}-${currentMonth}-18`, time: "10:00 AM", status: "Pending", visitType: "Scheduled" },
+  { id: 8, petName: "Snow", owner: "Ella Santos", date: `${currentYear}-${currentMonth}-18`, time: "10:00 AM", status: "Pending", visitType: "Scheduled" },
+  { id: 9, petName: "Snow", owner: "Ella Santos", date: `${currentYear}-${currentMonth}-18`, time: "10:00 AM", status: "Completed", visitType: "Scheduled" },
+  { id: 10, petName: "Snow", owner: "Ella Santos", date: `${currentYear}-${currentMonth}-18`, time: "10:00 AM", status: "Pending", visitType: "Scheduled" },
+  { id: 11, petName: "Snow", owner: "Ella Santos", date: `${currentYear}-${currentMonth}-18`, time: "10:00 AM", status: "Upcoming", visitType: "Scheduled" },
+  { id: 12, petName: "Snow", owner: "Ella Santos", date: `${currentYear}-${currentMonth}-18`, time: "10:00 AM", status: "Pending", visitType: "Scheduled" },
+];
+
+// Add sample visits data
+const sampleVisits = [
+  { id: 101, petName: "Miguel", owner: "Emily Sicat", date: `${currentYear}-${currentMonth}-10`, time: "9:30 AM", visitType: "Scheduled", status: "Completed" },
+  { id: 102, petName: "Mark", owner: "Jerom Bulatao", date: `${currentYear}-${currentMonth}-11`, time: "2:15 PM", visitType: "Walk-in", status: "Completed" },
+  { id: 103, petName: "Jade", owner: "Fionah Irish", date: `${currentYear}-${currentMonth}-12`, time: "11:00 AM", visitType: "Scheduled", status: "Completed" },
+  { id: 104, petName: "Vanerie", owner: "Mark Mapili", date: `${currentYear}-${currentMonth}-13`, time: "3:45 PM", visitType: "Walk-in", status: "Completed" },
+  { id: 105, petName: "Ashley", owner: "Tadifa", date: `${currentYear}-${currentMonth}-14`, time: "10:30 AM", visitType: "Scheduled", status: "Completed" },
 ];
 
 const statusColors = {
@@ -35,21 +44,30 @@ const statusColors = {
   Cancelled: "bg-red-300 text-red-800",
 };
 
-const Appointments = () => {
+const visitTypeColors = {
+  Scheduled: "bg-blue-100 text-blue-800 border border-blue-200",
+  "Walk-in": "bg-purple-100 text-purple-800 border border-purple-200",
+};
+
+const AppointmentsVisits = () => {
   const [activeTab, setActiveTab] = useState("Calendar");
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [appointments, setAppointments] = useState(sampleAppointments);
+  const [visits, setVisits] = useState(sampleVisits);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [visitTypeFilter, setVisitTypeFilter] = useState("All");
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   
   const [selectedAppointments, setSelectedAppointments] = useState([]);
+  const [selectedVisits, setSelectedVisits] = useState([]);
   const [isSelectMode, setIsSelectMode] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [appointmentToDelete, setAppointmentToDelete] = useState(null);
+  const [visitToDelete, setVisitToDelete] = useState(null);
   const [toast, setToast] = useState(null);
 
   const [showCancelModal, setShowCancelModal] = useState(false);
@@ -66,18 +84,26 @@ const Appointments = () => {
     );
   });
 
+  const filteredVisits = visits.filter(visit => {
+    if (visitTypeFilter !== "All" && visit.visitType !== visitTypeFilter)
+      return false;
+    return (
+      visit.petName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      visit.owner.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  });
+
   const handleViewRequest = (appointment) => {
     setSelectedAppointment(appointment);
     setIsModalOpen(true);
   };
 
-  const handleUpdateStatus = (appointmentId, newStatus, cancelReason = "") => {
+  const handleUpdateStatus = (appointmentId, newStatus) => {
     try {
       setAppointments(prev => prev.map(app => 
         app.id === appointmentId ? { 
           ...app, 
-          status: newStatus,
-          ...(cancelReason && { cancelReason })
+          status: newStatus
         } : app
       ));
       return true;
@@ -95,6 +121,7 @@ const Appointments = () => {
   const toggleSelectMode = () => {
     setIsSelectMode(!isSelectMode);
     setSelectedAppointments([]);
+    setSelectedVisits([]);
   };
 
   const toggleAppointmentSelection = (appointmentId) => {
@@ -105,27 +132,57 @@ const Appointments = () => {
     );
   };
 
+  const toggleVisitSelection = (visitId) => {
+    setSelectedVisits(prev =>
+      prev.includes(visitId)
+        ? prev.filter(id => id !== visitId)
+        : [...prev, visitId]
+    );
+  };
+
   const toggleSelectAll = () => {
-    if (selectedAppointments.length === filteredAppointments.length && filteredAppointments.length > 0) {
-      setSelectedAppointments([]);
-    } else {
-      setSelectedAppointments(filteredAppointments.map(app => app.id));
+    if (activeTab === "Appointments") {
+      if (selectedAppointments.length === filteredAppointments.length && filteredAppointments.length > 0) {
+        setSelectedAppointments([]);
+      } else {
+        setSelectedAppointments(filteredAppointments.map(app => app.id));
+      }
+    } else if (activeTab === "Visits") {
+      if (selectedVisits.length === filteredVisits.length && filteredVisits.length > 0) {
+        setSelectedVisits([]);
+      } else {
+        setSelectedVisits(filteredVisits.map(visit => visit.id));
+      }
     }
   };
 
-  const handleSingleDelete = (appointment) => {
-    setAppointmentToDelete([appointment]);
-    setShowDeleteModal(true);
+  const handleSingleDelete = (item) => {
+    if (activeTab === "Appointments") {
+      setAppointmentToDelete([item]);
+      setShowDeleteModal(true);
+    } else if (activeTab === "Visits") {
+      setVisitToDelete([item]);
+      setShowDeleteModal(true);
+    }
   };
 
   const handleBulkDelete = () => {
-    if (selectedAppointments.length === 0) return;
+    if (activeTab === "Appointments" && selectedAppointments.length === 0) return;
+    if (activeTab === "Visits" && selectedVisits.length === 0) return;
     
-    const appointmentsToDelete = filteredAppointments.filter(app => 
-      selectedAppointments.includes(app.id)
-    );
-    setAppointmentToDelete(appointmentsToDelete);
-    setShowDeleteModal(true);
+    if (activeTab === "Appointments") {
+      const appointmentsToDelete = filteredAppointments.filter(app => 
+        selectedAppointments.includes(app.id)
+      );
+      setAppointmentToDelete(appointmentsToDelete);
+      setShowDeleteModal(true);
+    } else if (activeTab === "Visits") {
+      const visitsToDelete = filteredVisits.filter(visit => 
+        selectedVisits.includes(visit.id)
+      );
+      setVisitToDelete(visitsToDelete);
+      setShowDeleteModal(true);
+    }
   };
 
   const handleBulkStatusUpdate = (newStatus) => {
@@ -143,14 +200,10 @@ const Appointments = () => {
     }
   };
 
-  const updateAppointmentsStatus = (newStatus, cancelReasons = {}) => {
+  const updateAppointmentsStatus = (newStatus) => {
     setAppointments(prev => prev.map(app => 
       selectedAppointments.includes(app.id) 
-        ? { 
-            ...app, 
-            status: newStatus,
-            ...(cancelReasons[app.id] && { cancelReason: cancelReasons[app.id] })
-          } 
+        ? { ...app, status: newStatus } 
         : app
     ));
 
@@ -165,24 +218,26 @@ const Appointments = () => {
 
   const [pendingBulkStatus, setPendingBulkStatus] = useState(null);
 
-  const confirmCancellation = (cancelReason) => {
+  const confirmCancellation = () => {
     if (appointmentToCancel) {
       if (Array.isArray(appointmentToCancel)) {
         // Bulk cancellation
-        const cancelReasons = {};
-        appointmentToCancel.forEach(app => {
-          cancelReasons[app.id] = cancelReason;
-        });
-        updateAppointmentsStatus("Cancelled", cancelReasons);
+        setAppointments(prev => prev.map(app => 
+          selectedAppointments.includes(app.id) 
+            ? { ...app, status: "Cancelled" } 
+            : app
+        ));
+        setToast({ type: "success", message: `${appointmentToCancel.length} appointments cancelled successfully!` });
       } else {
         // Single cancellation
-        handleUpdateStatus(appointmentToCancel.id, "Cancelled", cancelReason);
+        handleUpdateStatus(appointmentToCancel.id, "Cancelled");
         setToast({ type: "success", message: "Appointment cancelled successfully!" });
       }
     }
     setShowCancelModal(false);
     setAppointmentToCancel(null);
-    setPendingBulkStatus(null);
+    setSelectedAppointments([]);
+    setIsSelectMode(false);
   };
 
   const confirmDelete = () => {
@@ -201,8 +256,26 @@ const Appointments = () => {
       setSelectedAppointments([]);
       setIsSelectMode(false);
     }
+    
+    if (visitToDelete) {
+      const idsToDelete = Array.isArray(visitToDelete) 
+        ? visitToDelete.map(visit => visit.id)
+        : [visitToDelete.id];
+      
+      setVisits(prev => prev.filter(visit => !idsToDelete.includes(visit.id)));
+      
+      const message = idsToDelete.length === 1 
+        ? "Visit deleted successfully!"
+        : `${idsToDelete.length} visits deleted successfully!`;
+      
+      setToast({ type: "success", message });
+      setSelectedVisits([]);
+      setIsSelectMode(false);
+    }
+    
     setShowDeleteModal(false);
     setAppointmentToDelete(null);
+    setVisitToDelete(null);
   };
 
   const handleToastClose = () => {
@@ -229,6 +302,19 @@ const Appointments = () => {
   }
 
   const dayAppointments = appointments.filter(a => isSameDay(parseISO(a.date), selectedDate));
+  const dayVisits = visits.filter(v => isSameDay(parseISO(v.date), selectedDate));
+
+  const getSelectedCount = () => {
+    if (activeTab === "Appointments") return selectedAppointments.length;
+    if (activeTab === "Visits") return selectedVisits.length;
+    return 0;
+  };
+
+  const getFilteredData = () => {
+    if (activeTab === "Appointments") return filteredAppointments;
+    if (activeTab === "Visits") return filteredVisits;
+    return [];
+  };
 
   return (
     <div className="flex flex-col h-screen bg-[#FBFBFB] p-6 font-sans">
@@ -303,9 +389,11 @@ const Appointments = () => {
                   }
 
                   const dayApps = appointments.filter(a => isSameDay(parseISO(a.date), day));
+                  const dayVisits = visits.filter(v => isSameDay(parseISO(v.date), day));
+                  const totalEvents = [...dayApps, ...dayVisits];
                   const isSelected = isSameDay(day, selectedDate);
                   const isToday = isSameDay(day, new Date());
-                  const hasManyAppointments = dayApps.length >= 4;
+                  const hasManyEvents = totalEvents.length >= 4;
 
                   return (
                     <div
@@ -325,21 +413,25 @@ const Appointments = () => {
                         {format(day, "d")}
                       </span>
                       <div className="flex flex-wrap justify-center mt-1 gap-1 w-full">
-                        {dayApps.slice(0, hasManyAppointments ? 6 : 4).map((a, idx) => (
+                        {totalEvents.slice(0, hasManyEvents ? 6 : 4).map((event, idx) => (
                           <span
                             key={idx}
                             className={`rounded-full border border-white shadow-sm ${
-                              hasManyAppointments 
-                                ? "h-2 w-2"  // Smaller dots for 4+ appointments
-                                : "h-3 w-3"  // Normal size for 1-3 appointments
-                            } ${statusColors[a.status]}`}
-                            title={`${a.petName} - ${a.status}`}
+                              hasManyEvents 
+                                ? "h-2 w-2"  // Smaller dots for 4+ events
+                                : "h-3 w-3"  // Normal size for 1-3 events
+                            } ${
+                              'status' in event ? statusColors[event.status] : 
+                              'visitType' in event ? visitTypeColors[event.visitType] : 
+                              'bg-gray-400'
+                            }`}
+                            title={`${event.petName} - ${'status' in event ? event.status : event.visitType}`}
                           />
                         ))}
-                        {hasManyAppointments && dayApps.length > 6 && (
+                        {hasManyEvents && totalEvents.length > 6 && (
                           <span 
                             className="h-2 w-2 bg-gray-400 rounded-full border border-white"
-                            title={`+${dayApps.length - 6} more appointments`}
+                            title={`+${totalEvents.length - 6} more events`}
                           />
                         )}
                       </div>
@@ -350,36 +442,55 @@ const Appointments = () => {
             </div>
           </div>
 
-          {/* Right Panel - remains the same */}
+          {/* Right Panel */}
           <div className="w-2/5 flex flex-col gap-4">
             <div className="bg-gradient-to-br from-[#F9FEFF] to-[#EAFBFF] rounded-3xl p-5 shadow-md border border-[#E1F8FF] flex flex-col gap-4 h-full">
               <h3 className="font-semibold text-base text-gray-700">
-                Appointments on {format(selectedDate, "MMMM d, yyyy")}
+                Events on {format(selectedDate, "MMMM d, yyyy")}
               </h3>
 
               <div className="flex flex-col gap-3 overflow-y-auto">
-                {dayAppointments.length === 0 ? (
+                {dayAppointments.length === 0 && dayVisits.length === 0 ? (
                   <p className="text-gray-400 text-center mt-4 text-sm">
-                    No appointments for this day.
+                    No events for this day.
                   </p>
                 ) : (
-                  dayAppointments.map(a => (
-                    <div
-                      key={a.id}
-                      className="p-4 rounded-2xl bg-white shadow-sm border border-[#E6F7FA] hover:shadow-md transition-transform transform hover:scale-[1.02] flex justify-between items-center"
-                    >
-                      <div className="flex flex-col">
-                        <p className="font-semibold text-gray-700 text-sm">{a.petName}</p>
-                        <p className="text-gray-500 text-xs">Owner: {a.owner}</p>
-                        <p className="text-gray-400 text-xs mt-1">{a.time}</p>
-                      </div>
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold ${statusColors[a.status]}`}
+                  <>
+                    {dayAppointments.map(a => (
+                      <div
+                        key={a.id}
+                        className="p-4 rounded-2xl bg-white shadow-sm border border-[#E6F7FA] hover:shadow-md transition-transform transform hover:scale-[1.02] flex justify-between items-center"
                       >
-                        {a.status}
-                      </span>
-                    </div>
-                  ))
+                        <div className="flex flex-col">
+                          <p className="font-semibold text-gray-700 text-sm">{a.petName}</p>
+                          <p className="text-gray-500 text-xs">Owner: {a.owner}</p>
+                          <p className="text-gray-400 text-xs mt-1">{a.time} (Appointment)</p>
+                        </div>
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-semibold ${statusColors[a.status]}`}
+                        >
+                          {a.status}
+                        </span>
+                      </div>
+                    ))}
+                    {dayVisits.map(v => (
+                      <div
+                        key={v.id}
+                        className="p-4 rounded-2xl bg-white shadow-sm border border-[#E6F7FA] hover:shadow-md transition-transform transform hover:scale-[1.02] flex justify-between items-center"
+                      >
+                        <div className="flex flex-col">
+                          <p className="font-semibold text-gray-700 text-sm">{v.petName}</p>
+                          <p className="text-gray-500 text-xs">Owner: {v.owner}</p>
+                          <p className="text-gray-400 text-xs mt-1">{v.time} (Visit)</p>
+                        </div>
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-semibold ${visitTypeColors[v.visitType]}`}
+                        >
+                          {v.visitType}
+                        </span>
+                      </div>
+                    ))}
+                  </>
                 )}
               </div>
             </div>
@@ -387,7 +498,7 @@ const Appointments = () => {
         </div>
       )}
 
-      {activeTab === "Appointments" && (
+      {(activeTab === "Appointments" || activeTab === "Visits") && (
         <div className="mt-">
           {/* Search & Filter with New Select Controls */}
           <div className="flex gap-2 mb-4 flex-wrap items-center justify-between">
@@ -406,23 +517,54 @@ const Appointments = () => {
                 />
               </div>
 
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="p-2 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#1B1B1B] text-gray-800 dark:text-gray-200 w-36 focus:outline-none focus:ring-2 focus:ring-[#5EE6FE]/50"
-              >
-                <option value="All">All Status</option>
-                <option value="Upcoming">Upcoming</option>
-                <option value="Completed">Completed</option>
-                <option value="Cancelled">Cancelled</option>
-              </select>
-              <button
-                onClick={() => navigate("/admin-pages/appointments/add")}
-                className="flex flex-row gap-2 px-4 py-2 bg-[#5EE6FE] text-white rounded-xl hover:bg-[#4AD4EC] transition"
-              >
-                <Plus size={18} />
-                Appointment
-              </button>
+              {/* Status Filter for Appointments */}
+              {activeTab === "Appointments" && (
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="p-2 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#1B1B1B] text-gray-800 dark:text-gray-200 w-36 focus:outline-none focus:ring-2 focus:ring-[#5EE6FE]/50"
+                >
+                  <option value="All">All Status</option>
+                  <option value="Upcoming">Upcoming</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Cancelled">Cancelled</option>
+                </select>
+              )}
+
+              {/* Visit Type Filter for Visits */}
+              {activeTab === "Visits" && (
+                <select
+                  value={visitTypeFilter}
+                  onChange={(e) => setVisitTypeFilter(e.target.value)}
+                  className="p-2 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#1B1B1B] text-gray-800 dark:text-gray-200 w-36 focus:outline-none focus:ring-2 focus:ring-[#5EE6FE]/50"
+                >
+                  <option value="All">All Types</option>
+                  <option value="Scheduled">Scheduled</option>
+                  <option value="Walk-in">Walk-in</option>
+                </select>
+              )}
+
+              {/* Add Button */}
+              {activeTab === "Appointments" && (
+    <button
+      onClick={() => navigate("/admin-pages/appointments/add")}
+      className="flex items-center gap-2 px-4 py-2 bg-[#5EE6FE] text-white rounded-xl hover:bg-[#4AD4EC] transition font-medium"
+    >
+      <Plus className="h-4 w-4" />
+      Appointment
+    </button>
+  )}
+
+  {/* Add Visit Button */}
+  {activeTab === "Visits" && (
+    <button
+      onClick={() => navigate("/admin-pages/visits/add")}
+      className="flex items-center gap-2 px-4 py-2 bg-[#5EE6FE] text-white rounded-xl hover:bg-[#4AD4EC] transition font-medium"
+    >
+      <Plus className="h-4 w-4" />
+      Visit
+    </button>
+  )}
             </div>
 
             {/* Selection Controls */}
@@ -430,11 +572,11 @@ const Appointments = () => {
               {isSelectMode ? (
                 <>
                   <span className="text-sm text-gray-600">
-                    {selectedAppointments.length} selected
+                    {getSelectedCount()} selected
                   </span>
                   
-                  {/* Bulk Status Update Dropdown */}
-                  {selectedAppointments.length > 0 && (
+                  {/* Bulk Status Update Dropdown for Appointments */}
+                  {activeTab === "Appointments" && selectedAppointments.length > 0 && (
                     <div className="relative">
                       <select
                         onChange={(e) => handleBulkStatusUpdate(e.target.value)}
@@ -454,12 +596,12 @@ const Appointments = () => {
                   )}
 
                   {/* Bulk Delete Button */}
-                  {selectedAppointments.length > 0 && (
+                  {getSelectedCount() > 0 && (
                     <button
                       onClick={handleBulkDelete}
                       className="px-4 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition font-medium text-sm"
                     >
-                      Delete Selected ({selectedAppointments.length})
+                      Delete Selected ({getSelectedCount()})
                     </button>
                   )}
                   
@@ -488,7 +630,7 @@ const Appointments = () => {
                   <th className="p-2 text-sm text-gray-600 dark:text-gray-300 w-12">
                     <input
                       type="checkbox"
-                      checked={selectedAppointments.length === filteredAppointments.length && filteredAppointments.length > 0}
+                      checked={getSelectedCount() === getFilteredData().length && getFilteredData().length > 0}
                       onChange={toggleSelectAll}
                       className="rounded border-gray-300"
                     />
@@ -498,77 +640,100 @@ const Appointments = () => {
                 <th className="p-2 text-sm text-gray-600 dark:text-gray-300">Pet</th>
                 <th className="p-2 text-sm text-gray-600 dark:text-gray-300">Owner</th>
                 <th className="p-2 text-sm text-gray-600 dark:text-gray-300">Date</th>
-                <th className="p-2 text-sm text-gray-600 dark:text-gray-300">Time</th>
-                <th className="p-2 text-sm text-gray-600 dark:text-gray-300">Status</th>
+                <th className="p-2 text-sm text-gray-600 dark:text-gray-300">
+                  {activeTab === "Appointments" ? "Scheduled Time" : "Visit Time"}
+                </th>
+                <th className="p-2 text-sm text-gray-600 dark:text-gray-300">
+                  {activeTab === "Appointments" ? "Status" : "Visit Type"}
+                </th>
                 <th className="p-2 text-sm text-gray-600 dark:text-gray-300">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {filteredAppointments.length === 0 ? (
+              {getFilteredData().length === 0 ? (
                 <tr>
                   <td colSpan={isSelectMode ? 8 : 7} className="text-center p-4 text-gray-400">
-                    No appointments found.
+                    No {activeTab.toLowerCase()} found.
                   </td>
                 </tr>
               ) : (
-                filteredAppointments.map((app) => {
-                  const isEditable = app.status === "Upcoming" || app.status === "Pending";
+                getFilteredData().map((item) => {
+                  const isAppointment = activeTab === "Appointments";
+                  const isEditable = isAppointment && (item.status === "Upcoming" || item.status === "Pending");
                   
                   return (
                     <tr
-                      key={app.id}
+                      key={item.id}
                       className="cursor-pointer hover:bg-[#E5FBFF] dark:hover:bg-[#222] transition"
                     >
                       {isSelectMode && (
                         <td className="p-2">
                           <input
                             type="checkbox"
-                            checked={selectedAppointments.includes(app.id)}
-                            onChange={() => toggleAppointmentSelection(app.id)}
+                            checked={
+                              isAppointment 
+                                ? selectedAppointments.includes(item.id)
+                                : selectedVisits.includes(item.id)
+                            }
+                            onChange={() => {
+                              if (isAppointment) {
+                                toggleAppointmentSelection(item.id);
+                              } else {
+                                toggleVisitSelection(item.id);
+                              }
+                            }}
                             className="rounded border-gray-300"
                           />
                         </td>
                       )}
-                      <td className="p-2 text-sm">{app.id}</td>
-                      <td className="p-2 text-sm">{app.petName}</td>
-                      <td className="p-2 text-sm">{app.owner}</td>
-                      <td className="p-2 text-sm">{app.date}</td>
-                      <td className="p-2 text-sm">{app.time}</td>
+                      <td className="p-2 text-sm">{item.id}</td>
+                      <td className="p-2 text-sm">{item.petName}</td>
+                      <td className="p-2 text-sm">{item.owner}</td>
+                      <td className="p-2 text-sm">{item.date}</td>
+                      <td className="p-2 text-sm">{item.time}</td>
                       <td className="p-2 text-sm">
-                        {isEditable ? (
-                          <select
-                            value={app.status}
-                            onChange={(e) => {
-                              if (e.target.value === "Cancelled") {
-                                handleCancelAppointment(app);
-                              } else {
-                                const updatedAppointments = appointments.map(a =>
-                                  a.id === app.id ? { ...a, status: e.target.value } : a
-                                );
-                                setAppointments(updatedAppointments);
-                              }
-                            }}
-                            className={`p-1 rounded-xl text-xs font-semibold border border-gray-200 dark:border-gray-700 ${
-                              app.status === "Pending"
-                                ? "bg-yellow-100 text-yellow-800"
-                                : app.status === "Upcoming"
-                                ? "bg-pink-100 text-pink-800"
-                                : "bg-green-100 text-green-800"
-                            }`}
-                          >
-                            <option value="Upcoming">Upcoming</option>
-                            <option value="Completed">Completed</option>
-                            <option value="Cancelled">Cancelled</option>
-                          </select>
+                        {isAppointment ? (
+                          isEditable ? (
+                            <select
+                              value={item.status}
+                              onChange={(e) => {
+                                if (e.target.value === "Cancelled") {
+                                  handleCancelAppointment(item);
+                                } else {
+                                  const updatedAppointments = appointments.map(a =>
+                                    a.id === item.id ? { ...a, status: e.target.value } : a
+                                  );
+                                  setAppointments(updatedAppointments);
+                                }
+                              }}
+                              className={`p-1 rounded-xl text-xs font-semibold border border-gray-200 dark:border-gray-700 ${
+                                item.status === "Pending"
+                                  ? "bg-yellow-100 text-yellow-800"
+                                  : item.status === "Upcoming"
+                                  ? "bg-pink-100 text-pink-800"
+                                  : "bg-green-100 text-green-800"
+                              }`}
+                            >
+                              <option value="Upcoming">Upcoming</option>
+                              <option value="Completed">Completed</option>
+                              <option value="Cancelled">Cancelled</option>
+                            </select>
+                          ) : (
+                            <span
+                              className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
+                                item.status === "Completed"
+                                  ? "bg-green-100 text-green-800 border border-green-200"
+                                  : "bg-red-100 text-red-800 border border-red-200"
+                              }`}
+                            >
+                              {item.status}
+                            </span>
+                          )
                         ) : (
                           <span
-                            className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
-                              app.status === "Completed"
-                                ? "bg-green-100 text-green-800 border border-green-200"
-                                : "bg-red-100 text-red-800 border border-red-200"
-                            }`}
+                            className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${visitTypeColors[item.visitType]}`}
                           >
-                            {app.status}
+                            {item.visitType}
                           </span>
                         )}
                       </td>
@@ -577,14 +742,14 @@ const Appointments = () => {
                           size={18}
                           className="text-blue-500 cursor-pointer hover:text-blue-600"
                           onClick={() => {
-                            setSelectedAppointment(app);
+                            setSelectedAppointment(item);
                             setIsDetailsModalOpen(true);
                           }}
                         />
                         <Trash2
                           size={18}
                           className="text-red-500 cursor-pointer hover:text-red-600"
-                          onClick={() => handleSingleDelete(app)}
+                          onClick={() => handleSingleDelete(item)}
                         />
                       </td>
                     </tr>
@@ -655,9 +820,11 @@ const Appointments = () => {
           onClose={() => {
             setShowDeleteModal(false);
             setAppointmentToDelete(null);
+            setVisitToDelete(null);
           }}
           onConfirm={confirmDelete}
-          appointments={appointmentToDelete}
+          appointments={appointmentToDelete || visitToDelete}
+          type={appointmentToDelete ? "appointment" : "visit"}
         />
       )}
 
@@ -685,4 +852,4 @@ const Appointments = () => {
   );
 };
 
-export default Appointments;
+export default AppointmentsVisits;

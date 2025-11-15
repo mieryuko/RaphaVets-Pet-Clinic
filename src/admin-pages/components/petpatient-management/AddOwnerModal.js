@@ -406,7 +406,7 @@ const AddOwnerModal = ({ isOpen, onClose, onSave, initialData }) => {
                           <label className="flex items-center gap-2 cursor-pointer">
                             <input
                               type="radio"
-                              name="sex"
+                              name="owner-sex"
                               value="Male"
                               checked={ownerData.sex === "Male"}
                               onChange={(e) => handleOwnerChange("sex", e.target.value)}
@@ -417,7 +417,7 @@ const AddOwnerModal = ({ isOpen, onClose, onSave, initialData }) => {
                           <label className="flex items-center gap-2 cursor-pointer">
                             <input
                               type="radio"
-                              name="sex"
+                              name="owner-sex"
                               value="Female"
                               checked={ownerData.sex === "Female"}
                               onChange={(e) => handleOwnerChange("sex", e.target.value)}
@@ -540,6 +540,7 @@ const AddOwnerModal = ({ isOpen, onClose, onSave, initialData }) => {
                           <label className="flex items-center gap-2 cursor-pointer">
                             <input
                               type="radio"
+                              name="pet-sex"
                               name="petSex"
                               value="Male"
                               checked={petData.sex === "Male"}
@@ -551,7 +552,7 @@ const AddOwnerModal = ({ isOpen, onClose, onSave, initialData }) => {
                           <label className="flex items-center gap-2 cursor-pointer">
                             <input
                               type="radio"
-                              name="petSex"
+                              name="pet-sex"
                               value="Female"
                               checked={petData.sex === "Female"}
                               onChange={(e) => handlePetChange("sex", e.target.value)}
@@ -595,6 +596,14 @@ const AddOwnerModal = ({ isOpen, onClose, onSave, initialData }) => {
                         />
                       </div>
                       <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-gray-700">Date of Birth</label>
+                        <input 
+                          type="date" 
+                          value={petData.dob} 
+                          onChange={(e) => handlePetChange("dob", e.target.value)}
+                          className="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        />
+                      </div>
                         <label className="text-xs font-medium text-gray-700">Date of Birth</label>
                         <input 
                           type="date" 

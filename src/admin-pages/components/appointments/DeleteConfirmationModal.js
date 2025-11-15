@@ -1,8 +1,10 @@
-const DeleteConfirmationModal = ({ isOpen, onClose, onConfirm, appointments }) => {
+const DeleteConfirmationModal = ({ isOpen, onClose, onConfirm, appointments, type = "appointment" }) => {
   if (!isOpen) return null;
 
   const isBulkDelete = Array.isArray(appointments) && appointments.length > 1;
   const appointmentCount = isBulkDelete ? appointments.length : 1;
+  const itemType = type === "visit" ? "visit" : "appointment";
+  const itemTypePlural = type === "visit" ? "visits" : "appointments";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
@@ -14,7 +16,7 @@ const DeleteConfirmationModal = ({ isOpen, onClose, onConfirm, appointments }) =
           </div>
           <div>
             <h2 className="text-xl font-bold text-gray-800">
-              {isBulkDelete ? `Delete ${appointmentCount} Appointments` : 'Delete Appointment'}
+              {isBulkDelete ? `Delete ${appointmentCount} ${itemTypePlural}` : `Delete ${itemType}`}
             </h2>
             <p className="text-gray-500 text-sm mt-1">This action cannot be undone</p>
           </div>
@@ -24,14 +26,14 @@ const DeleteConfirmationModal = ({ isOpen, onClose, onConfirm, appointments }) =
         <div className="p-6">
           <p className="text-gray-600 mb-4">
             {isBulkDelete 
-              ? `Are you sure you want to delete ${appointmentCount} selected appointments? This action cannot be undone.`
-              : `Are you sure you want to delete the appointment for "${appointments[0]?.petName}"? This action cannot be undone.`
+              ? `Are you sure you want to delete ${appointmentCount} selected ${itemTypePlural}? This action cannot be undone.`
+              : `Are you sure you want to delete the ${itemType} for "${appointments[0]?.petName}"? This action cannot be undone.`
             }
           </p>
           
           {isBulkDelete && (
             <div className="max-h-32 overflow-y-auto border border-gray-200 rounded-lg p-3 mb-4">
-              <p className="text-sm font-medium text-gray-700 mb-2">Selected appointments:</p>
+              <p className="text-sm font-medium text-gray-700 mb-2">Selected {itemTypePlural}:</p>
               <ul className="text-sm text-gray-600 space-y-1">
                 {appointments.slice(0, 5).map((app, index) => (
                   <li key={app.id} className="flex items-center gap-2">
@@ -61,7 +63,7 @@ const DeleteConfirmationModal = ({ isOpen, onClose, onConfirm, appointments }) =
             onClick={onConfirm}
             className="px-6 py-2 rounded-xl bg-red-500 text-white hover:bg-red-600 transition font-medium"
           >
-            {isBulkDelete ? `Delete ${appointmentCount} Appointments` : 'Delete Appointment'}
+            {isBulkDelete ? `Delete ${appointmentCount} ${itemTypePlural}` : `Delete ${itemType}`}
           </button>
         </div>
       </div>
