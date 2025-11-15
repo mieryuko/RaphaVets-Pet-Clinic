@@ -1,4 +1,6 @@
   import db from "../../config/db.js";
+  import bcrypt from 'bcryptjs';
+  import nodemailer from 'nodemailer';
 
   export const getOwnersWithPets = async (req, res) => {
   try {
@@ -193,6 +195,17 @@
     }
   };
 
+// Email transporter configuration
+const emailTransporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST || 'smtp.gmail.com',
+  port: process.env.SMTP_PORT || 587,
+  secure: false,
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  }
+});
+
 export const createOwner = async (req, res) => {
   try {
     const {
@@ -203,30 +216,53 @@ export const createOwner = async (req, res) => {
       address,
       sex,
       dob,
-      pets // Array of pets (optional)
+      pets
     } = req.body;
 
-    // Validate required fields
     if (!firstName || !lastName || !email || !phone) {
       return res.status(400).json({ message: "Missing required fields: firstName, lastName, email, phone" });
     }
 
-    // Start transaction since we're doing multiple operations
+    // Generate random password
+    const generateRandomPassword = (length = 12) => {
+      const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      const lowercase = 'abcdefghijklmnopqrstuvwxyz';
+      const numbers = '0123456789';
+      const symbols = '!@#$%^&*';
+      
+      const allChars = uppercase + lowercase + numbers + symbols;
+      
+      let password = '';
+      password += uppercase[Math.floor(Math.random() * uppercase.length)];
+      password += lowercase[Math.floor(Math.random() * lowercase.length)];
+      password += numbers[Math.floor(Math.random() * numbers.length)];
+      password += symbols[Math.floor(Math.random() * symbols.length)];
+      
+      for (let i = password.length; i < length; i++) {
+        password += allChars[Math.floor(Math.random() * allChars.length)];
+      }
+      
+      return password.split('').sort(() => Math.random() - 0.5).join('');
+    };
+
+    const plainPassword = generateRandomPassword();
+    const hashedPassword = await bcrypt.hash(plainPassword, 10);
+
     const connection = await db.getConnection();
     await connection.beginTransaction();
 
     try {
-      // 1. Create account in account_tbl
+      // Create account WITH PASSWORD
       const [accountResult] = await connection.execute(
         `INSERT INTO account_tbl 
-         (firstName, lastName, email, roleID, isDeleted, createdAt) 
-         VALUES (?, ?, ?, 1, 0, NOW())`,
-        [firstName, lastName, email]
+         (firstName, lastName, email, password, roleID, isDeleted, createdAt) 
+         VALUES (?, ?, ?, ?, 1, 0, NOW())`,
+        [firstName, lastName, email, hashedPassword]
       );
 
       const accId = accountResult.insertId;
 
-      // 2. Create client info in clientinfo_tbl
+      // Create client info
       await connection.execute(
         `INSERT INTO clientinfo_tbl 
          (accId, gender, dateOfBirth, address, contactNo) 
@@ -234,11 +270,10 @@ export const createOwner = async (req, res) => {
         [accId, sex || null, dob || null, address || null, phone]
       );
 
-      // 3. If pets are provided, create them in pet_tbl
+      // Create pets if provided
       if (pets && pets.length > 0) {
         for (const pet of pets) {
           if (pet.name && pet.type && pet.breed) {
-            // Get breedID
             const [breedRow] = await connection.execute(
               "SELECT breedID FROM breed_tbl WHERE breedName = ? LIMIT 1",
               [pet.breed]
@@ -251,7 +286,6 @@ export const createOwner = async (req, res) => {
 
             const breedID = breedRow[0].breedID;
 
-            // Insert pet
             await connection.execute(
               `INSERT INTO pet_tbl 
                (accID, breedID, petName, petGender, weight_kg, color, dateOfBirth, note) 
@@ -271,13 +305,69 @@ export const createOwner = async (req, res) => {
         }
       }
 
-      // Commit transaction
       await connection.commit();
       connection.release();
 
+      // Send email with login credentials
+      try {
+        await emailTransporter.sendMail({
+          from: process.env.SMTP_FROM || '"RaphaVets Clinic" <markmapili29@gmail.com>',
+          to: email,
+          subject: 'Your RaphaVets Clinic Account Login Credentials',
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h2 style="color: #2563eb; text-align: center;">Welcome to RaphaVets Clinic!</h2>
+              
+              <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                <h3 style="color: #1e293b; margin-bottom: 15px;">Your Account Has Been Created</h3>
+                
+                <p style="color: #475569; margin-bottom: 10px;">
+                  Hello ${firstName} ${lastName},
+                </p>
+                
+                <p style="color: #475569; margin-bottom: 15px;">
+                  Your account has been successfully created. Here are your login credentials:
+                </p>
+                
+                <div style="background: white; padding: 15px; border-radius: 6px; border-left: 4px solid #2563eb;">
+                  <p style="margin: 5px 0;"><strong>Email:</strong> ${email}</p>
+                  <p style="margin: 5px 0;"><strong>Temporary Password:</strong> <code style="background: #f1f5f9; padding: 2px 6px; border-radius: 3px; font-family: monospace;">${plainPassword}</code></p>
+                </div>
+                
+                <p style="color: #475569; margin-top: 15px; font-size: 14px;">
+                  <strong>Important:</strong> Please change your password after your first login for security.
+                </p>
+              </div>
+              
+              <div style="text-align: center; margin-top: 25px;">
+                <a href="${process.env.CLINIC_URL || 'http://localhost:3000'}" 
+                   style="background: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+                  Login to Your Account
+                </a>
+              </div>
+              
+              <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
+                <p style="color: #64748b; font-size: 12px; text-align: center;">
+                  This is an automated message. Please do not reply to this email.<br>
+                  If you have any questions, please contact our clinic directly.
+                </p>
+              </div>
+            </div>
+          `
+        });
+        
+        console.log(`✅ Login credentials email sent to ${email}`);
+        
+      } catch (emailError) {
+        console.error('❌ Failed to send email:', emailError);
+        // Don't fail the whole request if email fails
+      }
+
       res.status(201).json({ 
         message: "Owner and pets created successfully",
-        accId: accId
+        accId: accId,
+        password: plainPassword,
+        email: email
       });
 
     } catch (transactionError) {
@@ -289,7 +379,6 @@ export const createOwner = async (req, res) => {
   } catch (err) {
     console.error("Error creating owner:", err);
     
-    // Check for duplicate email
     if (err.code === 'ER_DUP_ENTRY') {
       return res.status(400).json({ message: "Email already exists" });
     }
@@ -339,7 +428,10 @@ export const updateOwner = async (req, res) => {
       await connection.commit();
       connection.release();
 
-      res.status(200).json({ message: "Owner updated successfully" });
+      res.status(200).json({ 
+        message: "Owner updated successfully",
+        // NO password or email sending for edits
+      });
 
     } catch (transactionError) {
       await connection.rollback();

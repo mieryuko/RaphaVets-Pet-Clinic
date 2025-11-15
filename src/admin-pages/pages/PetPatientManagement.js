@@ -233,53 +233,62 @@
 
 
     const handleSaveOwner = async (newData) => {
-      try {
-        if (editingItem) {
-          // Editing existing owner - call backend
-          const res = await api.put(`/update-owner/${editingItem.id}`, newData);
-          console.log("Owner updated:", res.data);
+    try {
+      if (editingItem) {
+        // Editing existing owner - call backend
+        const res = await api.put(`/update-owner/${editingItem.id}`, newData);
+        console.log("Owner updated:", res.data);
 
-          // Update frontend state
-          const updatedOwner = {
-            ...editingItem,
-            ...newData,
-            name: `${newData.firstName} ${newData.lastName}`,
-            email: newData.email,
-            phone: newData.phone,
-            address: newData.address,
-            gender: newData.sex,
-            dateOfBirth: formatDate(newData.dob),
-          };
+        // Update frontend state
+        const updatedOwner = {
+          ...editingItem,
+          ...newData,
+          name: `${newData.firstName} ${newData.lastName}`,
+          email: newData.email,
+          phone: newData.phone,
+          address: newData.address,
+          gender: newData.sex,
+          dateOfBirth: formatDate(newData.dob),
+        };
 
-          setPetOwners(prev =>
-            prev.map(o => o.id === editingItem.id ? updatedOwner : o)
-          );
-          
-          if (selectedOwner && selectedOwner.id === editingItem.id) {
-            setSelectedOwner(updatedOwner);
-          }
-          
-          setEditingItem(null);
-          setSuccessMessage("Owner updated successfully!");
-          
-          // Refresh data from backend
-          await fetchOwnersAndPets();
-          
-        } else {
-          // Adding new owner - call backend
-          const res = await api.post("/add-owner", newData);
-          console.log("Owner created:", res.data);
-
-          setSuccessMessage("Owner added successfully!");
-          
-          // Refresh data from backend to get the new owner with proper ID
-          await fetchOwnersAndPets();
+        setPetOwners(prev =>
+          prev.map(o => o.id === editingItem.id ? updatedOwner : o)
+        );
+        
+        if (selectedOwner && selectedOwner.id === editingItem.id) {
+          setSelectedOwner(updatedOwner);
         }
-      } catch (error) {
-        console.error("Error saving owner:", error);
-        setErrorMessage(error.response?.data?.message || "Failed to save owner!");
+        
+        setEditingItem(null);
+        setSuccessMessage("Owner updated successfully!");
+        
+        // Refresh data from backend
+        await fetchOwnersAndPets();
+        
+        // Return simple response for editing (no credentials)
+        return { message: "Owner updated successfully" };
+        
+      } else {
+        // Adding new owner - call backend
+        const res = await api.post("/add-owner", newData);
+        console.log("Owner created:", res.data);
+
+        setSuccessMessage("Owner added successfully!");
+        
+        // Refresh data from backend to get the new owner with proper ID
+        await fetchOwnersAndPets();
+
+        // Return credentials for new owner
+        return {
+          email: res.data.email,
+          password: res.data.password
+        };
       }
-    };
+    } catch (error) {
+      console.error("Error saving owner:", error);
+      throw error;
+    }
+  };
     const handleSavePet = (savedPet) => {
   try {
     if (editingItem) {
