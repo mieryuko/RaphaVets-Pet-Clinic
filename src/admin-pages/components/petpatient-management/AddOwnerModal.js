@@ -29,31 +29,60 @@ const AddOwnerModal = ({ isOpen, onClose, onSave, initialData }) => {
   const catBreeds = ["Persian", "Siamese", "Maine Coon", "Sphynx", "Ragdoll"];
 
   useEffect(() => {
-    if (initialData) {
-      setOwnerData({
-        firstName: initialData.firstName || "",
-        lastName: initialData.lastName || "",
-        email: initialData.email || "",
-        phone: initialData.phone || "",
-        address: initialData.address || "",
-        sex: initialData.sex || "",
-        dob: initialData.dob || "",
-      });
-
-      if (initialData.pets && initialData.pets[0]) {
-        setPetData({
-          type: initialData.pets[0].type || "",
-          breed: initialData.pets[0].breed || "",
-          name: initialData.pets[0].name || "",
-          sex: initialData.pets[0].sex || "",
-          weight: initialData.pets[0].weight || "",
-          color: initialData.pets[0].color || "",
-          dob: initialData.pets[0].dob || "",
-          notes: initialData.pets[0].notes || "",
+    if (isOpen) {
+      if (initialData) {
+        // Editing existing owner - split the name
+        const nameParts = initialData.name ? initialData.name.split(' ') : ['', ''];
+        const firstName = nameParts[0] || '';
+        const lastName = nameParts.slice(1).join(' ') || '';
+        
+        setOwnerData({
+          firstName: firstName,
+          lastName: lastName,
+          email: initialData.email || "",
+          phone: initialData.phone || "",
+          address: initialData.address || "",
+          sex: initialData.gender || "",
+          dob: initialData.dateOfBirth || "",
         });
+
+        if (initialData.pets && initialData.pets[0]) {
+          setPetData({
+            type: initialData.pets[0].petType || initialData.pets[0].type || "",
+            breed: initialData.pets[0].breed || "",
+            name: initialData.pets[0].name || "",
+            sex: initialData.pets[0].gender || initialData.pets[0].sex || "",
+            weight: initialData.pets[0].weight ? initialData.pets[0].weight.replace(' kg', '') : "",
+            color: initialData.pets[0].color || "",
+            dob: initialData.pets[0].petDateOfBirth || initialData.pets[0].dob || "",
+            notes: initialData.pets[0].note || initialData.pets[0].notes || "",
+          });
+        }
+      } else {
+        // New owner - reset all fields
+        setOwnerData({
+          firstName: "",
+          lastName: "",
+          email: "",
+          phone: "",
+          address: "",
+          sex: "",
+          dob: "",
+        });
+        setPetData({
+          type: "",
+          breed: "",
+          name: "",
+          sex: "",
+          weight: "",
+          color: "",
+          dob: "",
+          notes: "",
+        });
+        setStep("form"); // Reset to first step
       }
     }
-  }, [initialData]);
+  }, [initialData, isOpen]);
 
   const handleOwnerChange = (field, value) => setOwnerData({ ...ownerData, [field]: value });
   const handlePetChange = (field, value) => {
@@ -64,30 +93,44 @@ const AddOwnerModal = ({ isOpen, onClose, onSave, initialData }) => {
 
   const handleNext = () => setStep("review");
   
-  const handleConfirm = () => {
-    const safePetData = {
-      type: petData.type || "",
-      breed: petData.breed || "",
-      name: petData.name || "",
-      sex: petData.sex || "",
-      weight: petData.weight || "",
-      color: petData.color || "",
-      dob: petData.dob || "",
-      notes: petData.notes || "",
-    };
+  const handleConfirm = async () => {
+    try {
+      const safePetData = {
+        type: petData.type || "",
+        breed: petData.breed || "",
+        name: petData.name || "",
+        sex: petData.sex || "",
+        weight: petData.weight || "",
+        color: petData.color || "",
+        dob: petData.dob || "",
+        notes: petData.notes || "",
+      };
 
-    const safeOwnerData = {
-      firstName: ownerData.firstName || "",
-      lastName: ownerData.lastName || "",
-      email: ownerData.email || "",
-      phone: ownerData.phone || "",
-      address: ownerData.address || "",
-      sex: ownerData.sex || "",
-      dob: ownerData.dob || "",
-    };
+      const safeOwnerData = {
+        firstName: ownerData.firstName || "",
+        lastName: ownerData.lastName || "",
+        email: ownerData.email || "",
+        phone: ownerData.phone || "",
+        address: ownerData.address || "",
+        sex: ownerData.sex || "",
+        dob: ownerData.dob || "",
+        pets: petData.name ? [safePetData] : [] // Only include pet if name was provided
+      };
 
-    onSave({ ...safeOwnerData, pets: [safePetData] });
-    setStep("success");
+      await onSave(safeOwnerData);
+      
+      // Show success and close
+      setStep("success");
+      
+      // Auto-close after delay
+      setTimeout(() => {
+        handleClose();
+      }, 2000);
+      
+    } catch (error) {
+      console.error("Error saving owner:", error);
+      // You might want to show an error message here
+    }
   };
 
   const handleClose = () => {
