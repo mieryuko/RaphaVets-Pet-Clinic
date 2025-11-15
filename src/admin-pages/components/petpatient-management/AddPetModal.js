@@ -19,15 +19,25 @@ const AddPetModal = ({ isOpen, onClose, onSave, owners, initialData, refreshPets
   const [speciesOptions, setSpeciesOptions] = useState([]);
   const [breeds, setBreeds] = useState([]);
   const [ownerSearch, setOwnerSearch] = useState("");
-  //const  = ["Labrador", "Golden Retriever", "Bulldog", "Poodle", "Beagle"];
-  //const  = ["Persian", "Siamese", "Maine Coon", "Sphynx", "Ragdoll"];
 
-   // Fetch species (Type)
+  const toInputDate = (dateStr) => {
+    if (!dateStr) return "";
+    const d = new Date(dateStr);
+    if (isNaN(d)) return ""; 
+    return d.toISOString().split("T")[0];
+  };
+
+  const sanitizeNumber = (value) => {
+    if (!value) return "";
+    return value.toString().replace(/[^\d.]/g, "");
+  };
+
+  // Fetch species (Type)
   useEffect(() => {
     const fetchSpecies = async () => {
       try {
         const res = await api.get("/species");
-        setSpeciesOptions(res.data); // e.g., ['Canine', 'Feline']
+        setSpeciesOptions(res.data);
       } catch (err) {
         console.error("Failed to fetch species:", err);
         setSpeciesOptions([]);
@@ -36,50 +46,108 @@ const AddPetModal = ({ isOpen, onClose, onSave, owners, initialData, refreshPets
     fetchSpecies();
   }, []);
 
-  // Fetch breeds based on selected type
+  // Reset form when modal opens/closes or initialData changes
   useEffect(() => {
-  const fetchBreeds = async () => {
-    if (!petData.type) return;
-
-    try {
-      const res = await api.get(`/breeds?species=${petData.type}`);
-      // API already returns an array of strings
-      setBreeds(res.data); 
-      console.log("Breed options:", res.data);
-    } catch (error) {
-      console.error("Failed to fetch breeds:", error);
-      setBreeds([]);
+    if (!isOpen) {
+      resetForm();
+      return;
     }
-  };
-  fetchBreeds();
-}, [petData.type]);
 
+    if (initialData) {
+      // Debug log to see what's in initialData
+      console.log("Initial Data for editing:", initialData);
+      
+      const ownerId = owners.find((o) => o.name === initialData.owner)?.id || "";
+      
+      setPetData({
+        ownerId,
+        type: initialData.petType || "", // Use petType from initialData
+        breed: initialData.breed || "",
+        name: initialData.name || "",
+        age: initialData.age || "",
+        sex: initialData.gender || "", // Note: pets use 'gender' not 'sex'
+        weight: sanitizeNumber(initialData.weight),
+        color: initialData.color || "",
+        dob: toInputDate(initialData.petDateOfBirth),
+        notes: initialData.note || "",
+      });
+    } else {
+      resetForm();
+    }
+  }, [initialData, isOpen, owners]);
 
-
-
-  // Set initial data if editing
+  // Fetch breeds whenever petData.type changes
   useEffect(() => {
-    if (initialData) setPetData({ ...initialData });
-  }, [initialData]);
+    if (!petData.type) {
+      setBreeds([]);
+      return;
+    }
 
+    const fetchBreeds = async () => {
+      try {
+        const res = await api.get(`/breeds?species=${petData.type}`);
+        setBreeds(res.data);
+      } catch (error) {
+        console.error("Failed to fetch breeds:", error);
+        setBreeds([]);
+      }
+    };
+
+    fetchBreeds();
+  }, [petData.type]);
 
   const handleChange = (field, value) => {
     const updated = { ...petData, [field]: value };
-    if (field === "type") updated.breed = "";
+    if (field === "type") {
+      updated.breed = ""; // Reset breed when type changes
+      setBreeds([]); // Clear breeds temporarily
+    }
     setPetData(updated);
   };
 
   const handleSave = async () => {
-  if (!petData.ownerId) return alert("Please select an owner.");
+    if (!petData.ownerId) return alert("Please select an owner.");
+    if (!petData.type) return alert("Please select a pet type.");
+    if (!petData.breed) return alert("Please select a breed.");
+    if (!petData.name) return alert("Please enter a pet name.");
 
-  try {
-    const res = await api.post("/add-pets", { ...petData });
-    console.log("Pet saved:", res.data);
+    try {
+      // For editing existing pet
+      if (initialData) {
+        const res = await api.put(`/update-pet/${initialData.id}`, { 
+          ...petData,
+          type: petData.type // Make sure type is included
+        });
+        console.log("Pet updated:", res.data);
+      } else {
+        // For adding new pet
+        const res = await api.post("/add-pets", { 
+          ...petData,
+          type: petData.type // Make sure type is included
+        });
+        console.log("Pet saved:", res.data);
+      }
 
-    // Pass the saved pet data back to parent
-    onSave(res.data);
+      // Pass the saved pet data back to parent
+      onSave({
+        ...petData,
+        id: initialData?.id || Date.now(), // Use existing ID or generate new one
+        owner: owners.find(o => o.id === parseInt(petData.ownerId))?.name || ""
+      });
 
-    // Reset form
+      resetForm();
+      onClose();
+      
+      if (refreshPets) {
+        refreshPets();
+      }
+    } catch (err) {
+      console.error("Error saving pet:", err);
+      alert("Failed to save pet.");
+    }
+  };
+
+  const resetForm = () => {
     setPetData({
       ownerId: "",
       type: "",
@@ -92,18 +160,12 @@ const AddPetModal = ({ isOpen, onClose, onSave, owners, initialData, refreshPets
       dob: "",
       notes: "",
     });
-
-    refreshPets();
-    onClose();
-  } catch (err) {
-    console.error("Error saving pet:", err);
-    alert("Failed to save pet.");
-  }
-};
+    setOwnerSearch("");
+    setBreeds([]);
+  };
 
   if (!isOpen) return null;
 
-  const breedOptions = breeds;
   const filteredOwners = owners.filter(
     (o) =>
       o.name.toLowerCase().includes(ownerSearch.toLowerCase()) ||
@@ -112,20 +174,23 @@ const AddPetModal = ({ isOpen, onClose, onSave, owners, initialData, refreshPets
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
-  <div className="bg-[#F5F7FA] dark:bg-[#1C1C1E] w-[820px] rounded-2xl shadow-2xl p-5 flex flex-col relative max-h-[90vh] box-border">
+      <div className="bg-[#F5F7FA] dark:bg-[#1C1C1E] w-[820px] rounded-2xl shadow-2xl p-5 flex flex-col relative max-h-[90vh] box-border">
         {/* Close */}
         <button
-          onClick={onClose}
+          onClick={() => {
+            resetForm();
+            onClose();
+          }}
           className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:hover:text-gray-200 transition"
         >
           <X size={26} />
         </button>
 
         <h2 className="text-2xl font-bold text-[#212529] dark:text-white mb-5 text-center">
-          Add New Pet
+          {initialData ? "Edit Pet" : "Add New Pet"}
         </h2>
 
-  <div className="flex gap-4 flex-1 min-h-0">
+        <div className="flex gap-4 flex-1 min-h-0">
           {/* Left: Owner selection */}
           <div className="flex-1 bg-white dark:bg-[#252525] p-4 rounded-xl flex flex-col gap-3 min-h-0 overflow-y-auto">
             <h3 className="font-semibold text-[#212529] dark:text-white mb-2 text-base">Select Owner</h3>
@@ -168,7 +233,7 @@ const AddPetModal = ({ isOpen, onClose, onSave, owners, initialData, refreshPets
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div>
                 <label className="block mb-1">Type</label>
-                 <select
+                <select
                   value={petData.type}
                   onChange={e => handleChange("type", e.target.value)}
                   className="w-full p-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#252525] text-gray-800 dark:text-gray-200 focus:border-[#5EE6FE] focus:ring-1 focus:ring-[#5EE6FE] transition"
@@ -189,7 +254,7 @@ const AddPetModal = ({ isOpen, onClose, onSave, owners, initialData, refreshPets
                   className="w-full p-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#252525] text-gray-800 dark:text-gray-200 focus:border-[#5EE6FE] focus:ring-1 focus:ring-[#5EE6FE] transition"
                 >
                   <option value="">Select Breed</option>
-                  {breedOptions.map((b, i) => (
+                  {breeds.map((b, i) => (
                     <option key={i} value={b}>{b}</option>
                   ))}
                 </select>
@@ -289,7 +354,7 @@ const AddPetModal = ({ isOpen, onClose, onSave, owners, initialData, refreshPets
                 onClick={handleSave}
                 className="px-4 py-2 rounded-lg bg-[#5EE6FE] hover:bg-[#40c6e3] text-white font-semibold transition"
               >
-                Save Pet
+                {initialData ? "Update Pet" : "Save Pet"}
               </button>
             </div>
           </div>
