@@ -195,7 +195,7 @@ const AddPetModal = ({ isOpen, onClose, onSave, owners, initialData, refreshPets
                 </select>
               </div>
 
-              <div>
+              <div className="col-span-2">
                 <label className="block mb-1">Name</label>
                 <input
                   type="text"
@@ -207,27 +207,31 @@ const AddPetModal = ({ isOpen, onClose, onSave, owners, initialData, refreshPets
               </div>
 
               <div>
-                <label className="block mb-1">Age</label>
-                <input
-                  type="number"
-                  value={petData.age}
-                  onChange={(e) => handleChange("age", e.target.value)}
-                  placeholder="Age"
-                  className="w-full p-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#252525] text-gray-800 dark:text-gray-200 focus:border-[#5EE6FE] focus:ring-1 focus:ring-[#5EE6FE] transition"
-                />
-              </div>
-
-              <div>
                 <label className="block mb-1">Sex</label>
-                <select
-                  value={petData.sex}
-                  onChange={(e) => handleChange("sex", e.target.value)}
-                  className="w-full p-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#252525] text-gray-800 dark:text-gray-200 focus:border-[#5EE6FE] focus:ring-1 focus:ring-[#5EE6FE] transition"
-                >
-                  <option value="">Select Sex</option>
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                </select>
+                <div className="flex gap-4">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="sex"
+                      value="Male"
+                      checked={petData.sex === "Male"}
+                      onChange={(e) => handleChange("sex", e.target.value)}
+                      className="w-4 h-4 text-[#5EE6FE] focus:ring-[#5EE6FE]"
+                    />
+                    <span className="text-sm text-gray-800 dark:text-gray-200">Male</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="sex"
+                      value="Female"
+                      checked={petData.sex === "Female"}
+                      onChange={(e) => handleChange("sex", e.target.value)}
+                      className="w-4 h-4 text-[#5EE6FE] focus:ring-[#5EE6FE]"
+                    />
+                    <span className="text-sm text-gray-800 dark:text-gray-200">Female</span>
+                  </label>
+                </div>
               </div>
 
               <div>
@@ -253,9 +257,9 @@ const AddPetModal = ({ isOpen, onClose, onSave, owners, initialData, refreshPets
               </div>
 
               <div>
-                <label className="block mb-1">DOB (Month/Year)</label>
+                <label className="block mb-1">Date of Birth</label>
                 <input
-                  type="month"
+                  type="date"
                   value={petData.dob}
                   onChange={(e) => handleChange("dob", e.target.value)}
                   className="w-full p-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#252525] text-gray-800 dark:text-gray-200 focus:border-[#5EE6FE] focus:ring-1 focus:ring-[#5EE6FE] transition"

@@ -418,7 +418,7 @@ const Appointments = () => {
               </select>
               <button
                 onClick={() => navigate("/admin-pages/appointments/add")}
-                className="flex flex-row gap-2 px-4 py-2 bg-[#5EE6FE] text-white rounded-3xl hover:bg-[#4AD4EC] transition"
+                className="flex flex-row gap-2 px-4 py-2 bg-[#5EE6FE] text-white rounded-xl hover:bg-[#4AD4EC] transition"
               >
                 <Plus size={18} />
                 Appointment
