@@ -2,37 +2,33 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import api from "../../api/axios";
 
-function SideBar({ isMenuOpen, setIsMenuOpen }) {
+function SideBar({ isMenuOpen, setIsMenuOpen, refreshTrigger }) { // Add refreshTrigger prop
   const navigate = useNavigate();
   const location = useLocation();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const [pets, setPets] = useState([]); // store pets from backend
+  const [pets, setPets] = useState([]);
 
-  
+  // Fetch pets function
+  const fetchPets = async () => {
+    const token = localStorage.getItem("token");
+    console.log("Token being sent:", token);
+    if (!token) return;
 
-  // Fetch pets on component mount
+    try {
+      const res = await api.get("/pets", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      console.log("Pets response:", res.data);
+      setPets(res.data);
+    } catch (err) {
+      console.error("❌ Failed to fetch pets:", err.response?.data || err);
+    }
+  };
+
+  // Fetch pets on component mount AND when refreshTrigger changes
   useEffect(() => {
-    const fetchPets = async () => {
-      const token = localStorage.getItem("token");
-      console.log("Token being sent:", token); // <-- log token
-      if (!token) return;
-
-      try {
-        const res = await api.get("/pets", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        console.log("Pets response:", res.data); // <-- log response
-        setPets(res.data);
-      } catch (err) {
-        console.error("❌ Failed to fetch pets:", err.response?.data || err);
-      }
-    };
-
     fetchPets();
-
-  }, []);
-  
-
+  }, [refreshTrigger]); // Add refreshTrigger as dependency
 
   const handleLogout = async () => {
     setShowLogoutModal(false);
@@ -72,8 +68,6 @@ function SideBar({ isMenuOpen, setIsMenuOpen }) {
     { label: "FAQs", path: "#", icon: "fa-circle-question" },
     { label: "Support", path: "#", icon: "fa-headset" },
   ];
-
-  
 
   return (
     <>

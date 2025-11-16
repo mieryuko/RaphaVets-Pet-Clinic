@@ -30,7 +30,7 @@ function PetInfo({ pets, setShowModal, currentPetIndex, setCurrentPetIndex }) {
           <div className="flex justify-center sm:justify-start w-full sm:w-auto">
             <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-full overflow-hidden border-4 border-[#5EE6FE] shadow-md flex-shrink-0 transition-transform duration-300 hover:scale-[1.05]">
               <img
-                src={pets[currentPetIndex]?.photo || pets[pets.length - 1].photo}
+                src={pets[currentPetIndex]?.image || pets[pets.length - 1].image}
                 alt={pets[currentPetIndex]?.name || pets[pets.length - 1].name}
                 className="w-full h-full object-cover transition-opacity duration-500"
               />

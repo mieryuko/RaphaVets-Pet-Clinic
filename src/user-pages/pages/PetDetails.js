@@ -18,6 +18,9 @@ function PetDetails() {
   const [activeTab, setActiveTab] = useState("Appointments");
   const [showEditModal, setShowEditModal] = useState(false);
   
+  // Add refresh trigger state
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  
   // Modal and toast states
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
@@ -28,7 +31,12 @@ function PetDetails() {
   const tabs = ["Appointments", "Medical Reports", "Lab Records"];
 
   const calculateAge = (dob) => {
+    if (!dob) return "Unknown";
+    
     const birth = new Date(dob);
+    // Handle invalid dates
+    if (isNaN(birth.getTime())) return "Unknown";
+    
     const today = new Date();
     let age = today.getFullYear() - birth.getFullYear();
     const m = today.getMonth() - birth.getMonth();
@@ -36,48 +44,170 @@ function PetDetails() {
     return age + " yrs";
   };
 
-  useEffect(() => {
-  const fetchPetData = async () => {
+  // Helper function to safely parse dates
+  const parseAppointmentDate = (appointment) => {
     try {
-      const token = localStorage.getItem("token");
-      const res = await api.get(`/pets/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      const petData = res.data;
-
-      const mappedPet = {
-        id: petData.petID,
-        name: petData.petName,
-        breed: petData.breed,
-        gender: petData.petGender || "N/A",
-        age: calculateAge(petData.dateOfBirth),
-        image: petData.image || "/images/dog-profile.png",
-        weight: petData.weight_kg,
-        lastCheck: petData.lastCheck || "N/A",
-      };
-
-      // ✅ Only update pet.image if there's no preview
-      setPet((prev) => ({
-        ...mappedPet,
-        image: previewImage ? prev.image : mappedPet.image,
-      }));
-
-      const mappedAppointments = (petData.appointments || []).map((appt) => ({
-        ...appt,
-        dateObj: new Date(appt.date),
-      }));
-      setAppointments(mappedAppointments);
-    } catch (err) {
-      console.error("❌ Failed to fetch pet details:", err);
-    } finally {
-      setLoading(false);
+      // If the API returns a formatted date string like "Nov 22, 2025 - 12:00:00"
+      // We need to extract the date part and create a valid Date object
+      if (appointment.date && typeof appointment.date === 'string') {
+        // Split the date string to get the date part (before the '-')
+        const datePart = appointment.date.split(' - ')[0];
+        if (datePart) {
+          return new Date(datePart);
+        }
+      }
+      
+      // Fallback: If we have appointmentDate from the raw data
+      if (appointment.appointmentDate) {
+        return new Date(appointment.appointmentDate);
+      }
+      
+      // Last resort: return current date
+      return new Date();
+    } catch (error) {
+      console.error("Error parsing date:", error);
+      return new Date(); // Return current date as fallback
     }
   };
 
-  fetchPetData();
-  }, [id, previewImage]);
+  // Helper function to format date for display
+  const formatAppointmentDate = (appointment) => {
+    const dateObj = parseAppointmentDate(appointment);
+    
+    // Format: "Nov 22, 2025 - 12:00 PM"
+    const options = { 
+      month: 'short', 
+      day: 'numeric', 
+      year: 'numeric' 
+    };
+    
+    const dateStr = dateObj.toLocaleDateString('en-US', options);
+    
+    // Get time part from the original date string if available
+    if (appointment.date && typeof appointment.date === 'string') {
+      const timePart = appointment.date.split(' - ')[1];
+      if (timePart) {
+        return `${dateStr} - ${formatTime(timePart)}`;
+      }
+    }
+    
+    return dateStr;
+  };
 
+  const getAppointmentTime = (appointment) => {
+    try {
+      if (appointment.date && typeof appointment.date === 'string') {
+        const timePart = appointment.date.split(' - ')[1];
+        if (timePart) {
+          return formatTime(timePart);
+        }
+      }
+      return "Unknown time";
+    } catch (error) {
+      return "Unknown time";
+    }
+  };
+
+  // Helper function to format time
+  const formatTime = (timeString) => {
+    try {
+      // Convert "12:00:00" to "12:00 PM"
+      const [hours, minutes] = timeString.split(':');
+      const hour = parseInt(hours);
+      const ampm = hour >= 12 ? 'PM' : 'AM';
+      const displayHour = hour % 12 || 12;
+      return `${displayHour}:${minutes} ${ampm}`;
+    } catch (error) {
+      return timeString; // Return original if parsing fails
+    }
+  };
+
+  const handleImageUpload = async (file) => {
+    try {
+      const formData = new FormData();
+      formData.append("petImage", file);
+
+      const token = localStorage.getItem("token");
+      const res = await api.post(`/pets/${pet.id}/upload`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      console.log("📤 Upload Response:", res.data); // Debug log
+
+      // The API already returns the full URL, so use it directly
+      setPet(prev => ({ 
+        ...prev, 
+        image: res.data.imageUrl // Use the URL directly from API response
+      }));
+      
+      setPreviewImage(null);
+      
+      // Trigger sidebar refresh
+      setRefreshTrigger(prev => prev + 1);
+      
+      setToastMessage("Profile picture updated successfully!");
+      setShowSuccessToast(true);
+      
+    } catch (err) {
+      console.error("❌ Upload failed:", err);
+      setToastMessage("Failed to upload image.");
+      setShowSuccessToast(true);
+    }
+  };
+
+  useEffect(() => {
+    const fetchPetData = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await api.get(`/pets/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        console.log("📊 Full API Response:", res.data);
+
+        const petData = res.data;
+
+        // Map the pet data with proper field names from your database
+        const mappedPet = {
+          id: petData.petID || petData.id,
+          name: petData.petName || petData.name || "Unknown Name",
+          breed: petData.breed || "Unknown Breed",
+          gender: petData.petGender || petData.gender || "N/A",
+          age: calculateAge(petData.dateOfBirth),
+          image: petData.image || "/images/dog-profile.png",
+          weight: petData.weight_kg,
+          lastCheck: petData.lastCheck || "N/A",
+          dateOfBirth: petData.dateOfBirth,
+          color: petData.color,
+          note: petData.note
+        };
+
+        console.log("🐾 Mapped Pet Data:", mappedPet);
+
+        setPet(mappedPet);
+
+        // Process appointments with proper date handling
+        const mappedAppointments = (petData.appointments || []).map((appt) => ({
+          ...appt,
+          dateObj: parseAppointmentDate(appt),
+          formattedDate: formatAppointmentDate(appt),
+          displayDate: formatAppointmentDate(appt)
+        }));
+        
+        console.log("📅 Mapped Appointments:", mappedAppointments);
+        setAppointments(mappedAppointments);
+      } catch (err) {
+        console.error("❌ Failed to fetch pet details:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPetData();
+  }, [id]);
 
   const filteredAppointments = appointments.filter((appt) =>
     appointmentFilter === "All" ? true : appt.status === appointmentFilter
@@ -118,7 +248,12 @@ function PetDetails() {
       <div className={`${(showEditModal || showDetailsModal) ? 'blur-sm' : ''}`}>
         <Header setIsMenuOpen={setIsMenuOpen} />
         <div className="flex flex-row gap-5 px-5 sm:px-12 animate-fadeSlideUp">
-          <SideBar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} pets={[pet]} setShowModal={() => {}} />
+          {/* Pass refreshTrigger to SideBar */}
+          <SideBar 
+            isMenuOpen={isMenuOpen} 
+            setIsMenuOpen={setIsMenuOpen} 
+            refreshTrigger={refreshTrigger}
+          />
 
           <div
             className={`transition-all duration-500 ease-in-out flex flex-col gap-6 rounded-xl p-5 w-full ${
@@ -134,10 +269,11 @@ function PetDetails() {
               <div className="flex items-center gap-6">
                 <div className="relative">
                   <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-[#00B8D4] bg-gray-200 flex items-center justify-center">
-                    {
-                      console.log(pet.image)
-                    }
-                    <img src={previewImage || pet.image}/>
+                    <img 
+                      src={previewImage || `http://localhost:5000${pet.image}`} 
+                      alt={pet.name} 
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                 </div>
                 <div>
@@ -225,7 +361,7 @@ function PetDetails() {
                               </p>
                               <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
                                 <i className="fa-solid fa-clock text-[#5EE6FE]"></i>
-                                {appt.date} • {appt.status}
+                                {getAppointmentTime(appt)} • {appt.status}
                               </p>
                             </div>
                             <button
@@ -244,40 +380,14 @@ function PetDetails() {
                 )}
 
                 {activeTab === "Medical Reports" && (
-                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {(pet.medicalReports || []).map((report, index) => (
-                      <div
-                        key={index}
-                        className="rounded-2xl bg-[#FFF8F9] p-5 shadow-sm border border-[#F3D6D8] flex flex-col justify-between"
-                      >
-                        <div>
-                          <h3 className="text-lg font-semibold text-gray-700">{report.title}</h3>
-                          <p className="text-gray-500 text-sm mt-1">{report.date}</p>
-                        </div>
-                        <button className="mt-4 bg-[#FFB6C1] text-white px-3 py-2 rounded-lg hover:bg-[#FF9FB0] transition-all">
-                          Download PDF
-                        </button>
-                      </div>
-                    ))}
+                  <div className="text-center text-gray-500 mt-6">
+                    No medical reports available.
                   </div>
                 )}
 
                 {activeTab === "Lab Records" && (
-                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {(pet.labRecords || []).map((record, index) => (
-                      <div
-                        key={index}
-                        className="rounded-2xl bg-[#E3FAF7] p-5 shadow-sm border border-[#A6E3E9] flex flex-col justify-between"
-                      >
-                        <div>
-                          <h3 className="text-lg font-semibold text-gray-700">{record.title}</h3>
-                          <p className="text-gray-500 text-sm mt-1">{record.date}</p>
-                        </div>
-                        <button className="mt-4 bg-[#5EE6FE] text-white px-3 py-2 rounded-lg hover:bg-[#3ecbe0] transition-all">
-                          View Report
-                        </button>
-                      </div>
-                    ))}
+                  <div className="text-center text-gray-500 mt-6">
+                    No lab records available.
                   </div>
                 )}
               </div>
@@ -315,10 +425,9 @@ function PetDetails() {
                 <div className="relative">
                   <div className="w-20 h-20 rounded-full overflow-hidden border-3 border-[#00B8D4] bg-gray-200 flex items-center justify-center mb-3">
                     <img 
-                      src={previewImage || pet.image} 
+                      src={previewImage || `http://localhost:5000${pet.image}`} 
                       alt={pet.name} 
                       className="w-full h-full object-cover"
-                      id="pet-profile-image"
                     />
                   </div>
 
@@ -331,33 +440,11 @@ function PetDetails() {
                       const file = e.target.files[0];
                       if (file) {
                         const previewUrl = URL.createObjectURL(file);
-                        setPreviewImage(previewUrl); // ✅ show preview immediately
-
-                        const formData = new FormData();
-                        formData.append("petImage", file);
-
-                        try {
-                          const token = localStorage.getItem("token");
-                          const res = await api.post(`/pets/${pet.id}/upload`, formData, {
-                            headers: {
-                              "Content-Type": "multipart/form-data",
-                              Authorization: `Bearer ${token}`,
-                            },
-                          });
-
-                          setPet((prev) => ({ ...prev, image: res.data.imageUrl }));
-                          setPreviewImage(null); // ✅ clear preview after server confirms
-                          setToastMessage("Profile picture updated successfully!");
-                          setShowSuccessToast(true);
-                        } catch (err) {
-                          console.error("❌ Upload failed:", err);
-                          setToastMessage("Failed to upload image.");
-                          setShowSuccessToast(true);
-                        }
+                        setPreviewImage(previewUrl);
+                        await handleImageUpload(file);
                       }
                     }}
                   />
-
 
                   <label 
                     htmlFor="profile-upload"

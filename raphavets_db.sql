@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Nov 16, 2025 at 09:08 AM
+-- Generation Time: Nov 16, 2025 at 03:03 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -47,9 +47,9 @@ CREATE TABLE `account_tbl` (
 --
 
 INSERT INTO `account_tbl` (`accId`, `roleID`, `firstName`, `lastName`, `email`, `password`, `createdAt`, `lastUpdatedAt`, `passwordChangeAt`, `logInAt`, `logOutAt`, `isDeleted`) VALUES
-(2, 1, 'Marke', 'Mapili', 'markmapili29@gmail.com', '$2b$10$NNG154DuvS/ST/lInE1Pp.XyhniL6YtSE.3UaiAv6/OvON5uMi3MC', '2025-11-19 19:01:01', '2025-11-16 15:08:31', '2025-11-09 12:21:30', '2025-11-16 15:08:31', '2025-11-09 19:26:09', 0),
+(2, 3, 'Marke', 'Mapili', 'markmapili29@gmail.com', '$2b$10$NNG154DuvS/ST/lInE1Pp.XyhniL6YtSE.3UaiAv6/OvON5uMi3MC', '2025-11-19 19:01:01', '2025-11-16 21:55:39', '2025-11-09 12:21:30', '2025-11-16 21:55:39', '2025-11-09 19:26:09', 0),
 (3, 2, 'Fionah Irish', 'Beltran', 'soupcuppy@gmail.com', '$2b$10$l/lPrlJ8Vho/LyqoOiq2sOlSSrZ1t.atCEgMaxBBOW05jri/FfwIS', '0000-00-00 00:00:00', '0000-00-00 00:00:00', '2025-11-09 12:21:30', '2025-11-09 12:20:21', '2025-11-09 12:20:21', 0),
-(5, 2, 'mark', 'mapili', 'markmapili72@gmail.com', '$2b$10$LMTrRhOAEKAweVGBy1NXQeGCWEzgN2d5WueonGDiRibvDGER08YVe', '0000-00-00 00:00:00', '2025-11-16 15:07:40', '2025-11-09 12:21:30', '2025-11-16 15:07:40', '2025-11-09 12:20:21', 0),
+(5, 2, 'mark', 'mapili', 'markmapili72@gmail.com', '$2b$10$LMTrRhOAEKAweVGBy1NXQeGCWEzgN2d5WueonGDiRibvDGER08YVe', '0000-00-00 00:00:00', '2025-11-16 16:12:58', '2025-11-09 12:21:30', '2025-11-16 16:12:58', '2025-11-09 12:20:21', 0),
 (6, 1, 'Miguel', 'Rojero', 'miguelrojero@gmail.com', '0908@Taks', '2025-11-15 18:31:41', '2025-11-15 18:31:41', '2025-11-15 18:31:41', '2025-11-15 18:31:41', '2025-11-15 18:31:41', 0),
 (8, 1, 'Vanerie', 'Parcon', 'vnaerie@gmail.com', '', '2025-11-16 00:09:49', '2025-11-16 14:50:13', '2025-11-16 00:09:49', '2025-11-16 00:09:49', '2025-11-16 00:09:49', 1),
 (9, 1, 'Marvin', 'Tomales', 'marvin@gmail.com09123456789', '', '2025-11-16 00:15:22', '2025-11-16 00:15:22', '2025-11-16 00:15:22', '2025-11-16 00:15:22', '2025-11-16 00:15:22', 0),
@@ -282,7 +282,8 @@ INSERT INTO `pet_tbl` (`petID`, `accID`, `petName`, `petGender`, `breedID`, `dat
 (53, 6, 'Carpenter', 'Female', 2, '2025-11-23', 1.00, 'dsada', 'dsadsa', '', '2025-11-15 23:53:43', '2025-11-16 14:50:36', 1),
 (54, 15, 'HAHA', 'Male', 1, '2025-11-05', 2.00, 'das', NULL, '', '2025-11-16 13:46:52', '2025-11-16 13:46:52', 0),
 (55, 14, 'MOSHI', 'Male', 2, '2025-11-03', 0.00, NULL, 'mamamama', '', '2025-11-16 14:17:14', '2025-11-16 14:17:44', 0),
-(56, 2, 'Marcy', 'Male', 1, '2025-11-13', NULL, NULL, NULL, '', '2025-11-16 15:08:17', '2025-11-16 15:08:17', 0);
+(56, 2, 'Marcy', 'Male', 1, '2025-11-13', NULL, NULL, NULL, '', '2025-11-16 15:08:17', '2025-11-16 15:08:17', 0),
+(57, 2, 'BEBE', 'Female', 1, '2025-11-05', 1.00, 'black', NULL, '', '2025-11-16 16:38:51', '2025-11-16 16:38:51', 0);
 
 -- --------------------------------------------------------
 
@@ -311,15 +312,15 @@ INSERT INTO `role_tbl` (`roleID`, `roleName`) VALUES
 --
 
 CREATE TABLE `scheduletime_tbl` (
-  `startTimeID` int(11) NOT NULL,
-  `startTime` varchar(250) NOT NULL
+  `scheduledTimeID` int(11) NOT NULL,
+  `scheduleTime` varchar(250) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `scheduletime_tbl`
 --
 
-INSERT INTO `scheduletime_tbl` (`startTimeID`, `startTime`) VALUES
+INSERT INTO `scheduletime_tbl` (`scheduledTimeID`, `scheduleTime`) VALUES
 (1, '08:00:00'),
 (2, '09:00:00'),
 (3, '10:00:00'),
@@ -451,6 +452,7 @@ CREATE TABLE `vet_table` (
 --
 ALTER TABLE `account_tbl`
   ADD PRIMARY KEY (`accId`),
+  ADD UNIQUE KEY `email` (`email`),
   ADD KEY `roleID_account_fk` (`roleID`);
 
 --
@@ -528,7 +530,7 @@ ALTER TABLE `role_tbl`
 -- Indexes for table `scheduletime_tbl`
 --
 ALTER TABLE `scheduletime_tbl`
-  ADD PRIMARY KEY (`startTimeID`);
+  ADD PRIMARY KEY (`scheduledTimeID`);
 
 --
 -- Indexes for table `service_pricing_tbl`
@@ -565,7 +567,7 @@ ALTER TABLE `vet_table`
 -- AUTO_INCREMENT for table `account_tbl`
 --
 ALTER TABLE `account_tbl`
-  MODIFY `accId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `accId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT for table `allergen_tbl`
@@ -595,7 +597,7 @@ ALTER TABLE `breed_tbl`
 -- AUTO_INCREMENT for table `clientinfo_tbl`
 --
 ALTER TABLE `clientinfo_tbl`
-  MODIFY `cliendInfoId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `cliendInfoId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `forum_images_tbl`
@@ -613,7 +615,7 @@ ALTER TABLE `forum_posts_tbl`
 -- AUTO_INCREMENT for table `pet_tbl`
 --
 ALTER TABLE `pet_tbl`
-  MODIFY `petID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=57;
+  MODIFY `petID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=59;
 
 --
 -- AUTO_INCREMENT for table `role_tbl`
@@ -625,7 +627,7 @@ ALTER TABLE `role_tbl`
 -- AUTO_INCREMENT for table `scheduletime_tbl`
 --
 ALTER TABLE `scheduletime_tbl`
-  MODIFY `startTimeID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `scheduledTimeID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT for table `service_pricing_tbl`
@@ -667,7 +669,7 @@ ALTER TABLE `account_tbl`
 ALTER TABLE `appointment_tbl`
   ADD CONSTRAINT `accID_appointment_fk` FOREIGN KEY (`accID`) REFERENCES `account_tbl` (`accId`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `petID_appointment_fk` FOREIGN KEY (`petID`) REFERENCES `pet_tbl` (`petID`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `scheduledTimeID` FOREIGN KEY (`scheduledTimeID`) REFERENCES `scheduletime_tbl` (`startTimeID`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `scheduledTimeID` FOREIGN KEY (`scheduledTimeID`) REFERENCES `scheduletime_tbl` (`scheduledTimeID`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `serviceID_appointment_fk` FOREIGN KEY (`serviceID`) REFERENCES `service_tbl` (`serviceID`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `statudID_appointment_fk` FOREIGN KEY (`statusID`) REFERENCES `appointment_status_tbl` (`statusID`) ON DELETE CASCADE ON UPDATE CASCADE;
 
