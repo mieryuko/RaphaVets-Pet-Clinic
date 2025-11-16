@@ -233,53 +233,62 @@
 
 
     const handleSaveOwner = async (newData) => {
-      try {
-        if (editingItem) {
-          // Editing existing owner - call backend
-          const res = await api.put(`/update-owner/${editingItem.id}`, newData);
-          console.log("Owner updated:", res.data);
+    try {
+      if (editingItem) {
+        // Editing existing owner - call backend
+        const res = await api.put(`/update-owner/${editingItem.id}`, newData);
+        console.log("Owner updated:", res.data);
 
-          // Update frontend state
-          const updatedOwner = {
-            ...editingItem,
-            ...newData,
-            name: `${newData.firstName} ${newData.lastName}`,
-            email: newData.email,
-            phone: newData.phone,
-            address: newData.address,
-            gender: newData.sex,
-            dateOfBirth: formatDate(newData.dob),
-          };
+        // Update frontend state
+        const updatedOwner = {
+          ...editingItem,
+          ...newData,
+          name: `${newData.firstName} ${newData.lastName}`,
+          email: newData.email,
+          phone: newData.phone,
+          address: newData.address,
+          gender: newData.sex,
+          dateOfBirth: formatDate(newData.dob),
+        };
 
-          setPetOwners(prev =>
-            prev.map(o => o.id === editingItem.id ? updatedOwner : o)
-          );
-          
-          if (selectedOwner && selectedOwner.id === editingItem.id) {
-            setSelectedOwner(updatedOwner);
-          }
-          
-          setEditingItem(null);
-          setSuccessMessage("Owner updated successfully!");
-          
-          // Refresh data from backend
-          await fetchOwnersAndPets();
-          
-        } else {
-          // Adding new owner - call backend
-          const res = await api.post("/add-owner", newData);
-          console.log("Owner created:", res.data);
-
-          setSuccessMessage("Owner added successfully!");
-          
-          // Refresh data from backend to get the new owner with proper ID
-          await fetchOwnersAndPets();
+        setPetOwners(prev =>
+          prev.map(o => o.id === editingItem.id ? updatedOwner : o)
+        );
+        
+        if (selectedOwner && selectedOwner.id === editingItem.id) {
+          setSelectedOwner(updatedOwner);
         }
-      } catch (error) {
-        console.error("Error saving owner:", error);
-        setErrorMessage(error.response?.data?.message || "Failed to save owner!");
+        
+        setEditingItem(null);
+        setSuccessMessage("Owner updated successfully!");
+        
+        // Refresh data from backend
+        await fetchOwnersAndPets();
+        
+        // Return simple response for editing (no credentials)
+        return { message: "Owner updated successfully" };
+        
+      } else {
+        // Adding new owner - call backend
+        const res = await api.post("/add-owner", newData);
+        console.log("Owner created:", res.data);
+
+        setSuccessMessage("Owner added successfully!");
+        
+        // Refresh data from backend to get the new owner with proper ID
+        await fetchOwnersAndPets();
+
+        // Return credentials for new owner
+        return {
+          email: res.data.email,
+          password: res.data.password
+        };
       }
-    };
+    } catch (error) {
+      console.error("Error saving owner:", error);
+      throw error;
+    }
+  };
     const handleSavePet = (savedPet) => {
   try {
     if (editingItem) {
@@ -714,39 +723,19 @@
 
 
         {/* Delete Confirmation Modal */}
+        {/* Delete Confirmation Modal - REPLACE THIS SECTION */}
         {showDeleteModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-            <div className="bg-white dark:bg-[#1C1C1E] rounded-2xl p-6 w-96 shadow-xl flex flex-col gap-4">
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">Confirm Delete</h3>
-              <p className="text-gray-600 dark:text-gray-300">
-                Are you sure you want to delete this {deleteTarget.type === "owner" ? "owner" : "pet"}?
-              </p>
-              <div className="flex justify-end gap-3">
-                <button
-                  onClick={() => setShowDeleteModal(false)}
-                  className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#222] transition"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => {
-                    if (deleteTarget.type === "owner") handleDelete(deleteTarget.id, "owner");
-                    else if (deleteTarget.type === "pet") handleDelete(deleteTarget.id, "pet");
-                    else if (deleteTarget.type === "record") {
-                      setRecords(prev => prev.filter(r => r.id !== deleteTarget.id));
-                      if (selectedRecord?.id === deleteTarget.id) setSelectedRecord(null);
-                      setSuccessMessage("Record deleted successfully!");
-                    }
-                    setShowDeleteModal(false);
-                    setDeleteTarget(null);
-                  }}
-                  className="px-4 py-2 rounded-lg bg-red-500 hover:bg-green-600 text-white font-semibold transition"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          </div>
+          <DeleteModal
+            isOpen={showDeleteModal}
+            onClose={() => {
+              setShowDeleteModal(false);
+              setDeleteTarget(null);
+            }}
+            onDelete={handleDelete}
+            itemType={deleteTarget?.type === "owner" ? "owner" : deleteTarget?.type === "pet" ? "pet" : "record"}
+            deleteTarget={deleteTarget}
+            refreshData={fetchOwnersAndPets}
+          />
         )}
 
         {/* Upload Record Modal */}

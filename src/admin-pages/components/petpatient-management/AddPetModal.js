@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { X, Search } from "lucide-react";
+import { X, Search, AlertCircle } from "lucide-react";
 import api from "../../../api/axios"; 
 
 const AddPetModal = ({ isOpen, onClose, onSave, owners, initialData, refreshPets }) => {
@@ -19,6 +19,8 @@ const AddPetModal = ({ isOpen, onClose, onSave, owners, initialData, refreshPets
   const [speciesOptions, setSpeciesOptions] = useState([]);
   const [breeds, setBreeds] = useState([]);
   const [ownerSearch, setOwnerSearch] = useState("");
+  const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
 
   const toInputDate = (dateStr) => {
     if (!dateStr) return "";
@@ -30,6 +32,98 @@ const AddPetModal = ({ isOpen, onClose, onSave, owners, initialData, refreshPets
   const sanitizeNumber = (value) => {
     if (!value) return "";
     return value.toString().replace(/[^\d.]/g, "");
+  };
+
+  // Validation functions
+  const validateField = (field, value) => {
+    const newErrors = { ...errors };
+    
+    switch (field) {
+      case "ownerId":
+        if (!value) newErrors.ownerId = "Owner is required";
+        else delete newErrors.ownerId;
+        break;
+        
+      case "type":
+        if (!value) newErrors.type = "Pet type is required";
+        else delete newErrors.type;
+        break;
+        
+      case "breed":
+        if (!value) newErrors.breed = "Breed is required";
+        else delete newErrors.breed;
+        break;
+        
+      case "name":
+        if (!value.trim()) newErrors.name = "Pet name is required";
+        else if (value.trim().length < 2) newErrors.name = "Pet name must be at least 2 characters";
+        else if (!/^[a-zA-Z\s]+$/.test(value.trim())) newErrors.name = "Pet name can only contain letters and spaces";
+        else delete newErrors.name;
+        break;
+        
+      case "sex":
+        if (!value) newErrors.sex = "Gender is required";
+        else delete newErrors.sex;
+        break;
+        
+      case "weight":
+        if (value) {
+          const weight = parseFloat(value);
+          if (isNaN(weight) || weight <= 0) {
+            newErrors.weight = "Weight must be a positive number";
+          } else if (weight > 200) {
+            newErrors.weight = "Weight seems too high. Please verify.";
+          } else {
+            delete newErrors.weight;
+          }
+        } else {
+          delete newErrors.weight; // Weight is optional
+        }
+        break;
+        
+      case "color":
+        if (value && !/^[a-zA-Z\s]+$/.test(value.trim())) {
+          newErrors.color = "Color can only contain letters and spaces";
+        } else {
+          delete newErrors.color;
+        }
+        break;
+        
+      case "dob":
+        if (value) {
+          const dobDate = new Date(value);
+          const today = new Date();
+          if (dobDate > today) {
+            newErrors.dob = "Date of birth cannot be in the future";
+          } else {
+            delete newErrors.dob;
+          }
+        } else {
+          delete newErrors.dob; // DOB is optional
+        }
+        break;
+        
+      default:
+        break;
+    }
+    
+    setErrors(newErrors);
+  };
+
+  const validateForm = () => {
+    // Validate all required fields
+    validateField("ownerId", petData.ownerId);
+    validateField("type", petData.type);
+    validateField("breed", petData.breed);
+    validateField("name", petData.name);
+    validateField("sex", petData.sex);
+    
+    // Validate optional fields if they have values
+    if (petData.weight) validateField("weight", petData.weight);
+    if (petData.color) validateField("color", petData.color);
+    if (petData.dob) validateField("dob", petData.dob);
+    
+    return Object.keys(errors).length === 0;
   };
 
   // Fetch species (Type)
@@ -54,18 +148,17 @@ const AddPetModal = ({ isOpen, onClose, onSave, owners, initialData, refreshPets
     }
 
     if (initialData) {
-      // Debug log to see what's in initialData
       console.log("Initial Data for editing:", initialData);
       
       const ownerId = owners.find((o) => o.name === initialData.owner)?.id || "";
       
       setPetData({
         ownerId,
-        type: initialData.petType || "", // Use petType from initialData
+        type: initialData.petType || "",
         breed: initialData.breed || "",
         name: initialData.name || "",
         age: initialData.age || "",
-        sex: initialData.gender || "", // Note: pets use 'gender' not 'sex'
+        sex: initialData.gender || "",
         weight: sanitizeNumber(initialData.weight),
         color: initialData.color || "",
         dob: toInputDate(initialData.petDateOfBirth),
@@ -103,27 +196,31 @@ const AddPetModal = ({ isOpen, onClose, onSave, owners, initialData, refreshPets
       setBreeds([]); // Clear breeds temporarily
     }
     setPetData(updated);
+    
+    // Validate field in real-time
+    validateField(field, value);
   };
 
   const handleSave = async () => {
-    if (!petData.ownerId) return alert("Please select an owner.");
-    if (!petData.type) return alert("Please select a pet type.");
-    if (!petData.breed) return alert("Please select a breed.");
-    if (!petData.name) return alert("Please enter a pet name.");
+    if (!validateForm()) {
+      return; // Don't proceed if validation fails
+    }
 
+    setIsLoading(true);
+    
     try {
       // For editing existing pet
       if (initialData) {
         const res = await api.put(`/update-pet/${initialData.id}`, { 
           ...petData,
-          type: petData.type // Make sure type is included
+          type: petData.type
         });
         console.log("Pet updated:", res.data);
       } else {
         // For adding new pet
         const res = await api.post("/add-pets", { 
           ...petData,
-          type: petData.type // Make sure type is included
+          type: petData.type
         });
         console.log("Pet saved:", res.data);
       }
@@ -131,7 +228,7 @@ const AddPetModal = ({ isOpen, onClose, onSave, owners, initialData, refreshPets
       // Pass the saved pet data back to parent
       onSave({
         ...petData,
-        id: initialData?.id || Date.now(), // Use existing ID or generate new one
+        id: initialData?.id || Date.now(),
         owner: owners.find(o => o.id === parseInt(petData.ownerId))?.name || ""
       });
 
@@ -144,6 +241,8 @@ const AddPetModal = ({ isOpen, onClose, onSave, owners, initialData, refreshPets
     } catch (err) {
       console.error("Error saving pet:", err);
       alert("Failed to save pet.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -162,6 +261,7 @@ const AddPetModal = ({ isOpen, onClose, onSave, owners, initialData, refreshPets
     });
     setOwnerSearch("");
     setBreeds([]);
+    setErrors({});
   };
 
   if (!isOpen) return null;
@@ -193,7 +293,7 @@ const AddPetModal = ({ isOpen, onClose, onSave, owners, initialData, refreshPets
         <div className="flex gap-4 flex-1 min-h-0">
           {/* Left: Owner selection */}
           <div className="flex-1 bg-white dark:bg-[#252525] p-4 rounded-xl flex flex-col gap-3 min-h-0 overflow-y-auto">
-            <h3 className="font-semibold text-[#212529] dark:text-white mb-2 text-base">Select Owner</h3>
+            <h3 className="font-semibold text-[#212529] dark:text-white mb-2 text-base">Select Owner *</h3>
             <div className="relative mb-2">
               <Search className="absolute top-3 left-3 text-gray-400" size={16} />
               <input
@@ -224,6 +324,12 @@ const AddPetModal = ({ isOpen, onClose, onSave, owners, initialData, refreshPets
                 <p className="p-2 text-gray-400 text-sm">No owner found</p>
               )}
             </div>
+            {errors.ownerId && (
+              <p className="text-red-500 text-xs flex items-center gap-1">
+                <AlertCircle size={12} />
+                {errors.ownerId}
+              </p>
+            )}
           </div>
 
           {/* Right: Pet details */}
@@ -231,48 +337,76 @@ const AddPetModal = ({ isOpen, onClose, onSave, owners, initialData, refreshPets
             <h3 className="font-semibold text-[#212529] dark:text-white text-base">Pet Details</h3>
 
             <div className="grid grid-cols-2 gap-3 text-sm">
+              {/* Type - Required */}
               <div>
-                <label className="block mb-1">Type</label>
+                <label className="block mb-1">Type *</label>
                 <select
                   value={petData.type}
                   onChange={e => handleChange("type", e.target.value)}
-                  className="w-full p-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#252525] text-gray-800 dark:text-gray-200 focus:border-[#5EE6FE] focus:ring-1 focus:ring-[#5EE6FE] transition"
+                  className={`w-full p-2 rounded-xl border ${
+                    errors.type ? 'border-red-300' : 'border-gray-300 dark:border-gray-600'
+                  } bg-white dark:bg-[#252525] text-gray-800 dark:text-gray-200 focus:border-[#5EE6FE] focus:ring-1 focus:ring-[#5EE6FE] transition`}
                 >
                   <option value="">Select Type</option>
                   {speciesOptions.map((s, i) => (
                     <option key={i} value={s}>{s}</option>
                   ))}
                 </select>
+                {errors.type && (
+                  <p className="text-red-500 text-xs flex items-center gap-1 mt-1">
+                    <AlertCircle size={12} />
+                    {errors.type}
+                  </p>
+                )}
               </div>
 
+              {/* Breed - Required */}
               <div>
-                <label className="block mb-1">Breed</label>
+                <label className="block mb-1">Breed *</label>
                 <select
                   value={petData.breed}
                   onChange={(e) => handleChange("breed", e.target.value)}
                   disabled={!petData.type}
-                  className="w-full p-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#252525] text-gray-800 dark:text-gray-200 focus:border-[#5EE6FE] focus:ring-1 focus:ring-[#5EE6FE] transition"
+                  className={`w-full p-2 rounded-xl border ${
+                    errors.breed ? 'border-red-300' : 'border-gray-300 dark:border-gray-600'
+                  } bg-white dark:bg-[#252525] text-gray-800 dark:text-gray-200 focus:border-[#5EE6FE] focus:ring-1 focus:ring-[#5EE6FE] transition`}
                 >
                   <option value="">Select Breed</option>
                   {breeds.map((b, i) => (
                     <option key={i} value={b}>{b}</option>
                   ))}
                 </select>
+                {errors.breed && (
+                  <p className="text-red-500 text-xs flex items-center gap-1 mt-1">
+                    <AlertCircle size={12} />
+                    {errors.breed}
+                  </p>
+                )}
               </div>
 
+              {/* Name - Required */}
               <div className="col-span-2">
-                <label className="block mb-1">Name</label>
+                <label className="block mb-1">Name *</label>
                 <input
                   type="text"
                   value={petData.name}
                   onChange={(e) => handleChange("name", e.target.value)}
                   placeholder="Pet Name"
-                  className="w-full p-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#252525] text-gray-800 dark:text-gray-200 focus:border-[#5EE6FE] focus:ring-1 focus:ring-[#5EE6FE] transition"
+                  className={`w-full p-2 rounded-xl border ${
+                    errors.name ? 'border-red-300' : 'border-gray-300 dark:border-gray-600'
+                  } bg-white dark:bg-[#252525] text-gray-800 dark:text-gray-200 focus:border-[#5EE6FE] focus:ring-1 focus:ring-[#5EE6FE] transition`}
                 />
+                {errors.name && (
+                  <p className="text-red-500 text-xs flex items-center gap-1 mt-1">
+                    <AlertCircle size={12} />
+                    {errors.name}
+                  </p>
+                )}
               </div>
 
+              {/* Sex - Required */}
               <div>
-                <label className="block mb-1">Sex</label>
+                <label className="block mb-1">Sex *</label>
                 <div className="flex gap-4">
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
@@ -297,8 +431,15 @@ const AddPetModal = ({ isOpen, onClose, onSave, owners, initialData, refreshPets
                     <span className="text-sm text-gray-800 dark:text-gray-200">Female</span>
                   </label>
                 </div>
+                {errors.sex && (
+                  <p className="text-red-500 text-xs flex items-center gap-1 mt-1">
+                    <AlertCircle size={12} />
+                    {errors.sex}
+                  </p>
+                )}
               </div>
 
+              {/* Weight - Optional */}
               <div>
                 <label className="block mb-1">Weight (kg)</label>
                 <input
@@ -306,10 +447,19 @@ const AddPetModal = ({ isOpen, onClose, onSave, owners, initialData, refreshPets
                   value={petData.weight}
                   onChange={(e) => handleChange("weight", e.target.value)}
                   placeholder="Weight"
-                  className="w-full p-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#252525] text-gray-800 dark:text-gray-200 focus:border-[#5EE6FE] focus:ring-1 focus:ring-[#5EE6FE] transition"
+                  className={`w-full p-2 rounded-xl border ${
+                    errors.weight ? 'border-red-300' : 'border-gray-300 dark:border-gray-600'
+                  } bg-white dark:bg-[#252525] text-gray-800 dark:text-gray-200 focus:border-[#5EE6FE] focus:ring-1 focus:ring-[#5EE6FE] transition`}
                 />
+                {errors.weight && (
+                  <p className="text-red-500 text-xs flex items-center gap-1 mt-1">
+                    <AlertCircle size={12} />
+                    {errors.weight}
+                  </p>
+                )}
               </div>
 
+              {/* Color - Optional */}
               <div>
                 <label className="block mb-1">Color</label>
                 <input
@@ -317,20 +467,38 @@ const AddPetModal = ({ isOpen, onClose, onSave, owners, initialData, refreshPets
                   value={petData.color}
                   onChange={(e) => handleChange("color", e.target.value)}
                   placeholder="Color"
-                  className="w-full p-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#252525] text-gray-800 dark:text-gray-200 focus:border-[#5EE6FE] focus:ring-1 focus:ring-[#5EE6FE] transition"
+                  className={`w-full p-2 rounded-xl border ${
+                    errors.color ? 'border-red-300' : 'border-gray-300 dark:border-gray-600'
+                  } bg-white dark:bg-[#252525] text-gray-800 dark:text-gray-200 focus:border-[#5EE6FE] focus:ring-1 focus:ring-[#5EE6FE] transition`}
                 />
+                {errors.color && (
+                  <p className="text-red-500 text-xs flex items-center gap-1 mt-1">
+                    <AlertCircle size={12} />
+                    {errors.color}
+                  </p>
+                )}
               </div>
 
+              {/* Date of Birth - Optional */}
               <div>
                 <label className="block mb-1">Date of Birth</label>
                 <input
                   type="date"
                   value={petData.dob}
                   onChange={(e) => handleChange("dob", e.target.value)}
-                  className="w-full p-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#252525] text-gray-800 dark:text-gray-200 focus:border-[#5EE6FE] focus:ring-1 focus:ring-[#5EE6FE] transition"
+                  className={`w-full p-2 rounded-xl border ${
+                    errors.dob ? 'border-red-300' : 'border-gray-300 dark:border-gray-600'
+                  } bg-white dark:bg-[#252525] text-gray-800 dark:text-gray-200 focus:border-[#5EE6FE] focus:ring-1 focus:ring-[#5EE6FE] transition`}
                 />
+                {errors.dob && (
+                  <p className="text-red-500 text-xs flex items-center gap-1 mt-1">
+                    <AlertCircle size={12} />
+                    {errors.dob}
+                  </p>
+                )}
               </div>
 
+              {/* Notes - Optional */}
               <div className="col-span-2">
                 <label className="block mb-1">Notes (optional)</label>
                 <textarea
@@ -352,9 +520,10 @@ const AddPetModal = ({ isOpen, onClose, onSave, owners, initialData, refreshPets
               </button>
               <button
                 onClick={handleSave}
-                className="px-4 py-2 rounded-lg bg-[#5EE6FE] hover:bg-[#40c6e3] text-white font-semibold transition"
+                disabled={isLoading}
+                className="px-4 py-2 rounded-lg bg-[#5EE6FE] hover:bg-[#40c6e3] text-white font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {initialData ? "Update Pet" : "Save Pet"}
+                {isLoading ? "Saving..." : (initialData ? "Update Pet" : "Save Pet")}
               </button>
             </div>
           </div>

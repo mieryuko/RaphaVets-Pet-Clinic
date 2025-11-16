@@ -1,4 +1,52 @@
-const DeleteModal = ({ isOpen, onClose, onDelete, itemType }) => {
+import { useState } from "react";
+import api from "../../../api/axios";
+
+const DeleteModal = ({ isOpen, onClose, onDelete, itemType, deleteTarget, refreshData }) => {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSoftDelete = async () => {
+    if (!deleteTarget) return;
+    
+    setIsLoading(true);
+    try {
+      let endpoint = "";
+      
+      // Determine the endpoint based on item type
+      switch (deleteTarget.type) {
+        case "owner":
+          endpoint = `soft-delete-owner/${deleteTarget.id}`; // Remove leading /
+          break;
+        case "pet":
+          endpoint = `soft-delete-pet/${deleteTarget.id}`; // Remove leading /
+          break;
+        case "record":
+          endpoint = `soft-delete-record/${deleteTarget.id}`; // Remove leading /
+          break;
+        default:
+          console.error("Unknown item type for deletion");
+          return;
+      }
+
+      // Make API call for soft deletion
+      await api.put(endpoint);
+      
+      // Call the parent's onDelete function to update UI
+      onDelete(deleteTarget.id, deleteTarget.type);
+      
+      // Refresh data if refresh function is provided
+      if (refreshData) {
+        refreshData();
+      }
+      
+    } catch (error) {
+      console.error(`Error soft deleting ${itemType}:`, error);
+      alert(`Failed to delete ${itemType}. Please try again.`);
+    } finally {
+      setIsLoading(false);
+      onClose();
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -6,20 +54,22 @@ const DeleteModal = ({ isOpen, onClose, onDelete, itemType }) => {
       <div className="bg-white dark:bg-[#1C1C1E] rounded-2xl p-6 w-96 shadow-xl flex flex-col gap-4">
         <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">Confirm Delete</h3>
         <p className="text-gray-600 dark:text-gray-300">
-          Are you sure you want to delete this {itemType}?
+          Are you sure you want to delete this {itemType}? This action can be undone.
         </p>
         <div className="flex justify-end gap-3">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#222] transition"
+            disabled={isLoading}
+            className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#222] transition disabled:opacity-50"
           >
             Cancel
           </button>
           <button
-            onClick={onDelete}
-            className="px-4 py-2 rounded-lg bg-red-500 hover:bg-green-600 text-white font-semibold transition"
+            onClick={handleSoftDelete}
+            disabled={isLoading}
+            className="px-4 py-2 rounded-lg bg-red-500 hover:bg-red-600 text-white font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Delete
+            {isLoading ? "Deleting..." : "Delete"}
           </button>
         </div>
       </div>

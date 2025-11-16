@@ -1,6 +1,77 @@
 import React from "react";
 
 const ViewDetailsModal = ({ appointment, closeModal }) => {
+
+  const formatTime = (timeStr) => {
+    if (!timeStr) return 'Time TBD';
+    
+    // Handle both "12:00:00" and "12:00 PM" formats
+    if (timeStr.includes('PM') || timeStr.includes('AM')) {
+      return timeStr; // Already formatted
+    }
+    
+    // Format "12:00:00" to "12:00 PM"
+    const [hour, minute] = timeStr.split(":").map(Number);
+    const date = new Date();
+    date.setHours(hour);
+    date.setMinutes(minute);
+    return date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  };
+
+  const formatAppointmentDate = (dateString) => {
+    try {
+      // Handle different date formats that might come from your API
+      let date;
+      
+      if (dateString.includes("•")) {
+        // Format: "Nov 22, 2025 • 12:00 PM"
+        const [datePart] = dateString.split(" • ");
+        date = new Date(datePart);
+      } else if (dateString.includes("-")) {
+        // Format: "2025-11-22 - 12:00:00"
+        const [datePart, timePart] = dateString.split(" - ");
+        date = new Date(datePart);
+        
+        // Format the time part if it's in "12:00:00" format
+        if (timePart && !timePart.includes('PM') && !timePart.includes('AM')) {
+          const formattedTime = formatTime(timePart);
+          return {
+            month: date.toLocaleString("default", { month: "short" }),
+            day: date.getDate(),
+            weekday: date.toLocaleString("default", { weekday: "long" }),
+            fullDate: date,
+            displayDate: `${datePart} • ${formattedTime}`
+          };
+        }
+      } else {
+        // Assume it's already a proper date string
+        date = new Date(dateString);
+      }
+
+      if (isNaN(date)) {
+        console.warn("Invalid date:", dateString);
+        return null;
+      }
+
+      return {
+        month: date.toLocaleString("default", { month: "short" }),
+        day: date.getDate(),
+        weekday: date.toLocaleString("default", { weekday: "long" }),
+        fullDate: date,
+        displayDate: dateString
+      };
+    } catch (error) {
+      console.error("Error parsing date:", error);
+      return null;
+    }
+  };
+
+  // Get formatted date for display
+  const getFormattedDate = () => {
+    const formatted = formatAppointmentDate(appointment.date);
+    return formatted?.displayDate || appointment.date;
+  };
+
   return (
     <>
       <div onClick={closeModal} className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 animate-fadeIn"></div>
@@ -13,10 +84,15 @@ const ViewDetailsModal = ({ appointment, closeModal }) => {
             <p><span className="font-semibold">Pet Name:</span> {appointment.petName}</p>
             <p><span className="font-semibold">Owner Name:</span> {appointment.ownerName}</p>
             <p><span className="font-semibold">Service:</span> {appointment.type}</p>
-            <p><span className="font-semibold">Date & Time:</span> {appointment.date}</p>
+            <p><span className="font-semibold">Date & Time:</span> {getFormattedDate()}</p>
             <p>
               <span className="font-semibold">Status:</span>{" "}
-              <span className={`px-2 py-1 rounded-full text-xs font-semibold ${appointment.status === "Upcoming" ? "bg-[#E0F9FF] text-[#00B8D4]" : "bg-green-100 text-green-700"}`}>
+              <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                appointment.status === "Upcoming" ? "bg-[#E0F9FF] text-[#00B8D4]" : 
+                appointment.status === "Pending" ? "bg-yellow-100 text-yellow-700" :
+                appointment.status === "Done" ? "bg-green-100 text-green-700" :
+                "bg-gray-100 text-gray-700"
+              }`}>
                 {appointment.status}
               </span>
             </p>
