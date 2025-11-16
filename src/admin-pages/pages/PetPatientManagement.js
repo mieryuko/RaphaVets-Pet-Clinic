@@ -723,39 +723,19 @@
 
 
         {/* Delete Confirmation Modal */}
+        {/* Delete Confirmation Modal - REPLACE THIS SECTION */}
         {showDeleteModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-            <div className="bg-white dark:bg-[#1C1C1E] rounded-2xl p-6 w-96 shadow-xl flex flex-col gap-4">
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">Confirm Delete</h3>
-              <p className="text-gray-600 dark:text-gray-300">
-                Are you sure you want to delete this {deleteTarget.type === "owner" ? "owner" : "pet"}?
-              </p>
-              <div className="flex justify-end gap-3">
-                <button
-                  onClick={() => setShowDeleteModal(false)}
-                  className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#222] transition"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => {
-                    if (deleteTarget.type === "owner") handleDelete(deleteTarget.id, "owner");
-                    else if (deleteTarget.type === "pet") handleDelete(deleteTarget.id, "pet");
-                    else if (deleteTarget.type === "record") {
-                      setRecords(prev => prev.filter(r => r.id !== deleteTarget.id));
-                      if (selectedRecord?.id === deleteTarget.id) setSelectedRecord(null);
-                      setSuccessMessage("Record deleted successfully!");
-                    }
-                    setShowDeleteModal(false);
-                    setDeleteTarget(null);
-                  }}
-                  className="px-4 py-2 rounded-lg bg-red-500 hover:bg-green-600 text-white font-semibold transition"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          </div>
+          <DeleteModal
+            isOpen={showDeleteModal}
+            onClose={() => {
+              setShowDeleteModal(false);
+              setDeleteTarget(null);
+            }}
+            onDelete={handleDelete}
+            itemType={deleteTarget?.type === "owner" ? "owner" : deleteTarget?.type === "pet" ? "pet" : "record"}
+            deleteTarget={deleteTarget}
+            refreshData={fetchOwnersAndPets}
+          />
         )}
 
         {/* Upload Record Modal */}

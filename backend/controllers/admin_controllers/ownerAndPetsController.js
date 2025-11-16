@@ -444,3 +444,63 @@ export const updateOwner = async (req, res) => {
     res.status(500).json({ message: "Server error", error: err.message });
   }
 };
+
+export const softDeleteOwner = async (req, res) => {
+  try {
+    const { ownerId } = req.params;
+
+    const [result] = await db.execute(
+      'UPDATE account_tbl SET isDeleted = 1 WHERE accId = ? AND roleID = 1',
+      [ownerId]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Owner not found' });
+    }
+
+    res.status(200).json({ message: 'Owner soft deleted successfully' });
+  } catch (error) {
+    console.error('Error soft deleting owner:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+export const softDeletePet = async (req, res) => {
+  try {
+    const { petId } = req.params;
+
+    const [result] = await db.execute(
+      'UPDATE pet_tbl SET isDeleted = 1 WHERE petID = ?',
+      [petId]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Pet not found' });
+    }
+
+    res.status(200).json({ message: 'Pet soft deleted successfully' });
+  } catch (error) {
+    console.error('Error soft deleting pet:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+export const softDeleteRecord = async (req, res) => {
+  try {
+    const { recordId } = req.params;
+
+    const [result] = await db.execute(
+      'UPDATE records SET isDeleted = 1 WHERE recordId = ?',
+      [recordId]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Record not found' });
+    }
+
+    res.status(200).json({ message: 'Record soft deleted successfully' });
+  } catch (error) {
+    console.error('Error soft deleting record:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};

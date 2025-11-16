@@ -5,8 +5,11 @@ import {
     getSpecies,
     createPet,
     updatePet,
-    createOwner,    // Add this
-    updateOwner     // Add this
+    createOwner,
+    updateOwner,
+    softDeleteOwner,    
+    softDeletePet,     
+    softDeleteRecord    
 } from "../../controllers/admin_controllers/ownerAndPetsController.js";
 import { verifyToken } from "../../middleware/authMiddleware.js";
 import { allowRoles } from "../../middleware/roleMiddleware.js";
@@ -21,8 +24,13 @@ router.get("/species", verifyToken, allowRoles(2, 3), getSpecies);
 router.post("/add-pets", verifyToken, allowRoles(2, 3), createPet);
 router.put("/update-pet/:petId", verifyToken, allowRoles(2, 3), updatePet);
 
-// Owner routes - ADD THESE
+// Owner routes
 router.post("/add-owner", verifyToken, allowRoles(2, 3), createOwner);
 router.put("/update-owner/:ownerId", verifyToken, allowRoles(2, 3), updateOwner);
+
+// Soft deletion routes
+router.put("/soft-delete-owner/:ownerId", verifyToken, allowRoles(2, 3), softDeleteOwner);
+router.put("/soft-delete-pet/:petId", verifyToken, allowRoles(2, 3), softDeletePet);
+router.put("/soft-delete-record/:recordId", verifyToken, allowRoles(2, 3), softDeleteRecord);
 
 export default router;
