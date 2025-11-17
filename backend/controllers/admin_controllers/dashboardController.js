@@ -1,0 +1,43 @@
+import db from "../../config/db.js";
+
+export const getDashboardStats = async (req, res) => {
+  try {
+    // Get admin name (first admin user found)
+    const [adminRows] = await db.query(`
+      SELECT firstName, lastName 
+      FROM account_tbl 
+      WHERE roleID = 2 AND isDeleted = 0
+      LIMIT 1
+    `);
+
+    // Get total pet owners (all client users who are not deleted)
+    const [ownerRows] = await db.query(`
+      SELECT COUNT(*) as totalOwners 
+      FROM account_tbl 
+      WHERE roleID = 1 AND isDeleted = 0
+    `);
+
+    // Get total pets - only from non-deleted owners
+    const [petRows] = await db.query(`
+      SELECT COUNT(*) as totalPets 
+      FROM pet_tbl p
+      INNER JOIN account_tbl a ON p.accID = a.accId
+      WHERE p.isDeleted = 0 AND a.isDeleted = 0 AND a.roleID = 1
+    `);
+
+    const adminName = adminRows.length > 0 
+      ? `${adminRows[0].firstName} ${adminRows[0].lastName}`
+      : 'Admin';
+
+    const stats = {
+      adminName,
+      totalOwners: ownerRows[0]?.totalOwners || 0,
+      totalPets: petRows[0]?.totalPets || 0,
+    };
+
+    res.json(stats);
+  } catch (err) {
+    console.error("❌ Failed to fetch dashboard stats:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};

@@ -1,3 +1,4 @@
+import React, { useEffect, useState } from "react";
 import Sidebar from "../template/Sidebar";
 import Header from "../template/Header";
 import {
@@ -6,19 +7,40 @@ import {
   Cpu,
   MessageSquarePlus,
 } from "lucide-react";
-
 import {
   LineChart,
   Line,
-  Area,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import api from "../../api/axios";
 
 const Dashboard = () => {
+  const [stats, setStats] = useState({
+    adminName: "Admin",
+    totalOwners: 0,
+    totalPets: 0,
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDashboardStats = async () => {
+      try {
+        const response = await api.get('/admin/dashboard/stats');
+        setStats(response.data);
+      } catch (err) {
+        console.error("❌ Failed to fetch dashboard stats:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardStats();
+  }, []);
+
   const appointmentsData = [
     { month: "Jan", appointments: 30 },
     { month: "Feb", appointments: 45 },
@@ -39,6 +61,29 @@ const Dashboard = () => {
     { action: "Posted a tip", time: "2 days ago" },
   ];
 
+  const statCards = [
+    { 
+      title: "Total Pet Owners", 
+      value: loading ? "..." : stats.totalOwners, 
+      color: "from-[#E0F7FA] to-[#E5FBFF]" 
+    },
+    { 
+      title: "Total Pets", 
+      value: loading ? "..." : stats.totalPets, 
+      color: "from-[#E8F5E9] to-[#F1FBF1]" 
+    },
+    { 
+      title: "Upcoming Appointments", 
+      value: 8, 
+      color: "from-[#FFF8E1] to-[#FFFBEA]" 
+    },
+    { 
+      title: "Missing Pets", 
+      value: 4, 
+      color: "from-[#FCE4EC] to-[#FFF0F5]" 
+    },
+  ];
+
   return (
     <div className="flex bg-[#FBFBFB] dark:bg-[#101010] h-screen overflow-hidden">
       <main className="flex-1 p-4 flex flex-col justify-between">
@@ -48,29 +93,19 @@ const Dashboard = () => {
         <div className="bg-gradient-to-r from-[#E5FBFF] to-[#FDFBFF] dark:from-[#1F1F1F] dark:to-[#232323] rounded-2xl p-4 mb-3 flex justify-between items-center shadow-sm border border-gray-100 dark:border-gray-800">
           <div>
             <h1 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
-              Welcome back, Admin [name]👋
+              Welcome back, {stats.adminName} 👋
             </h1>
             <p className="text-xs text-gray-500 dark:text-gray-400">
               Here's what's happening in Rapha Vet Clinic today.
             </p>
           </div>
-          {/* <img
-            src="/images/white-paws.png"
-            alt="Clinic Logo"
-            className="h-10 w-15 opacity-80"
-          /> */}
         </div>
 
         {/* ========== MAIN GRID ========== */}
         <div className="grid grid-rows-[auto_auto_1fr] gap-3 flex-1 overflow-hidden">
           {/* Stat Cards */}
           <div className="grid grid-cols-4 gap-4">
-            {[
-              { title: "Total Pet Owners", value: 120, color: "from-[#E0F7FA] to-[#E5FBFF]" },
-              { title: "Total Pets", value: 85, color: "from-[#E8F5E9] to-[#F1FBF1]" },
-              { title: "Upcoming Appointments", value: 8, color: "from-[#FFF8E1] to-[#FFFBEA]" },
-              { title: "Missing Pets", value: 4, color: "from-[#FCE4EC] to-[#FFF0F5]" },
-            ].map((card, i) => (
+            {statCards.map((card, i) => (
               <div
                 key={i}
                 className={`bg-gradient-to-br ${card.color} dark:from-[#1B1B1B] dark:to-[#222] rounded-2xl shadow-md border border-white/40 dark:border-gray-800 p-4 hover:scale-[1.02] transition-transform`}
@@ -167,7 +202,6 @@ const Dashboard = () => {
               </div>
             </div>
 
-
             {/* Recent Activity */}
             <div className="col-span-1 flex flex-col min-h-0">
               <div className="bg-white dark:bg-[#181818] rounded-2xl shadow-md border border-gray-100 dark:border-gray-800 p-4 flex flex-col flex-1 min-h-0">
@@ -198,8 +232,6 @@ const Dashboard = () => {
                 </div>
               </div>
             </div>
-
-
           </div>
         </div>
       </main>

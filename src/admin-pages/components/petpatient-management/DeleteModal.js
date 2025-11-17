@@ -14,13 +14,13 @@ const DeleteModal = ({ isOpen, onClose, onDelete, itemType, deleteTarget, refres
       // Determine the endpoint based on item type
       switch (deleteTarget.type) {
         case "owner":
-          endpoint = `soft-delete-owner/${deleteTarget.id}`; // Remove leading /
+          endpoint = `admin/soft-delete-owner/${deleteTarget.id}`; // Remove leading /
           break;
         case "pet":
-          endpoint = `soft-delete-pet/${deleteTarget.id}`; // Remove leading /
+          endpoint = `admin/soft-delete-pet/${deleteTarget.id}`; // Remove leading /
           break;
         case "record":
-          endpoint = `soft-delete-record/${deleteTarget.id}`; // Remove leading /
+          endpoint = `admin/soft-delete-record/${deleteTarget.id}`; // Remove leading /
           break;
         default:
           console.error("Unknown item type for deletion");

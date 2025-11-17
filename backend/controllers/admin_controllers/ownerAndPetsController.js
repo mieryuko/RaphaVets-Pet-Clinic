@@ -223,6 +223,16 @@ export const createOwner = async (req, res) => {
       return res.status(400).json({ message: "Missing required fields: firstName, lastName, email, phone" });
     }
 
+    // ✅ ADDED: Check if email already exists
+    const [existingEmail] = await db.execute(
+      "SELECT accId FROM account_tbl WHERE email = ? AND isDeleted = 0",
+      [email]
+    );
+
+    if (existingEmail.length > 0) {
+      return res.status(400).json({ message: "Email already exists" });
+    }
+
     // Generate random password
     const generateRandomPassword = (length = 12) => {
       const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';

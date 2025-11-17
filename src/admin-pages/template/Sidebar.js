@@ -1,6 +1,8 @@
 import { useState } from "react"; 
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Home, Users, Calendar, Brain, FileBarChart, Settings, LogOut, Edit } from "lucide-react";
+  import api from "../../api/axios"; 
+
 
 const Sidebar = () => {
   const location = useLocation(); 
@@ -17,11 +19,28 @@ const Sidebar = () => {
     { name: "Admin Settings", icon: <Settings size={18} />, path: "/admin-pages/settings" },
   ];
 
-    const handleLogout = () => {
-    // Here you can clear user session, tokens, etc.
-    setShowLogoutModal(false);
-    navigate("/"); // <-- navigate to home
-  };
+    const handleLogout = async () => {
+      setShowLogoutModal(false);
+
+      const token = localStorage.getItem("token");
+      if (token) {
+        try {
+          await api.post(
+            "/auth/logout",
+            {},
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+        } catch (err) {
+          console.error("❌ Logout error:", err);
+        }
+      }
+
+      localStorage.removeItem("token");
+      localStorage.removeItem("userId");
+      localStorage.removeItem("role");
+
+      navigate("/");
+    };
 
   return (
     <aside className="w-64 h-screen bg-white shadow-[4px_0_12px_rgba(0,0,0,0.05)] flex flex-col justify-between py-6 rounded-r-2xl">

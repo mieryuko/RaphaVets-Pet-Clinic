@@ -7,6 +7,10 @@ import userRoute from "./routes/userRoute.js";
 import appointmentRoute from "./routes/appointmentRoute.js";
 import petRoute from "./routes/petRoute.js";
 import clientRoute from "./routes/admin_routes/ownerAndPetRoute.js"
+import dashboardRoute from "./routes/admin_routes/dashboardRoute.js"
+import petCareTipsRoutes from './routes/petCareTipsRoute.js';
+import videoRoutes from './routes/videoRoute.js';
+
 const app = express();
 
 app.use(cors());
@@ -23,14 +27,16 @@ app.use("/api/forum", forumRoutes);
 app.use("/api/appointment", appointmentRoute);
 //pet routes
 app.use("/api/pets", petRoute);
+//pet care tips route
+app.use('/api/pet-care-tips', petCareTipsRoutes);
+app.use('/api/videos', videoRoutes);
+
+// ADMIN SIDE ROUTES
+app.use("/api/admin", clientRoute);
+app.use("/api/admin/dashboard", dashboardRoute);
 
 // Serve uploaded pet images
 app.use("/uploads", express.static("uploads"));
-
-//ADMIN SIDE
-
-app.use("/api", clientRoute);
-
 
 // Test route to verify server
 app.get("/api/test", (req, res) => {

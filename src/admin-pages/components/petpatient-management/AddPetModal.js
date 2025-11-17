@@ -130,7 +130,7 @@ const AddPetModal = ({ isOpen, onClose, onSave, owners, initialData, refreshPets
   useEffect(() => {
     const fetchSpecies = async () => {
       try {
-        const res = await api.get("/species");
+        const res = await api.get("/admin/species");
         setSpeciesOptions(res.data);
       } catch (err) {
         console.error("Failed to fetch species:", err);
@@ -178,7 +178,7 @@ const AddPetModal = ({ isOpen, onClose, onSave, owners, initialData, refreshPets
 
     const fetchBreeds = async () => {
       try {
-        const res = await api.get(`/breeds?species=${petData.type}`);
+        const res = await api.get(`admin/breeds?species=${petData.type}`);
         setBreeds(res.data);
       } catch (error) {
         console.error("Failed to fetch breeds:", error);
@@ -211,14 +211,14 @@ const AddPetModal = ({ isOpen, onClose, onSave, owners, initialData, refreshPets
     try {
       // For editing existing pet
       if (initialData) {
-        const res = await api.put(`/update-pet/${initialData.id}`, { 
+        const res = await api.put(`admin/update-pet/${initialData.id}`, { 
           ...petData,
           type: petData.type
         });
         console.log("Pet updated:", res.data);
       } else {
         // For adding new pet
-        const res = await api.post("/add-pets", { 
+        const res = await api.post("admin/add-pets", { 
           ...petData,
           type: petData.type
         });

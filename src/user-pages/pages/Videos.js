@@ -1,55 +1,108 @@
-// src/user-pages/pages/Videos.js
 import React, { useState, useEffect } from "react";
 import Header from "../template/Header";
 import Sidebar from "../template/SideBar";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search } from "lucide-react";
+import api from "../../api/axios";
 
 export default function Videos() {
   const [isMenuOpen, setIsMenuOpen] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
   const [activeFilter, setActiveFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
-  const [openVideoId, setOpenVideoId] = useState(null); // currently opened video in modal
+  const [openVideoId, setOpenVideoId] = useState(null);
+  const [videos, setVideos] = useState([]);
+  const [filters, setFilters] = useState(["All"]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Categories / filters
-  const filters = ["All", "Training", "Health", "Grooming", "Nutrition", "Behavior"];
+  // Fetch videos and categories
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      console.log('🔄 Fetching videos data...');
+      
+      const [videosResponse, categoriesResponse] = await Promise.all([
+        api.get('/videos'),
+        api.get('/videos/categories')
+      ]);
 
-  // NOTE: use valid YouTube VIDEO IDs here (just the id, not the full URL).
-  // Replace the sample ids with real ones when you want.
-  const videos = [
-    { id: "jFMA5ggFsXU", title: "Dog Training 101: How to Train ANY DOG the Basics", category: "Training" },
-    { id: "ORtlZG_RU1s", title: "How to Bathe your Cat that Hates Water (6 Step Tutorial) | The Cat Butler", category: "Grooming" },
-    { id: "qwKMf_5pU_Y", title: "Top 10 Best Foods for Dogs!!", category: "Nutrition" },
-    { id: "rR6aXt-bRGs", title: "10 Signs Your Cat is Sick And Needs Help (A Vet's Advice)", category: "Health" },
-    { id: "pZkzdsjtWc0", title: "How To Stop Your Dog Barking - You Can Do This Right Now", category: "Behavior" },
-    { id: "VnJafu_NMoQ", title: "How to Trim Dog Nails Safely", category: "Grooming" },
-    { id: "6cvxA1CMbMQ", title: "Cat Nutrition: The Food, The Bad & The Ugly: Part 1: Dry Food!", category: "Nutrition" },
-  ];
+      console.log('✅ Videos data:', videosResponse.data);
+      console.log('✅ Categories data:', categoriesResponse.data);
 
-  // filter + search
+      if (videosResponse.data.success) {
+        setVideos(videosResponse.data.data);
+      }
+
+      if (categoriesResponse.data.success) {
+        setFilters(categoriesResponse.data.data);
+      }
+
+    } catch (err) {
+      console.error('💥 Error fetching videos:', err);
+      setError(err.message);
+      
+      // // Fallback to mock data
+      // console.log('🔄 Using mock data as fallback...');
+      // const mockVideos = [
+      //   { id: "jFMA5ggFsXU", title: "Dog Training 101: How to Train ANY DOG the Basics", category: "Training" },
+      //   { id: "ORtlZG_RU1s", title: "How to Bathe your Cat that Hates Water", category: "Grooming" },
+      //   { id: "qwKMf_5pU_Y", title: "Top 10 Best Foods for Dogs!!", category: "Nutrition" },
+      //   { id: "rR6aXt-bRGs", title: "10 Signs Your Cat is Sick And Needs Help", category: "Health" },
+      //   { id: "pZkzdsjtWc0", title: "How To Stop Your Dog Barking", category: "Behavior" },
+      // ];
+
+      // const mockFilters = ["All", "Training", "Health", "Grooming", "Nutrition", "Behavior"];
+      
+      // setVideos(mockVideos);
+      // setFilters(mockFilters);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  // Filter + search
   const filtered = videos.filter(
     (v) =>
       (activeFilter === "All" || v.category === activeFilter) &&
       v.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // dark mode read/save
+  // Dark mode persistence
   useEffect(() => {
     const saved = localStorage.getItem("darkMode");
     if (saved) setDarkMode(saved === "true");
   }, []);
+  
   useEffect(() => localStorage.setItem("darkMode", darkMode), [darkMode]);
 
-  // Helper: thumbnail URL from id
+  // Helper functions
   const thumbUrl = (id) => `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
-  // Helper: watch URL (fallback)
   const watchUrl = (id) => `https://www.youtube.com/watch?v=${id}`;
-  // Helper: embed src
   const embedSrc = (id) => `https://www.youtube.com/embed/${id}?autoplay=1`;
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-xl text-[#2FA394]">Loading videos...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-xl text-red-500">Error loading videos: {error}</div>
+      </div>
+    );
+  }
+
   return (
-    <div className={`font-sansation min-h-screen ${darkMode ? "bg-[#121212] text-white" : "bg-[#FBFBFB]"}`}>
+    <div className={`font-sansation min-h-screen ${darkMode ? "bg-[#121212] text-white" : "bg-[#F6FAFB]"}`}>
       <Header darkMode={darkMode} setDarkMode={setDarkMode} setIsMenuOpen={setIsMenuOpen} />
 
       <div className="flex flex-row gap-5 px-5 sm:px-10 lg:px-12">
@@ -57,7 +110,7 @@ export default function Videos() {
 
         <div className={`w-full transition-all duration-300 ${!isMenuOpen ? "md:w-full" : "md:w-[calc(100%-250px)]"}`}>
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }} className="bg-white rounded-3xl p-6 mt-6 shadow-lg border border-gray-100">
-            {/* header + search */}
+            {/* Header + search */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
               <div>
                 <h1 className="text-2xl sm:text-3xl font-bold text-[#2FA394]">Pet Video Library</h1>
@@ -77,7 +130,7 @@ export default function Videos() {
               </div>
             </div>
 
-            {/* filters */}
+            {/* Filters */}
             <div className="flex flex-wrap gap-2 mb-6">
               {filters.map((f) => (
                 <button
@@ -92,14 +145,12 @@ export default function Videos() {
               ))}
             </div>
 
-            {/* wrapper */}
+            {/* Video grid */}
             <div className="rounded-2xl border border-gray-100 bg-white p-4">
-              {/* grid of thumbnails */}
               {filtered.length ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                   {filtered.map((v) => (
                     <motion.div key={v.id} layout initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }} className="rounded-lg overflow-hidden border border-gray-100 shadow-sm hover:shadow-md group bg-white">
-                      {/* Thumbnail (click opens modal) */}
                       <button
                         onClick={() => setOpenVideoId(v.id)}
                         className="relative block w-full aspect-video overflow-hidden"
@@ -112,7 +163,6 @@ export default function Videos() {
                         </div>
                       </button>
 
-                      {/* meta */}
                       <div className="p-3 text-left">
                         <h3 className="text-sm font-semibold text-[#2FA394] mb-1">{v.title}</h3>
                         <p className="text-xs text-gray-500 mb-2">{v.category}</p>
@@ -132,7 +182,6 @@ export default function Videos() {
               <p className="text-xs text-gray-400 mt-3 text-center">
                 © Videos embedded from YouTube. All rights belong to their respective creators.
               </p>
-
             </div>
           </motion.div>
         </div>
@@ -144,7 +193,6 @@ export default function Videos() {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
             <motion.div initial={{ y: 20 }} animate={{ y: 0 }} exit={{ y: 20 }} transition={{ duration: 0.2 }} className="w-full max-w-4xl bg-black rounded-xl overflow-hidden">
               <div className="relative pb-[56.25%]"> 
-                {/* responsive iframe container */}
                 <iframe
                   title="video-player"
                   src={embedSrc(openVideoId)}
@@ -155,7 +203,6 @@ export default function Videos() {
                 />
               </div>
 
-              {/* action bar */}
               <div className="flex items-center justify-between p-3 bg-white">
                 <div className="text-sm text-gray-700">Playing video</div>
                 <div className="flex items-center gap-2">

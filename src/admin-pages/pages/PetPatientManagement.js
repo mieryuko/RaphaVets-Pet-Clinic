@@ -92,7 +92,7 @@
 
     const fetchOwnersAndPets = async () => {
       try {
-        const res = await api.get("/owners-with-pets");
+        const res = await api.get("/admin/owners-with-pets");
         const data = res.data;
 
         setPetOwners(
@@ -138,7 +138,7 @@
     useEffect(() => {
       const fetchData = async () => {
         try {
-          const res = await api.get("/owners-with-pets");
+          const res = await api.get("/admin/owners-with-pets");
           const data = res.data;
 
           setPetOwners(
@@ -270,7 +270,7 @@
         
       } else {
         // Adding new owner - call backend
-        const res = await api.post("/add-owner", newData);
+        const res = await api.post("admin/add-owner", newData);
         console.log("Owner created:", res.data);
 
         setSuccessMessage("Owner added successfully!");

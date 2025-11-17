@@ -2,47 +2,40 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import api from "../../api/axios";
 
-function SideBar({ isMenuOpen, setIsMenuOpen }) {
+function SideBar({ isMenuOpen, setIsMenuOpen, refreshTrigger }) { // Add refreshTrigger prop
   const navigate = useNavigate();
   const location = useLocation();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [pets, setPets] = useState([]); // store pets from backend
 
+  
+
   // Fetch pets on component mount
   useEffect(() => {
     const fetchPets = async () => {
-      // Check if we have cached pets
-      const cachedPets = localStorage.getItem('cachedPets');
-      const cacheTimestamp = localStorage.getItem('petsCacheTimestamp');
-      const now = Date.now();
-      
-      // Use cache if it's less than 5 minutes old
-      if (cachedPets && cacheTimestamp && (now - parseInt(cacheTimestamp)) < 5 * 60 * 1000) {
-        setPets(JSON.parse(cachedPets));
-        return;
-      }
-
       const token = localStorage.getItem("token");
+      console.log("Token being sent:", token); // <-- log token
       if (!token) return;
 
       try {
         const res = await api.get("/pets", {
           headers: { Authorization: `Bearer ${token}` },
         });
-        console.log("Pets response:", res.data);
+        console.log("Pets response:", res.data); // <-- log response
         setPets(res.data);
-        
-        // Cache the result
-        localStorage.setItem('cachedPets', JSON.stringify(res.data));
-        localStorage.setItem('petsCacheTimestamp', now.toString());
       } catch (err) {
         console.error("❌ Failed to fetch pets:", err.response?.data || err);
       }
     };
 
+  // Fetch pets on component mount AND when refreshTrigger changes
+  useEffect(() => {
     fetchPets();
+
   }, []);
   
+
+
   const handleLogout = async () => {
     setShowLogoutModal(false);
 

@@ -58,9 +58,9 @@ export const getBookedSlots = async (req, res) => {
 
   try {
     const [rows] = await db.query(
-      `SELECT st.startTime 
+      `SELECT st.scheduleTime 
        FROM appointment_tbl a
-       JOIN scheduleTIme_tbl st ON a.scheduledTimeID = st.startTimeID
+       JOIN scheduleTIme_tbl st ON a.scheduledTimeID = st.scheduledTimeID
        WHERE a.appointmentDate = ? 
        AND a.statusID != 4`, // statusID 4 is 'Cancelled'
       [date]
@@ -162,10 +162,9 @@ export const bookAppointment = async (req, res) => {
     const dbTimeFormat = convertTo24Hour(startTime);
     console.log("🕒 Converted time:", { original: startTime, converted: dbTimeFormat });
 
-    // First, get the startTimeID from scheduleTIme_tbl based on the time string
     console.log("🔍 Looking up time slot:", dbTimeFormat);
     const [timeRows] = await db.query(
-      "SELECT startTimeID FROM scheduleTIme_tbl WHERE startTime = ?",
+      "SELECT scheduledTimeID FROM scheduleTIme_tbl WHERE scheduleTime = ?",
       [dbTimeFormat]
     );
 
@@ -231,16 +230,16 @@ export const getUserAppointments = async (req, res) => {
         p.petName,
         CONCAT(u.firstName, ' ', u.lastName) AS ownerName,
         s.service AS type,
-        CONCAT(DATE_FORMAT(a.appointmentDate, '%b %e, %Y'), ' - ', st.startTime) AS date,
+        CONCAT(DATE_FORMAT(a.appointmentDate, '%b %e, %Y'), ' - ', st.scheduleTime) AS date,
         ast.statusName AS status
       FROM appointment_tbl a
       JOIN pet_tbl p ON a.petID = p.petID
       JOIN service_tbl s ON a.serviceID = s.serviceID
       JOIN account_tbl u ON a.accID = u.accId
-      JOIN scheduleTIme_tbl st ON a.scheduledTimeID = st.startTimeID
+      JOIN scheduleTIme_tbl st ON a.scheduledTimeID = st.scheduledTimeID
       JOIN appointment_status_tbl ast ON a.statusID = ast.statusID
       WHERE a.accID = ?
-      ORDER BY a.appointmentDate DESC, st.startTime DESC;
+      ORDER BY a.appointmentDate DESC, st.scheduleTIme DESC;
       `,
       [userId]
     );

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { X, Copy, Check, AlertCircle } from "lucide-react";
+import api from "../../../api/axios";
 
 const AddOwnerModal = ({ isOpen, onClose, onSave, initialData }) => {
   const [ownerData, setOwnerData] = useState({
@@ -29,34 +30,32 @@ const AddOwnerModal = ({ isOpen, onClose, onSave, initialData }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [apiError, setApiError] = useState("");
-
-  const dogBreeds = ["Labrador", "Golden Retriever", "Bulldog", "Poodle", "Beagle"];
-  const catBreeds = ["Persian", "Siamese", "Maine Coon", "Sphynx", "Ragdoll"];
+  
+  // State for breeds from database
+  const [dogBreeds, setDogBreeds] = useState([]);
+  const [catBreeds, setCatBreeds] = useState([]);
+  const [loadingBreeds, setLoadingBreeds] = useState(false);
 
   // Enhanced date formatting function
   const formatDateForInput = (dateString) => {
-    console.log("Formatting date:", dateString); // Debug log
+    console.log("Formatting date:", dateString);
     
     if (!dateString || dateString === "Invalid Date" || dateString === "null") return "";
     
     try {
       let date;
       
-      // If it's already in YYYY-MM-DD format, return as is
       if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
         return dateString;
       }
       
-      // Try parsing as Date object
       date = new Date(dateString);
       
-      // Check if date is valid
       if (isNaN(date.getTime())) {
         console.log("Invalid date:", dateString);
         return "";
       }
       
-      // Format as YYYY-MM-DD for date input
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, '0');
       const day = String(date.getDate()).padStart(2, '0');
@@ -68,9 +67,41 @@ const AddOwnerModal = ({ isOpen, onClose, onSave, initialData }) => {
     }
   };
 
+  // Fetch breeds from database
+  const fetchBreeds = async (species) => {
+    try {
+      setLoadingBreeds(true);
+      const response = await api.get(`/admin/breeds?species=${species}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Error fetching ${species} breeds:`, error);
+      return [];
+    } finally {
+      setLoadingBreeds(false);
+    }
+  };
+
+  // Load breeds when component mounts or when pet type changes
+  useEffect(() => {
+    const loadBreeds = async () => {
+      if (!dogBreeds.length) {
+        const dogBreedsData = await fetchBreeds('Dog');
+        setDogBreeds(dogBreedsData);
+      }
+      if (!catBreeds.length) {
+        const catBreedsData = await fetchBreeds('Cat');
+        setCatBreeds(catBreedsData);
+      }
+    };
+
+    if (isOpen) {
+      loadBreeds();
+    }
+  }, [isOpen]);
+
   useEffect(() => {
     if (isOpen) {
-      console.log("Initial data received:", initialData); // Debug log
+      console.log("Initial data received:", initialData);
       
       if (initialData) {
         // Editing existing owner - split the name
@@ -78,8 +109,8 @@ const AddOwnerModal = ({ isOpen, onClose, onSave, initialData }) => {
         const firstName = nameParts[0] || '';
         const lastName = nameParts.slice(1).join(' ') || '';
         
-        console.log("Owner DOB from initialData:", initialData.dateOfBirth); // Debug log
-        console.log("Formatted DOB:", formatDateForInput(initialData.dateOfBirth)); // Debug log
+        console.log("Owner DOB from initialData:", initialData.dateOfBirth);
+        console.log("Formatted DOB:", formatDateForInput(initialData.dateOfBirth));
         
         setOwnerData({
           firstName: firstName,
@@ -93,7 +124,7 @@ const AddOwnerModal = ({ isOpen, onClose, onSave, initialData }) => {
 
         if (initialData.pets && initialData.pets[0]) {
           const pet = initialData.pets[0];
-          console.log("Pet DOB:", pet.petDateOfBirth || pet.dob); // Debug log
+          console.log("Pet DOB:", pet.petDateOfBirth || pet.dob);
           
           setPetData({
             type: pet.petType || pet.type || "",
@@ -189,8 +220,9 @@ const AddOwnerModal = ({ isOpen, onClose, onSave, initialData }) => {
       }
     }
 
-    // Only validate pet data for NEW owners (not when editing)
-    if (!initialData && petData.name) {
+    // PET VALIDATIONS - REQUIRED FOR NEW OWNERS
+    if (!initialData) {
+      // Pet validations for NEW owners (required)
       newErrors.petName = validateName(petData.name, "Pet name");
       if (!petData.type) newErrors.petType = "Pet type is required";
       if (!petData.breed) newErrors.petBreed = "Breed is required";
@@ -257,8 +289,8 @@ const AddOwnerModal = ({ isOpen, onClose, onSave, initialData }) => {
       setIsLoading(true);
       setApiError("");
       
-      // For editing existing owners, don't include pet data
-      const safePetData = initialData ? null : {
+      // PET DATA IS REQUIRED FOR NEW OWNERS
+      const safePetData = {
         type: petData.type || "",
         breed: petData.breed || "",
         name: petData.name || "",
@@ -277,8 +309,8 @@ const AddOwnerModal = ({ isOpen, onClose, onSave, initialData }) => {
         address: ownerData.address || "",
         sex: ownerData.sex || "",
         dob: ownerData.dob || "",
-        // Only include pets for new owners, not when editing
-        pets: initialData ? [] : (petData.name ? [safePetData] : [])
+        // PETS ARE REQUIRED FOR NEW OWNERS
+        pets: initialData ? [] : [safePetData] // Always include pet for new owners
       };
 
       // Call onSave and get the response
@@ -529,7 +561,7 @@ const AddOwnerModal = ({ isOpen, onClose, onSave, initialData }) => {
                     <div className="w-1.5 h-5 bg-green-500 rounded-full"></div>
                     <h3 className="text-base font-semibold text-gray-800">Pet Information</h3>
                     <span className="text-xs text-gray-500">
-                      {isEditing ? "(View Only)" : "(Optional)"}
+                      {isEditing ? "(View Only)" : "REQUIRED"}
                     </span>
                     {isEditing && (
                       <span className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
@@ -563,11 +595,11 @@ const AddOwnerModal = ({ isOpen, onClose, onSave, initialData }) => {
                       )}
                     </div>
                   ) : (
-                    // Editable mode for new owners
+                    // REQUIRED PET FIELDS FOR NEW OWNERS
                     <div className="space-y-3">
                       <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1.5">
-                          <label className="text-xs font-medium text-gray-700">Pet Type</label>
+                          <label className="text-xs font-medium text-gray-700">Pet Type *</label>
                           <select 
                             value={petData.type} 
                             onChange={(e) => handlePetChange("type", e.target.value)}
@@ -587,7 +619,7 @@ const AddOwnerModal = ({ isOpen, onClose, onSave, initialData }) => {
                           )}
                         </div>
                         <div className="space-y-1.5">
-                          <label className="text-xs font-medium text-gray-700">Breed</label>
+                          <label className="text-xs font-medium text-gray-700">Breed *</label>
                           <select 
                             value={petData.breed} 
                             onChange={(e) => handlePetChange("breed", e.target.value)}
@@ -611,7 +643,7 @@ const AddOwnerModal = ({ isOpen, onClose, onSave, initialData }) => {
                       </div>
                       
                       <div className="space-y-1.5">
-                        <label className="text-xs font-medium text-gray-700">Pet Name</label>
+                        <label className="text-xs font-medium text-gray-700">Pet Name *</label>
                         <input 
                           type="text" 
                           value={petData.name} 
