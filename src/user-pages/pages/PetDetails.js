@@ -157,47 +157,46 @@ function PetDetails() {
   };
 
   useEffect(() => {
-  const fetchPetData = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const res = await api.get(`/pets/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+    const fetchPetData = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await api.get(`/pets/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
         const petData = res.data;
 
-      const mappedPet = {
-        id: petData.petID,
-        name: petData.petName,
-        breed: petData.breed,
-        gender: petData.petGender || "N/A",
-        age: calculateAge(petData.dateOfBirth),
-        image: petData.image || "/images/dog-profile.png",
-        weight: petData.weight_kg,
-        lastCheck: petData.lastCheck || "N/A",
-      };
+        const mappedPet = {
+          id: petData.petID,
+          name: petData.petName,
+          breed: petData.breed,
+          gender: petData.petGender || "N/A",
+          age: calculateAge(petData.dateOfBirth),
+          image: petData.image || "/images/dog-profile.png",
+          weight: petData.weight_kg,
+          lastCheck: petData.lastCheck || "N/A",
+        };
 
-      // ✅ Only update pet.image if there's no preview
-      setPet((prev) => ({
-        ...mappedPet,
-        image: previewImage ? prev.image : mappedPet.image,
-      }));
+        // ✅ Only update pet.image if there's no preview
+        setPet((prev) => ({
+          ...mappedPet,
+          image: previewImage ? prev.image : mappedPet.image,
+        }));
 
-      const mappedAppointments = (petData.appointments || []).map((appt) => ({
-        ...appt,
-        dateObj: new Date(appt.date),
-      }));
-      setAppointments(mappedAppointments);
-    } catch (err) {
-      console.error("❌ Failed to fetch pet details:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+        const mappedAppointments = (petData.appointments || []).map((appt) => ({
+          ...appt,
+          dateObj: parseAppointmentDate(appt),
+        }));
+        setAppointments(mappedAppointments);
+      } catch (err) {
+        console.error("❌ Failed to fetch pet details:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  fetchPetData();
-  }, [id, previewImage]);
-
+    fetchPetData();
+  }, [id, previewImage, refreshTrigger]);
 
   const filteredAppointments = appointments.filter((appt) =>
     appointmentFilter === "All" ? true : appt.status === appointmentFilter
@@ -288,51 +287,51 @@ function PetDetails() {
     );
 
   return (
-    <div className={`font-sansation min-h-screen bg-[#FBFBFB] relative ${(showEditModal || showDetailsModal) ? 'overflow-hidden' : ''}`}>
-      <div className={`${(showEditModal || showDetailsModal) ? 'blur-sm' : ''}`}>
-        <Header setIsMenuOpen={setIsMenuOpen} />
-        <div className="flex flex-row gap-5 px-5 sm:px-12 animate-fadeSlideUp">
-          <SideBar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} pets={[pet]} setShowModal={() => {}} />
-
-          <div
-            className={`transition-all duration-500 ease-in-out flex flex-col gap-6 rounded-xl p-5 w-full ${
-              !isMenuOpen ? "md:w-full" : "md:w-[calc(100%-250px)]"
-            }`}
+    <ClientLayout>
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="flex flex-col gap-6"
+      >
+        {/* Pet Header */}
+        <motion.div
+          variants={itemVariants}
+          className="relative overflow-hidden rounded-3xl bg-white shadow-lg border border-gray-100 flex flex-col sm:flex-row items-center justify-between px-6 py-5"
+        >
+          <div className="flex items-center gap-6">
+            <div className="relative">
+              <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-[#00B8D4] bg-gray-200 flex items-center justify-center">
+                <img src={previewImage || pet.image} alt={pet.name} />
+              </div>
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
+                {pet.name}
+                <motion.button 
+                  onClick={() => setShowEditModal(true)} 
+                  className="text-gray-400 hover:text-[#00B8D4]"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <i className="fa-solid fa-pen text-base"></i>
+                </motion.button>
+              </h2>
+              <p className="text-gray-500 text-sm">
+                {pet.breed} • {pet.gender} • {pet.age}
+              </p>
+            </div>
+          </div>
+          <motion.div 
+            variants={itemVariants}
+            className="flex flex-wrap justify-center sm:justify-end gap-4 text-sm mt-4 sm:mt-0"
           >
-            {/* Pet Header */}
-            <motion.div
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="relative overflow-hidden rounded-3xl bg-white shadow-lg border border-gray-100 flex flex-col sm:flex-row items-center justify-between px-6 py-5"
-            >
-              <div className="flex items-center gap-6">
-                <div className="relative">
-                  <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-[#00B8D4] bg-gray-200 flex items-center justify-center">
-                    {
-                      console.log(pet.image)
-                    }
-                    <img src={previewImage || pet.image}/>
-                  </div>
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
-                    {pet.name}
-                    <button onClick={() => setShowEditModal(true)} className="text-gray-400 hover:text-[#00B8D4] transition-all">
-                      <i className="fa-solid fa-pen text-base"></i>
-                    </button>
-                  </h2>
-                  <p className="text-gray-500 text-sm">
-                    {pet.breed} • {pet.gender} • {pet.age}
-                  </p>
-                </div>
-              </div>
-              <div className="flex flex-wrap justify-center sm:justify-end gap-4 text-sm mt-4 sm:mt-0">
-                <div className="px-4 py-2 bg-[#FFF7E6] rounded-xl shadow-sm text-gray-700">
-                  <i className="fa-solid fa-calendar-check text-[#00B8D4] mr-2"></i>
-                  Last Check: {pet.lastCheck}
-                </div>
-              </div>
-            </motion.div>
+            <div className="px-4 py-2 bg-[#FFF7E6] rounded-xl shadow-sm text-gray-700">
+              <i className="fa-solid fa-calendar-check text-[#00B8D4] mr-2"></i>
+              Last Check: {pet.lastCheck}
+            </div>
+          </motion.div>
+        </motion.div>
 
         {/* Tabs Section */}
         <motion.div 
@@ -427,25 +426,31 @@ function PetDetails() {
                               </span>
                             </div>
 
-                          <div className="flex justify-between items-center flex-1 ml-4">
-                            <div>
-                              <p className="font-semibold text-gray-800">
-                                {pet.name} — {appt.type}
-                              </p>
-                              <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
-                                <i className="fa-solid fa-clock text-[#5EE6FE]"></i>
-                                {appt.date} • {appt.status}
-                              </p>
+                            <div className="flex justify-between items-center flex-1 ml-4">
+                              <div>
+                                <p className="font-semibold text-gray-800">
+                                  {pet.name} — {appt.type}
+                                </p>
+                                <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
+                                  <i className="fa-solid fa-clock text-[#5EE6FE]"></i>
+                                  {formatAppointmentDate(appt)} • {appt.status}
+                                </p>
+                              </div>
+                              <motion.button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleViewDetails(appt);
+                                }}
+                                className="bg-[#5EE6FE] text-white px-4 py-2 rounded-lg text-xs font-semibold"
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                              >
+                                View Details
+                              </motion.button>
                             </div>
-                            <button
-                              onClick={() => handleViewDetails(appt)}
-                              className="bg-[#5EE6FE] text-white px-4 py-2 rounded-lg text-xs font-semibold hover:bg-[#3ecbe0] transition-all"
-                            >
-                              View Details
-                            </button>
-                          </div>
-                        </div>
-                      ))
+                          </motion.div>
+                        ))}
+                      </motion.div>
                     ) : (
                       <motion.p 
                         initial={{ opacity: 0, y: 20 }}
@@ -459,41 +464,61 @@ function PetDetails() {
                 )}
 
                 {activeTab === "Medical Reports" && (
-                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <motion.div
+                    variants={containerVariants}
+                    className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"
+                  >
                     {(pet.medicalReports || []).map((report, index) => (
-                      <div
+                      <motion.div
                         key={index}
+                        variants={cardVariants}
                         className="rounded-2xl bg-[#FFF8F9] p-5 shadow-sm border border-[#F3D6D8] flex flex-col justify-between"
+                        whileHover={{ scale: 1.02 }}
+                        transition={{ delay: index * 0.1 }}
                       >
                         <div>
                           <h3 className="text-lg font-semibold text-gray-700">{report.title}</h3>
                           <p className="text-gray-500 text-sm mt-1">{report.date}</p>
                         </div>
-                        <button className="mt-4 bg-[#FFB6C1] text-white px-3 py-2 rounded-lg hover:bg-[#FF9FB0] transition-all">
+                        <motion.button 
+                          className="mt-4 bg-[#FFB6C1] text-white px-3 py-2 rounded-lg"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
                           Download PDF
-                        </button>
-                      </div>
+                        </motion.button>
+                      </motion.div>
                     ))}
-                  </div>
+                  </motion.div>
                 )}
 
                 {activeTab === "Lab Records" && (
-                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <motion.div
+                    variants={containerVariants}
+                    className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"
+                  >
                     {(pet.labRecords || []).map((record, index) => (
-                      <div
+                      <motion.div
                         key={index}
+                        variants={cardVariants}
                         className="rounded-2xl bg-[#E3FAF7] p-5 shadow-sm border border-[#A6E3E9] flex flex-col justify-between"
+                        whileHover={{ scale: 1.02 }}
+                        transition={{ delay: index * 0.1 }}
                       >
                         <div>
                           <h3 className="text-lg font-semibold text-gray-700">{record.title}</h3>
                           <p className="text-gray-500 text-sm mt-1">{record.date}</p>
                         </div>
-                        <button className="mt-4 bg-[#5EE6FE] text-white px-3 py-2 rounded-lg hover:bg-[#3ecbe0] transition-all">
+                        <motion.button 
+                          className="mt-4 bg-[#5EE6FE] text-white px-3 py-2 rounded-lg"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
                           View Report
-                        </button>
-                      </div>
+                        </motion.button>
+                      </motion.div>
                     ))}
-                  </div>
+                  </motion.div>
                 )}
               </motion.div>
             </AnimatePresence>
@@ -524,78 +549,72 @@ function PetDetails() {
           </div>
         )}
 
-      {showEditModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
-          <div className="relative z-50 mx-4 w-full max-w-sm">
-            <div className="bg-white rounded-xl p-5 w-full shadow-2xl max-h-[80vh] overflow-y-auto">
-              <button 
-                onClick={() => setShowEditModal(false)} 
-                className="absolute top-3 right-4 text-gray-400 hover:text-gray-600 text-lg"
-              >
-                ✕
-              </button>
-              
-              <h3 className="text-lg font-bold text-gray-800 mb-4 text-center">Edit Pet Profile</h3>
-              
-              {/* Profile Picture Section */}
-              <div className="flex flex-col items-center mb-4">
-                <div className="relative">
-                  <div className="w-20 h-20 rounded-full overflow-hidden border-3 border-[#00B8D4] bg-gray-200 flex items-center justify-center mb-3">
-                    <img 
-                      src={previewImage || pet.image} 
-                      alt={pet.name} 
-                      className="w-full h-full object-cover"
-                      id="pet-profile-image"
-                    />
-                  </div>
+        {showEditModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
+            <motion.div
+              className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowEditModal(false)}
+            />
+            <motion.div
+              className="relative z-50 mx-4 w-full max-w-sm"
+              initial={{ opacity: 0, scale: 0.8, y: 30 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.8, y: 30 }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            >
+              <div className="bg-white rounded-xl p-5 w-full shadow-2xl max-h-[80vh] overflow-y-auto">
+                <motion.button 
+                  onClick={() => setShowEditModal(false)} 
+                  className="absolute top-3 right-4 text-gray-400 hover:text-gray-600 text-lg"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  ✕
+                </motion.button>
+                
+                <h3 className="text-lg font-bold text-gray-800 mb-4 text-center">Edit Pet Profile</h3>
+                
+                {/* Profile Picture Section */}
+                <div className="flex flex-col items-center mb-4">
+                  <div className="relative">
+                    <div className="w-20 h-20 rounded-full overflow-hidden border-3 border-[#00B8D4] bg-gray-200 flex items-center justify-center mb-3">
+                      <img 
+                        src={previewImage || pet.image} 
+                        alt={pet.name} 
+                        className="w-full h-full object-cover"
+                        id="pet-profile-image"
+                      />
+                    </div>
 
-                  <input 
-                    type="file" 
-                    id="profile-upload"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={async (e) => {
-                      const file = e.target.files[0];
-                      if (file) {
-                        const previewUrl = URL.createObjectURL(file);
-                        setPreviewImage(previewUrl); // ✅ show preview immediately
-
-                        const formData = new FormData();
-                        formData.append("petImage", file);
-
-                        try {
-                          const token = localStorage.getItem("token");
-                          const res = await api.post(`/pets/${pet.id}/upload`, formData, {
-                            headers: {
-                              "Content-Type": "multipart/form-data",
-                              Authorization: `Bearer ${token}`,
-                            },
-                          });
-
-                          setPet((prev) => ({ ...prev, image: res.data.imageUrl }));
-                          setPreviewImage(null); // ✅ clear preview after server confirms
-                          setToastMessage("Profile picture updated successfully!");
-                          setShowSuccessToast(true);
-                        } catch (err) {
-                          console.error("❌ Upload failed:", err);
-                          setToastMessage("Failed to upload image.");
-                          setShowSuccessToast(true);
+                    <input 
+                      type="file" 
+                      id="profile-upload"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={async (e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                          const previewUrl = URL.createObjectURL(file);
+                          setPreviewImage(previewUrl);
+                          await handleImageUpload(file);
                         }
-                      }
-                    }}
-                  />
+                      }}
+                    />
 
-
-                  <label 
-                    htmlFor="profile-upload"
-                    className="absolute bottom-1 right-0 bg-[#5EE6FE] text-white p-1.5 rounded-full shadow-lg hover:bg-[#3ecbe0] transition-all cursor-pointer"
-                  >
-                    <i className="fa-solid fa-camera text-xs"></i>
-                  </label>
+                    <motion.label 
+                      htmlFor="profile-upload"
+                      className="absolute bottom-1 right-0 bg-[#5EE6FE] text-white p-1.5 rounded-full shadow-lg cursor-pointer"
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                    >
+                      <i className="fa-solid fa-camera text-xs"></i>
+                    </motion.label>
+                  </div>
+                  <p className="text-xs text-gray-500">Click camera to change photo</p>
                 </div>
-                <p className="text-xs text-gray-500">Click camera to change photo</p>
-              </div>
 
                 {/* Read-only Information */}
                 <div className="space-y-3 mb-4">
