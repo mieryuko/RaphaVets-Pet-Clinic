@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Header from "../template/Header";
 import Sidebar from "../template/SideBar";
 import { motion, AnimatePresence } from "framer-motion";
+import api from "../../api/axios";
+
 
 export default function PetTips() {
   const [isMenuOpen, setIsMenuOpen] = useState(true);
@@ -10,72 +12,10 @@ export default function PetTips() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("All");
   const [confirmLink, setConfirmLink] = useState(null);
-
-  const tips = [
-    {
-      id: 1,
-      title: "Brush Your Dog’s Fur Daily",
-      short: "Prevents mats and reduces shedding.",
-      long: "Use a suitable brush to remove loose hair and prevent tangles. This keeps your dog comfortable, prevents skin irritation, and helps detect lumps or skin issues early.",
-      icon: "fa-scissors",
-      category: "Hygiene",
-      url: "https://lila-loves-it.com/en/magazine/brushing-dogs-why-it-is-so-important/", // example
-    },
-    {
-      id: 2,
-      title: "Trim Your Cat’s Nails Weekly",
-      short: "Avoids scratching injuries.",
-      long: "Use cat-specific nail clippers. Gently trim the sharp tips, avoid the quick, and reward your cat afterwards. Regular trimming keeps them safe and prevents furniture damage.",
-      icon: "fa-cut",
-      category: "Hygiene",
-      url: "https://www.petmd.com/news/view/how-often-should-you-trim-cats-nails-37807",
-    },
-    {
-      id: 3,
-      title: "Give 30-Minute Walks Daily",
-      short: "Keeps your dog healthy and active.",
-      long: "Walk your dog twice a day or a single 30-minute session. Walking supports physical fitness, reduces anxiety, and strengthens the bond with your pet.",
-      icon: "fa-dumbbell",
-      category: "Exercise",
-      url: "https://vcahospitals.com/know-your-pet/the-benefits-of-walking-your-dog",
-    },
-    {
-      id: 4,
-      title: "Offer Fresh Water Multiple Times a Day",
-      short: "Prevents dehydration.",
-      long: "Change your pet’s water 2–3 times daily. Clean bowls thoroughly to avoid bacteria. Proper hydration keeps pets energetic and prevents kidney and urinary issues.",
-      icon: "fa-droplet",
-      category: "Health",
-      url: "https://www.wellnesspetfood.com/blog/how-often-should-you-change-your-pets-water/",
-    },
-    {
-      id: 5,
-      title: "Feed Measured Portions",
-      short: "Controls weight and digestion.",
-      long: "Use a measuring cup to feed your pet appropriate portions based on age, size, and activity level. Avoid free-feeding. Consult your vet for dietary adjustments if needed.",
-      icon: "fa-bone",
-      category: "Nutrition",
-      url: "https://www.northpointpets.com/whyaccuratelymeasuringyourpetsfoodisessential/",
-    },
-    {
-      id: 6,
-      title: "Use Puzzle Toys to Stimulate Your Pet",
-      short: "Keeps their mind sharp.",
-      long: "Introduce treat puzzles, hide-and-seek games, or interactive toys. Mental stimulation prevents boredom, improves behavior, and strengthens your bond.",
-      icon: "fa-puzzle-piece",
-      category: "Exercise",
-      url: "https://vmc.vet.osu.edu/sites/default/files/documents/behavioral-med-puzzle-toys-2024.pdf",
-    },
-    {
-      id: 7,
-      title: "Use Puzzle Toys to Stimulate Your Pet",
-      short: "Keeps their mind sharp.",
-      long: "Introduce treat puzzles, hide-and-seek games, or interactive toys. Mental stimulation prevents boredom, improves behavior, and strengthens your bond.",
-      icon: "fa-puzzle-piece",
-      category: "Exercise",
-      url: "https://vmc.vet.osu.edu/sites/default/files/documents/behavioral-med-puzzle-toys-2024.pdf",
-    },
-  ];
+  const [tips, setTips] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const cardColors = [
     "#E3FAF7", 
@@ -86,6 +26,46 @@ export default function PetTips() {
     "#FFF1F0", 
   ];
 
+
+
+// Fetch pet care tips and categories
+const fetchData = async () => {
+  try {
+    setLoading(true);
+    console.log('🔄 Attempting to fetch from API...');
+    
+    const [tipsResponse, categoriesResponse] = await Promise.all([
+      api.get('/pet-care-tips'),
+      api.get('/pet-care-tips/categories')
+    ]);
+
+    console.log('📥 API Responses:');
+    console.log('Tips data:', tipsResponse.data);
+    console.log('Categories data:', categoriesResponse.data);
+
+    if (tipsResponse.data.success) {
+      setTips(tipsResponse.data.data);
+    }
+
+    if (categoriesResponse.data.success) {
+      setCategories(categoriesResponse.data.data);
+    }
+
+  } catch (err) {
+    console.error('💥 Error in fetchData:', err);
+    console.error('Error details:', err.response?.data || err.message);
+
+  } finally {
+    setLoading(false);
+  }
+};
+
+  // Call fetchData when component mounts
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  // Filter tips based on search and category
   const filteredTips = tips.filter(
     (tip) =>
       (filter === "All" || tip.category === filter) &&
@@ -93,14 +73,24 @@ export default function PetTips() {
         tip.short.toLowerCase().includes(search.toLowerCase()))
   );
 
-  const categories = ["All", "Health", "Nutrition", "Exercise", "Hygiene"];
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-xl text-[#2FA394]">Loading pet care tips...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-xl text-red-500">Error: {error}</div>
+      </div>
+    );
+  }
 
   return (
-    <div
-      className={`font-sansation min-h-screen relative ${
-        darkMode ? "bg-[#1E1E1E] text-white" : "bg-[#FBFBFB]"
-      }`}
-    >
+    <div className={`font-sansation min-h-screen relative ${darkMode ? "bg-[#1E1E1E] text-white" : "bg-[#FBFBFB]"}`}>
       {/* HEADER */}
       <Header
         darkMode={darkMode}
@@ -114,16 +104,12 @@ export default function PetTips() {
         <Sidebar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
 
         {/* MAIN CONTENT */}
-        <div
-          className={`transition-all duration-500 ease-in-out flex flex-col gap-7 rounded-xl p-6 w-full ${
-            !isMenuOpen ? "md:w-full" : "md:w-[calc(100%-250px)]"
-          }`}
-        >
+        <div className={`transition-all duration-500 ease-in-out flex flex-col gap-7 rounded-xl p-6 w-full ${!isMenuOpen ? "md:w-full" : "md:w-[calc(100%-250px)]"}`}>
           <div className="max-w-6xl mx-auto w-full bg-white shadow-md rounded-xl p-6 relative">
             {/* Header Section */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-5">
               <h1 className="text-2xl font-semibold text-[#2FA394]">
-                Pet Care Tips
+                Pet Care Tips {/*tips.length > 0 && `(${tips.length})`*/}
               </h1>
               <input
                 type="text"
@@ -179,7 +165,6 @@ export default function PetTips() {
                 No tips found for this category or search.
               </p>
             )}
-
           </div>
         </div>
       </div>
@@ -218,15 +203,14 @@ export default function PetTips() {
               <div className="flex justify-center gap-4">
                 {/* Learn More */}
                 <a
-                onClick={(e) => {
-                  e.preventDefault();
-                  setConfirmLink(selectedTip.url);
-                }}
-                className="bg-[#2FA394] hover:bg-[#24907e] text-white px-4 py-2 rounded-lg text-sm font-medium cursor-pointer transition-all"
-              >
-                Learn More
-              </a>
-
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setConfirmLink(selectedTip.url);
+                  }}
+                  className="bg-[#2FA394] hover:bg-[#24907e] text-white px-4 py-2 rounded-lg text-sm font-medium cursor-pointer transition-all"
+                >
+                  Learn More
+                </a>
 
                 {/* Close */}
                 <button
@@ -237,7 +221,6 @@ export default function PetTips() {
                 </button>
               </div>
             </motion.div>
-
           </div>
         )}
       </AnimatePresence>

@@ -8,6 +8,8 @@ import appointmentRoute from "./routes/appointmentRoute.js";
 import petRoute from "./routes/petRoute.js";
 import clientRoute from "./routes/admin_routes/ownerAndPetRoute.js"
 import dashboardRoute from "./routes/admin_routes/dashboardRoute.js"
+import petCareTipsRoutes from './routes/petCareTipsRoute.js';
+import videoRoutes from './routes/videoRoute.js';
 
 const app = express();
 
@@ -25,6 +27,9 @@ app.use("/api/forum", forumRoutes);
 app.use("/api/appointment", appointmentRoute);
 //pet routes
 app.use("/api/pets", petRoute);
+//pet care tips route
+app.use('/api/pet-care-tips', petCareTipsRoutes);
+app.use('/api/videos', videoRoutes);
 
 // ADMIN SIDE ROUTES
 app.use("/api/admin", clientRoute);

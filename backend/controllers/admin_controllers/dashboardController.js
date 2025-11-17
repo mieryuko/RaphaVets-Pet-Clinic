@@ -6,22 +6,23 @@ export const getDashboardStats = async (req, res) => {
     const [adminRows] = await db.query(`
       SELECT firstName, lastName 
       FROM account_tbl 
-      WHERE roleID = 2 AND isDeleted = 0 
+      WHERE roleID = 2 AND isDeleted = 0
       LIMIT 1
     `);
 
-    // Get total pet owners (unique accounts with pets)
+    // Get total pet owners (all client users who are not deleted)
     const [ownerRows] = await db.query(`
-      SELECT COUNT(DISTINCT accID) as totalOwners 
-      FROM pet_tbl 
-      WHERE isDeleted = 0
+      SELECT COUNT(*) as totalOwners 
+      FROM account_tbl 
+      WHERE roleID = 1 AND isDeleted = 0
     `);
 
-    // Get total pets
+    // Get total pets - only from non-deleted owners
     const [petRows] = await db.query(`
       SELECT COUNT(*) as totalPets 
-      FROM pet_tbl 
-      WHERE isDeleted = 0
+      FROM pet_tbl p
+      INNER JOIN account_tbl a ON p.accID = a.accId
+      WHERE p.isDeleted = 0 AND a.isDeleted = 0 AND a.roleID = 1
     `);
 
     const adminName = adminRows.length > 0 
