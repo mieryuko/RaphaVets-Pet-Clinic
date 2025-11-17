@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Nov 16, 2025 at 03:03 PM
+-- Generation Time: Nov 17, 2025 at 04:18 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -47,11 +47,10 @@ CREATE TABLE `account_tbl` (
 --
 
 INSERT INTO `account_tbl` (`accId`, `roleID`, `firstName`, `lastName`, `email`, `password`, `createdAt`, `lastUpdatedAt`, `passwordChangeAt`, `logInAt`, `logOutAt`, `isDeleted`) VALUES
-(2, 3, 'Marke', 'Mapili', 'markmapili29@gmail.com', '$2b$10$NNG154DuvS/ST/lInE1Pp.XyhniL6YtSE.3UaiAv6/OvON5uMi3MC', '2025-11-19 19:01:01', '2025-11-16 21:55:39', '2025-11-09 12:21:30', '2025-11-16 21:55:39', '2025-11-09 19:26:09', 0),
+(2, 3, 'Marke', 'Mapili', 'markmapili29@gmail.com', '$2b$10$NNG154DuvS/ST/lInE1Pp.XyhniL6YtSE.3UaiAv6/OvON5uMi3MC', '2025-11-19 19:01:01', '2025-11-17 11:09:01', '2025-11-09 12:21:30', '2025-11-17 11:09:01', '2025-11-09 19:26:09', 0),
 (3, 2, 'Fionah Irish', 'Beltran', 'soupcuppy@gmail.com', '$2b$10$l/lPrlJ8Vho/LyqoOiq2sOlSSrZ1t.atCEgMaxBBOW05jri/FfwIS', '0000-00-00 00:00:00', '0000-00-00 00:00:00', '2025-11-09 12:21:30', '2025-11-09 12:20:21', '2025-11-09 12:20:21', 0),
-(5, 2, 'mark', 'mapili', 'markmapili72@gmail.com', '$2b$10$LMTrRhOAEKAweVGBy1NXQeGCWEzgN2d5WueonGDiRibvDGER08YVe', '0000-00-00 00:00:00', '2025-11-16 16:12:58', '2025-11-09 12:21:30', '2025-11-16 16:12:58', '2025-11-09 12:20:21', 0),
-(5, 2, 'mark', 'mapili', 'markmapili72@gmail.com', '$2b$10$LMTrRhOAEKAweVGBy1NXQeGCWEzgN2d5WueonGDiRibvDGER08YVe', '0000-00-00 00:00:00', '2025-11-16 16:12:58', '2025-11-09 12:21:30', '2025-11-16 16:12:58', '2025-11-09 12:20:21', 0),
-(6, 1, 'Miguel', 'Rojero', 'miguelrojero@gmail.com', '0908@Taks', '2025-11-15 18:31:41', '2025-11-15 18:31:41', '2025-11-15 18:31:41', '2025-11-15 18:31:41', '2025-11-15 18:31:41', 0),
+(5, 2, 'mark', 'mapili', 'markmapili72@gmail.com', '$2b$10$LMTrRhOAEKAweVGBy1NXQeGCWEzgN2d5WueonGDiRibvDGER08YVe', '0000-00-00 00:00:00', '2025-11-17 10:09:31', '2025-11-09 12:21:30', '2025-11-17 10:09:31', '2025-11-09 12:20:21', 0),
+(6, 1, 'Miguel', 'Rojero', 'miguelrojero@gmail.com', '0908@Taks', '2025-11-15 18:31:41', '2025-11-17 10:17:26', '2025-11-15 18:31:41', '2025-11-15 18:31:41', '2025-11-15 18:31:41', 1),
 (8, 1, 'Vanerie', 'Parcon', 'vnaerie@gmail.com', '', '2025-11-16 00:09:49', '2025-11-16 14:50:13', '2025-11-16 00:09:49', '2025-11-16 00:09:49', '2025-11-16 00:09:49', 1),
 (9, 1, 'Marvin', 'Tomales', 'marvin@gmail.com09123456789', '', '2025-11-16 00:15:22', '2025-11-16 00:15:22', '2025-11-16 00:15:22', '2025-11-16 00:15:22', '2025-11-16 00:15:22', 0),
 (14, 1, 'Markee', 'MWEHEHEH', 'markmapili2004@gmail.com', '$2b$10$eLEuf0mmdz4C8j54brMNK.tfY1yE9Vx2hCGgV1KAB.WP7wWywJ6l6', '2025-11-16 01:12:32', '2025-11-16 01:13:18', '2025-11-16 01:12:32', '2025-11-16 01:12:32', '2025-11-16 01:12:32', 0),
@@ -244,6 +243,18 @@ INSERT INTO `forum_posts_tbl` (`forumID`, `accID`, `postType`, `description`, `c
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `icon_tbl`
+--
+
+CREATE TABLE `icon_tbl` (
+  `iconID` int(11) NOT NULL,
+  `icon` varchar(250) NOT NULL,
+  `iconName` varchar(250) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `pet_allergies_tbl`
 --
 
@@ -251,6 +262,36 @@ CREATE TABLE `pet_allergies_tbl` (
   `petID` int(11) NOT NULL,
   `allergenID` int(11) NOT NULL,
   `severity` enum('Mild','Modarate','Severe') NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `pet_care_category_tbl`
+--
+
+CREATE TABLE `pet_care_category_tbl` (
+  `petCareCategoryID` int(11) NOT NULL,
+  `categoryIcon` varchar(250) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `pet_care_tips_content_tbl`
+--
+
+CREATE TABLE `pet_care_tips_content_tbl` (
+  `petCareID` int(11) NOT NULL,
+  `accID` int(11) NOT NULL,
+  `iconID` int(11) NOT NULL,
+  `title` varchar(250) NOT NULL,
+  `petCareCategoryID` int(11) NOT NULL,
+  `shortDescription` varchar(250) NOT NULL,
+  `learnMoreURL` varchar(250) NOT NULL,
+  `detailedContent` varchar(250) NOT NULL,
+  `lastUpdated` datetime NOT NULL DEFAULT current_timestamp(),
+  `isDeleted` tinyint(1) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -283,10 +324,22 @@ INSERT INTO `pet_tbl` (`petID`, `accID`, `petName`, `petGender`, `breedID`, `dat
 (53, 6, 'Carpenter', 'Female', 2, '2025-11-23', 1.00, 'dsada', 'dsadsa', '', '2025-11-15 23:53:43', '2025-11-16 14:50:36', 1),
 (54, 15, 'HAHA', 'Male', 1, '2025-11-05', 2.00, 'das', NULL, '', '2025-11-16 13:46:52', '2025-11-16 13:46:52', 0),
 (55, 14, 'MOSHI', 'Male', 2, '2025-11-03', 0.00, NULL, 'mamamama', '', '2025-11-16 14:17:14', '2025-11-16 14:17:44', 0),
-(56, 2, 'Marcy', 'Male', 1, '2025-11-13', NULL, NULL, NULL, '', '2025-11-16 15:08:17', '2025-11-16 15:08:17', 0),
-(57, 2, 'BEBE', 'Female', 1, '2025-11-05', 1.00, 'black', NULL, '', '2025-11-16 16:38:51', '2025-11-16 16:38:51', 0);
-(56, 2, 'Marcy', 'Male', 1, '2025-11-13', NULL, NULL, NULL, '', '2025-11-16 15:08:17', '2025-11-16 15:08:17', 0),
-(57, 2, 'BEBE', 'Female', 1, '2025-11-05', 1.00, 'black', NULL, '', '2025-11-16 16:38:51', '2025-11-16 16:38:51', 0);
+(56, 2, 'Marcy', 'Male', 1, '2025-11-13', NULL, NULL, NULL, 'petImage-1763304525120-946292901.jpg', '2025-11-16 15:08:17', '2025-11-16 22:48:45', 0),
+(57, 2, 'BEBE', 'Female', 1, '2025-11-05', 1.00, 'black', NULL, 'petImage-1763302372637-418073190.jpg', '2025-11-16 16:38:51', '2025-11-16 22:12:52', 0),
+(59, 9, 'Tobi', 'Male', 1, '2025-11-04', 12.00, 'black', NULL, '', '2025-11-17 10:11:43', '2025-11-17 10:11:43', 0);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `publication_status_tbl`
+--
+
+CREATE TABLE `publication_status_tbl` (
+  `pubStatsID` int(11) NOT NULL,
+  `pubStatus` varchar(250) NOT NULL,
+  `pubStatusIcon` varchar(250) NOT NULL,
+  `description` varchar(250) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -446,6 +499,31 @@ CREATE TABLE `vet_table` (
   `certificationId` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `video_category_tbl`
+--
+
+CREATE TABLE `video_category_tbl` (
+  `videoCategoryID` int(11) NOT NULL,
+  `videoCategory` varchar(250) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `video_content_tbl`
+--
+
+CREATE TABLE `video_content_tbl` (
+  `videoID` int(11) NOT NULL,
+  `accID` int(11) NOT NULL,
+  `videoTitle` varchar(250) NOT NULL,
+  `videoCategoryID` int(11) NOT NULL,
+  `videoURL` varchar(250) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 --
 -- Indexes for dumped tables
 --
@@ -455,7 +533,6 @@ CREATE TABLE `vet_table` (
 --
 ALTER TABLE `account_tbl`
   ADD PRIMARY KEY (`accId`),
-  ADD UNIQUE KEY `email` (`email`),
   ADD UNIQUE KEY `email` (`email`),
   ADD KEY `roleID_account_fk` (`roleID`);
 
@@ -510,11 +587,32 @@ ALTER TABLE `forum_posts_tbl`
   ADD KEY `accID_forum_fk` (`accID`);
 
 --
+-- Indexes for table `icon_tbl`
+--
+ALTER TABLE `icon_tbl`
+  ADD PRIMARY KEY (`iconID`);
+
+--
 -- Indexes for table `pet_allergies_tbl`
 --
 ALTER TABLE `pet_allergies_tbl`
   ADD PRIMARY KEY (`petID`,`allergenID`),
   ADD KEY `allergenID_pet_allergies_fk` (`allergenID`);
+
+--
+-- Indexes for table `pet_care_category_tbl`
+--
+ALTER TABLE `pet_care_category_tbl`
+  ADD PRIMARY KEY (`petCareCategoryID`);
+
+--
+-- Indexes for table `pet_care_tips_content_tbl`
+--
+ALTER TABLE `pet_care_tips_content_tbl`
+  ADD PRIMARY KEY (`petCareID`),
+  ADD KEY `petContent_accID_FK` (`accID`),
+  ADD KEY `iconID_FK` (`iconID`),
+  ADD KEY `petCareCategoryID_FK` (`petCareCategoryID`);
 
 --
 -- Indexes for table `pet_tbl`
@@ -523,6 +621,12 @@ ALTER TABLE `pet_tbl`
   ADD PRIMARY KEY (`petID`),
   ADD KEY `breedID_pet_fk` (`breedID`),
   ADD KEY `accID_pettbl` (`accID`);
+
+--
+-- Indexes for table `publication_status_tbl`
+--
+ALTER TABLE `publication_status_tbl`
+  ADD PRIMARY KEY (`pubStatsID`);
 
 --
 -- Indexes for table `role_tbl`
@@ -564,6 +668,20 @@ ALTER TABLE `vet_table`
   ADD KEY `accIdVet` (`accId`);
 
 --
+-- Indexes for table `video_category_tbl`
+--
+ALTER TABLE `video_category_tbl`
+  ADD PRIMARY KEY (`videoCategoryID`);
+
+--
+-- Indexes for table `video_content_tbl`
+--
+ALTER TABLE `video_content_tbl`
+  ADD PRIMARY KEY (`videoID`),
+  ADD KEY `accID_videoContentFK` (`accID`),
+  ADD KEY `videoCategoryID_videoContentFK` (`videoCategoryID`);
+
+--
 -- AUTO_INCREMENT for dumped tables
 --
 
@@ -571,7 +689,6 @@ ALTER TABLE `vet_table`
 -- AUTO_INCREMENT for table `account_tbl`
 --
 ALTER TABLE `account_tbl`
-  MODIFY `accId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
   MODIFY `accId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
@@ -603,7 +720,6 @@ ALTER TABLE `breed_tbl`
 --
 ALTER TABLE `clientinfo_tbl`
   MODIFY `cliendInfoId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
-  MODIFY `cliendInfoId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `forum_images_tbl`
@@ -618,11 +734,28 @@ ALTER TABLE `forum_posts_tbl`
   MODIFY `forumID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
+-- AUTO_INCREMENT for table `icon_tbl`
+--
+ALTER TABLE `icon_tbl`
+  MODIFY `iconID` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `pet_care_category_tbl`
+--
+ALTER TABLE `pet_care_category_tbl`
+  MODIFY `petCareCategoryID` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `pet_tbl`
 --
 ALTER TABLE `pet_tbl`
-  MODIFY `petID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=59;
-  MODIFY `petID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=59;
+  MODIFY `petID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=60;
+
+--
+-- AUTO_INCREMENT for table `publication_status_tbl`
+--
+ALTER TABLE `publication_status_tbl`
+  MODIFY `pubStatsID` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `role_tbl`
@@ -659,6 +792,18 @@ ALTER TABLE `userpreference_tbl`
 --
 ALTER TABLE `vet_table`
   MODIFY `vetId` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `video_category_tbl`
+--
+ALTER TABLE `video_category_tbl`
+  MODIFY `videoCategoryID` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `video_content_tbl`
+--
+ALTER TABLE `video_content_tbl`
+  MODIFY `videoID` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- Constraints for dumped tables
@@ -706,6 +851,14 @@ ALTER TABLE `pet_allergies_tbl`
   ADD CONSTRAINT `petID_pet_allergies_fk` FOREIGN KEY (`petID`) REFERENCES `pet_tbl` (`petID`);
 
 --
+-- Constraints for table `pet_care_tips_content_tbl`
+--
+ALTER TABLE `pet_care_tips_content_tbl`
+  ADD CONSTRAINT `iconID_FK` FOREIGN KEY (`iconID`) REFERENCES `icon_tbl` (`iconID`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `petCareCategoryID_FK` FOREIGN KEY (`petCareCategoryID`) REFERENCES `pet_care_category_tbl` (`petCareCategoryID`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `petContent_accID_FK` FOREIGN KEY (`accID`) REFERENCES `account_tbl` (`accId`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
 -- Constraints for table `pet_tbl`
 --
 ALTER TABLE `pet_tbl`
@@ -729,6 +882,13 @@ ALTER TABLE `userpreference_tbl`
 --
 ALTER TABLE `vet_table`
   ADD CONSTRAINT `accIdVet` FOREIGN KEY (`accId`) REFERENCES `account_tbl` (`accId`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `video_content_tbl`
+--
+ALTER TABLE `video_content_tbl`
+  ADD CONSTRAINT `accID_videoContentFK` FOREIGN KEY (`accID`) REFERENCES `account_tbl` (`accId`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `videoCategoryID_videoContentFK` FOREIGN KEY (`videoCategoryID`) REFERENCES `video_category_tbl` (`videoCategoryID`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
