@@ -49,7 +49,7 @@ export default function Videos() {
   const embedSrc = (id) => `https://www.youtube.com/embed/${id}?autoplay=1`;
 
   return (
-    <div className={`font-sansation min-h-screen ${darkMode ? "bg-[#121212] text-white" : "bg-[#F6FAFB]"}`}>
+    <div className={`font-sansation min-h-screen ${darkMode ? "bg-[#121212] text-white" : "bg-[#FBFBFB]"}`}>
       <Header darkMode={darkMode} setDarkMode={setDarkMode} setIsMenuOpen={setIsMenuOpen} />
 
       <div className="flex flex-row gap-5 px-5 sm:px-10 lg:px-12">

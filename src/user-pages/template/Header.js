@@ -135,18 +135,18 @@ function Header({ darkMode, setDarkMode, setIsMenuOpen }) {
   const unreadCount = notifications.filter(notif => !notif.read).length;
 
   return (
-    <div className="pt-5 pb-2 px-4 sm:px-6 md:px-10 flex flex-row justify-between items-center animate-fadeSlideDown relative z-40">
+    <div className="pt-5 pb-2 px-4 sm:px-6 md:px-10 flex flex-row justify-between items-center relative z-40 fixed top-0 left-0 right-0 bg-transparent">
       {/* Left side - Menu, Logo */}
       <div className="flex flex-row items-center gap-2 sm:gap-3 flex-shrink-0">
         <button
           onClick={() => setIsMenuOpen((prev) => !prev)}
-          className="text-2xl sm:text-3xl text-gray-700 focus:outline-none transition-transform duration-300 hover:scale-110 flex-shrink-0"
+          className="text-2xl sm:text-3xl text-gray-700 focus:outline-none flex-shrink-0"
         >
           ☰
         </button>
         <img
           src="/images/logo.png"
-          className="w-[30px] sm:w-[40px] md:w-[60px] lg:w-[80px] transition-transform duration-300 hover:scale-105 flex-shrink-0"
+          className="w-[30px] sm:w-[40px] md:w-[60px] lg:w-[80px] flex-shrink-0"
           alt="Logo"
         />
         <div className="flex flex-col flex-shrink-0">
@@ -159,12 +159,12 @@ function Header({ darkMode, setDarkMode, setIsMenuOpen }) {
       </div>
 
       {/* RIGHT SIDE - NOTIF + FORUM + MODE TOGGLE */}
-      <div className="flex flex-row justify-end items-center gap-3 sm:gap-5 md:gap-8 text-gray-700 animate-fadeSlideDown delay-100 flex-shrink-0">
+      <div className="flex flex-row justify-end items-center gap-3 sm:gap-5 md:gap-8 text-gray-700 flex-shrink-0">
         {/* Notification */}
         <div className="relative" ref={notificationRef}>
           <div
             onClick={handleNotificationClick}
-            className="relative text-xl sm:text-2xl transition-all duration-300 hover:scale-110 cursor-pointer text-gray-700 hover:text-gray-900"
+            className="relative text-xl sm:text-2xl cursor-pointer text-gray-700"
           >
             <i className="fa-solid fa-bell"></i>
             {unreadCount > 0 && (
@@ -176,14 +176,14 @@ function Header({ darkMode, setDarkMode, setIsMenuOpen }) {
 
           {/* Notification Dropdown - Fixed Positioning */}
           {showNotifications && (
-            <div className="fixed right-2 sm:right-4 top-16 sm:top-20 w-[calc(100vw-1rem)] sm:w-80 md:w-96 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 animate-slideDown">
+            <div className="fixed right-2 sm:right-4 top-16 sm:top-20 w-[calc(100vw-1rem)] sm:w-80 md:w-96 bg-white rounded-xl shadow-2xl border border-gray-200 z-50">
               {/* Header */}
               <div className="flex justify-between items-center p-3 sm:p-4 border-b border-gray-100 bg-gray-50 rounded-t-xl">
                 <h3 className="font-semibold text-gray-800 text-base sm:text-lg">Notifications</h3>
                 {unreadCount > 0 && (
                   <button
                     onClick={markAllAsRead}
-                    className="text-xs sm:text-sm text-[#5EE6FE] hover:text-[#3ecbe0] font-medium transition-colors duration-200"
+                    className="text-xs sm:text-sm text-[#5EE6FE] hover:text-[#3ecbe0] font-medium"
                   >
                     Mark all as read
                   </button>
@@ -193,20 +193,19 @@ function Header({ darkMode, setDarkMode, setIsMenuOpen }) {
               {/* Notifications List */}
               <div className="max-h-64 sm:max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
                 {notifications.length > 0 ? (
-                  notifications.map((notification, index) => (
+                  notifications.map((notification) => (
                     <div
                       key={notification.id}
                       onClick={() => handleNotificationItemClick(notification)}
-                      className={`p-3 sm:p-4 border-b border-gray-50 hover:bg-gray-50 cursor-pointer transition-all duration-200 animate-fadeIn ${
+                      className={`p-3 sm:p-4 border-b border-gray-50 hover:bg-gray-50 cursor-pointer ${
                         !notification.read ? "bg-blue-50 border-l-4 border-l-blue-400" : ""
                       }`}
-                      style={{ animationDelay: `${index * 50}ms` }}
                     >
                       <div className="flex items-start gap-2 sm:gap-3">
                         {/* Notification Icon */}
                         <div className={`flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg sm:rounded-xl flex items-center justify-center ${
                           notification.read ? "bg-gray-100" : "bg-blue-100"
-                        } transition-colors duration-200`}>
+                        }`}>
                           <i className={`fa-solid ${notification.icon} ${notification.color} text-sm sm:text-base md:text-lg`}></i>
                         </div>
                         
@@ -229,13 +228,13 @@ function Header({ darkMode, setDarkMode, setIsMenuOpen }) {
                         
                         {/* Unread Indicator */}
                         {!notification.read && (
-                          <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-[#5EE6FE] rounded-full flex-shrink-0 mt-1 sm:mt-2 animate-pulse"></div>
+                          <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-[#5EE6FE] rounded-full flex-shrink-0 mt-1 sm:mt-2"></div>
                         )}
                       </div>
                     </div>
                   ))
                 ) : (
-                  <div className="p-6 sm:p-8 text-center animate-fadeIn">
+                  <div className="p-6 sm:p-8 text-center">
                     <i className="fa-solid fa-bell-slash text-2xl sm:text-3xl md:text-4xl text-gray-300 mb-2 sm:mb-3"></i>
                     <p className="text-gray-500 text-xs sm:text-sm">No notifications yet</p>
                     <p className="text-gray-400 text-[10px] sm:text-xs mt-1">We'll notify you when something new arrives</p>
@@ -249,7 +248,7 @@ function Header({ darkMode, setDarkMode, setIsMenuOpen }) {
         {/* Forum Button - Hide text only on small screens */}
         <div
           onClick={() => navigate("/forum")}
-          className="flex items-center gap-1 sm:gap-2 transition-transform duration-300 hover:scale-105 cursor-pointer"
+          className="flex items-center gap-1 sm:gap-2 cursor-pointer"
         >
           <i className="fa-solid fa-users text-lg sm:text-xl"></i>
           <span className="font-semibold text-sm sm:text-base hidden sm:inline">Forum</span>
@@ -260,12 +259,12 @@ function Header({ darkMode, setDarkMode, setIsMenuOpen }) {
           <span className="text-xs sm:text-sm font-semibold hidden sm:inline">Mode</span>
           <div
             onClick={() => setDarkMode(!darkMode)}
-            className={`w-10 h-5 sm:w-12 sm:h-6 flex items-center rounded-full p-[2px] cursor-pointer transition-all duration-300 ${
+            className={`w-10 h-5 sm:w-12 sm:h-6 flex items-center rounded-full p-[2px] cursor-pointer ${
               darkMode ? "bg-[#5EE6FE]" : "bg-gray-300"
             }`}
           >
             <div
-              className={`bg-white w-4 h-4 sm:w-5 sm:h-5 rounded-full shadow-md transform transition-transform duration-300 ${
+              className={`bg-white w-4 h-4 sm:w-5 sm:h-5 rounded-full shadow-md ${
                 darkMode ? "translate-x-5 sm:translate-x-6" : ""
               }`}
             ></div>

@@ -106,7 +106,7 @@ function BreedDetect() {
       />
 
       {/* MAIN LAYOUT */}
-      <div className="flex flex-row w-full  sm:px-12 animate-fadeSlideUp">
+      <div className="flex flex-row w-full  sm:px-12">
         {/* SIDEBAR */}
         <Sidebar
           isMenuOpen={isMenuOpen}

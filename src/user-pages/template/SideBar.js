@@ -8,32 +8,41 @@ function SideBar({ isMenuOpen, setIsMenuOpen }) {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [pets, setPets] = useState([]); // store pets from backend
 
-  
-
   // Fetch pets on component mount
   useEffect(() => {
     const fetchPets = async () => {
+      // Check if we have cached pets
+      const cachedPets = localStorage.getItem('cachedPets');
+      const cacheTimestamp = localStorage.getItem('petsCacheTimestamp');
+      const now = Date.now();
+      
+      // Use cache if it's less than 5 minutes old
+      if (cachedPets && cacheTimestamp && (now - parseInt(cacheTimestamp)) < 5 * 60 * 1000) {
+        setPets(JSON.parse(cachedPets));
+        return;
+      }
+
       const token = localStorage.getItem("token");
-      console.log("Token being sent:", token); // <-- log token
       if (!token) return;
 
       try {
         const res = await api.get("/pets", {
           headers: { Authorization: `Bearer ${token}` },
         });
-        console.log("Pets response:", res.data); // <-- log response
+        console.log("Pets response:", res.data);
         setPets(res.data);
+        
+        // Cache the result
+        localStorage.setItem('cachedPets', JSON.stringify(res.data));
+        localStorage.setItem('petsCacheTimestamp', now.toString());
       } catch (err) {
         console.error("❌ Failed to fetch pets:", err.response?.data || err);
       }
     };
 
     fetchPets();
-
   }, []);
   
-
-
   const handleLogout = async () => {
     setShowLogoutModal(false);
 
@@ -73,8 +82,6 @@ function SideBar({ isMenuOpen, setIsMenuOpen }) {
     { label: "Support", path: "#", icon: "fa-headset" },
   ];
 
-  
-
   return (
     <>
       {/* Sidebar */}
@@ -83,7 +90,7 @@ function SideBar({ isMenuOpen, setIsMenuOpen }) {
           isMenuOpen
             ? "translate-x-0"
             : "-translate-x-full md:translate-x-0 md:w-0 md:p-0"
-        } fixed md:static top-0 left-0 z-20 md:z-auto bg-white md:bg-transparent w-[250px] h-full md:h-auto flex-shrink-0 flex flex-col p-5 transition-all duration-500 ease-in-out overflow-hidden`}
+        } fixed md:static top-0 left-0 z-20 md:z-auto bg-white md:bg-transparent w-[250px] h-full md:h-auto flex-shrink-0 flex flex-col p-5 overflow-hidden fixed left-0 top-[84px] h-[calc(100vh-84px)]`}
       >
         {isMenuOpen && (
           <>
@@ -97,9 +104,9 @@ function SideBar({ isMenuOpen, setIsMenuOpen }) {
                     <div
                       key={pet.id}
                       onClick={() => navigate(`/pet/${pet.id}`)}
-                      className="flex flex-col items-center flex-shrink-0 cursor-pointer group"
+                      className="flex flex-col items-center flex-shrink-0 cursor-pointer"
                     >
-                      <div className="w-16 h-16 rounded-full p-[3px] bg-gradient-to-br from-[#A7E9E3] via-[#FDE2E4] to-[#FFF5E4] shadow-sm hover:scale-110 transition-all duration-300">
+                      <div className="w-16 h-16 rounded-full p-[3px] bg-gradient-to-br from-[#A7E9E3] via-[#FDE2E4] to-[#FFF5E4] shadow-sm">
                         <div className="w-full h-full rounded-full overflow-hidden bg-[#FDFEFF] flex items-center justify-center border border-[#C9EAF2]">
                           <img
                             src={`http://localhost:5000${pet.image}`}
@@ -108,7 +115,7 @@ function SideBar({ isMenuOpen, setIsMenuOpen }) {
                           />
                         </div>
                       </div>
-                      <span className="text-[12px] mt-1 text-gray-700 truncate w-14 text-center font-medium group-hover:text-[#00B8D4]">
+                      <span className="text-[12px] mt-1 text-gray-700 truncate w-14 text-center font-medium">
                         {pet.name}
                       </span>
                     </div>
@@ -124,10 +131,10 @@ function SideBar({ isMenuOpen, setIsMenuOpen }) {
                   <div
                     key={item.path}
                     onClick={() => navigate(item.path)}
-                    className={`text-[15px] flex items-center gap-2 cursor-pointer transition-colors duration-300 ${
+                    className={`text-[15px] flex items-center gap-2 cursor-pointer ${
                       location.pathname === item.path
                         ? "text-[#5EE6FE] font-semibold"
-                        : "hover:text-[#5EE6FE] text-gray-700"
+                        : "text-gray-700"
                     }`}
                   >
                     <i className={`fa-solid ${item.icon}`}></i>
@@ -145,10 +152,10 @@ function SideBar({ isMenuOpen, setIsMenuOpen }) {
                   <div
                     key={item.path}
                     onClick={() => navigate(item.path)}
-                    className={`text-[15px] flex items-center gap-2 cursor-pointer transition-colors duration-300 ${
+                    className={`text-[15px] flex items-center gap-2 cursor-pointer ${
                       location.pathname === item.path
                         ? "text-[#5EE6FE] font-semibold"
-                        : "hover:text-[#5EE6FE] text-gray-700"
+                        : "text-gray-700"
                     }`}
                   >
                     <i className={`fa-solid ${item.icon}`}></i>
@@ -165,7 +172,7 @@ function SideBar({ isMenuOpen, setIsMenuOpen }) {
                 {infoItems.map((item) => (
                   <div
                     key={item.label}
-                    className="text-[15px] flex items-center gap-2 hover:text-[#5EE6FE] cursor-pointer"
+                    className="text-[15px] flex items-center gap-2 text-gray-700 cursor-pointer"
                   >
                     <i className={`fa-solid ${item.icon}`}></i>
                     <span>{item.label}</span>
@@ -176,7 +183,7 @@ function SideBar({ isMenuOpen, setIsMenuOpen }) {
 
             {/* Logout */}
             <div
-              className="px-3 mt-3 text-[15px] flex items-center gap-2 hover:text-[#5EE6FE] cursor-pointer"
+              className="px-3 mt-3 text-[15px] flex items-center gap-2 text-gray-700 cursor-pointer"
               onClick={() => setShowLogoutModal(true)}
             >
               <i className="fa-solid fa-right-from-bracket"></i>
@@ -188,8 +195,8 @@ function SideBar({ isMenuOpen, setIsMenuOpen }) {
 
       {/* Logout Modal */}
       {showLogoutModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 animate-fadeIn">
-          <div className="bg-white rounded-2xl p-6 w-[320px] shadow-lg text-center animate-popUp">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-6 w-[320px] shadow-lg text-center">
             <h2 className="text-lg font-semibold text-gray-800 mb-2">Confirm Logout</h2>
             <p className="text-gray-600 text-sm mb-5">
               Are you sure you want to log out of your account?
@@ -198,14 +205,14 @@ function SideBar({ isMenuOpen, setIsMenuOpen }) {
             <div className="flex justify-center gap-3">
               <button
                 onClick={() => setShowLogoutModal(false)}
-                className="bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 transition-all duration-300"
+                className="bg-gray-200 text-gray-700 py-2 px-4 rounded-lg"
               >
                 Cancel
               </button>
 
               <button
                 onClick={handleLogout}
-                className="bg-[#5EE6FE] text-white py-2 px-4 rounded-lg hover:bg-[#3ecbe0] transition-all duration-300"
+                className="bg-[#5EE6FE] text-white py-2 px-4 rounded-lg"
               >
                 Logout
               </button>
