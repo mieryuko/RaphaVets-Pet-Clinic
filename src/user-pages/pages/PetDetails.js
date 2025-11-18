@@ -126,29 +126,38 @@ function PetDetails() {
       formData.append("petImage", file);
 
       const token = localStorage.getItem("token");
-      const res = await api.post(`/pets/${pet.id}/upload`, formData, {
+      const res = await api.post(`/pets/${id}/upload`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${token}`,
         },
       });
 
-      console.log("📤 Upload Response:", res.data); // Debug log
+      console.log("📤 Upload Response:", res.data);
 
-      // The API already returns the full URL, so use it directly
-      setPet(prev => ({ 
-        ...prev, 
-        image: res.data.imageUrl // Use the URL directly from API response
+      // Update local pet state
+      setPet(prev => ({
+        ...prev,
+        image: res.data.imageUrl
       }));
-      
+
       setPreviewImage(null);
+
+      // Clear the pets cache to force sidebar refresh
+      localStorage.removeItem('cachedPets');
+      localStorage.removeItem('petsCacheTimestamp');
+
+      // Trigger sidebar refresh through multiple methods:
       
-      // Trigger sidebar refresh
+      // Method 1: Trigger custom event
+      window.dispatchEvent(new Event('petImageUpdated'));
+      
+      // Method 2: Use the refresh trigger
       setRefreshTrigger(prev => prev + 1);
-      
+
       setToastMessage("Profile picture updated successfully!");
       setShowSuccessToast(true);
-      
+
     } catch (err) {
       console.error("❌ Upload failed:", err);
       setToastMessage("Failed to upload image.");
@@ -165,28 +174,44 @@ function PetDetails() {
         });
 
         const petData = res.data;
+        console.log("📊 Pet Data from API:", petData); // Debug log
 
         const mappedPet = {
-          id: petData.petID,
-          name: petData.petName,
-          breed: petData.breed,
-          gender: petData.petGender || "N/A",
+          id: petData.petID || petData.id,
+          name: petData.name || "Unknown Name",
+          breed: petData.breed || "Unknown Breed",
+          gender: petData.petGender || petData.gender || "N/A",
           age: calculateAge(petData.dateOfBirth),
           image: petData.image || "/images/dog-profile.png",
           weight: petData.weight_kg,
           lastCheck: petData.lastCheck || "N/A",
+          dateOfBirth: petData.dateOfBirth,
+          color: petData.color,
+          note: petData.note
         };
-
-        // ✅ Only update pet.image if there's no preview
-        setPet((prev) => ({
-          ...mappedPet,
-          image: previewImage ? prev.image : mappedPet.image,
-        }));
+        
+        console.log("🔄 Mapped Pet:", mappedPet); // Debug log
+        
+        // FIX: Only set pet once, don't overwrite it
+        if (previewImage) {
+          // If we have a preview image, keep it but update other fields
+          setPet(prev => ({
+            ...mappedPet,
+            image: prev?.image || mappedPet.image // Keep existing image if available
+          }));
+        } else {
+          // Otherwise set the complete mapped pet
+          setPet(mappedPet);
+        }
 
         const mappedAppointments = (petData.appointments || []).map((appt) => ({
           ...appt,
           dateObj: parseAppointmentDate(appt),
+          formattedDate: formatAppointmentDate(appt),
+          displayDate: formatAppointmentDate(appt)
         }));
+       
+        console.log("📅 Mapped Appointments:", mappedAppointments);
         setAppointments(mappedAppointments);
       } catch (err) {
         console.error("❌ Failed to fetch pet details:", err);
@@ -196,7 +221,7 @@ function PetDetails() {
     };
 
     fetchPetData();
-  }, [id, previewImage, refreshTrigger]);
+  }, [id, refreshTrigger]); // Removed previewImage from dependencies to prevent infinite loops
 
   const filteredAppointments = appointments.filter((appt) =>
     appointmentFilter === "All" ? true : appt.status === appointmentFilter
@@ -342,7 +367,7 @@ function PetDetails() {
     );
 
   return (
-    <ClientLayout>
+    <ClientLayout refreshTrigger={refreshTrigger}>
       <motion.div
         variants={containerVariants}
         initial="hidden"
@@ -357,12 +382,19 @@ function PetDetails() {
           <div className="flex items-center gap-6">
             <div className="relative">
               <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-[#00B8D4] bg-gray-200 flex items-center justify-center">
-                <img src={previewImage || pet.image} alt={pet.name} />
+                <img
+                  src={previewImage || `http://localhost:5000${pet.image}`}
+                  alt={pet.name || "Pet"}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.target.src = "/images/dog-profile.png";
+                  }}
+                />
               </div>
             </div>
             <div>
               <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
-                {pet.name}
+                {pet.name || "Unnamed Pet"}
                 <motion.button 
                   onClick={() => setShowEditModal(true)} 
                   className="text-gray-400 hover:text-[#00B8D4]"
@@ -373,7 +405,7 @@ function PetDetails() {
                 </motion.button>
               </h2>
               <p className="text-gray-500 text-sm">
-                {pet.breed} • {pet.gender} • {pet.age}
+                {pet.breed || "Unknown breed"} • {pet.gender || "Unknown"} • {pet.age || "Unknown age"}
               </p>
             </div>
           </div>
@@ -383,7 +415,7 @@ function PetDetails() {
           >
             <div className="px-4 py-2 bg-[#FFF7E6] rounded-xl shadow-sm text-gray-700">
               <i className="fa-solid fa-calendar-check text-[#00B8D4] mr-2"></i>
-              Last Check: {pet.lastCheck}
+              Last Check: {pet.lastCheck || "N/A"}
             </div>
           </motion.div>
         </motion.div>
@@ -484,7 +516,7 @@ function PetDetails() {
                             <div className="flex justify-between items-center flex-1 ml-4">
                               <div>
                                 <p className="font-semibold text-gray-800">
-                                  {pet.name} — {appt.type}
+                                  {pet.name || "Pet"} — {appt.type}
                                 </p>
                                 <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
                                   <i className="fa-solid fa-clock text-[#5EE6FE]"></i>
@@ -636,11 +668,13 @@ function PetDetails() {
                 <div className="flex flex-col items-center mb-4">
                   <div className="relative">
                     <div className="w-20 h-20 rounded-full overflow-hidden border-3 border-[#00B8D4] bg-gray-200 flex items-center justify-center mb-3">
-                      <img 
-                        src={previewImage || pet.image} 
-                        alt={pet.name} 
+                      <img
+                        src={previewImage || `http://localhost:5000${pet.image}`}
+                        alt={pet.name || "Pet"}
                         className="w-full h-full object-cover"
-                        id="pet-profile-image"
+                        onError={(e) => {
+                          e.target.src = "/images/dog-profile.png";
+                        }}
                       />
                     </div>
 
@@ -675,23 +709,23 @@ function PetDetails() {
                 <div className="space-y-3 mb-4">
                   <div className="border border-gray-200 rounded-lg p-2 bg-gray-50">
                     <label className="text-xs text-gray-500 block mb-1">Pet Name</label>
-                    <p className="text-sm text-gray-800 font-medium">{pet.name}</p>
+                    <p className="text-sm text-gray-800 font-medium">{pet.name || "Unnamed Pet"}</p>
                   </div>
                   
                   <div className="border border-gray-200 rounded-lg p-2 bg-gray-50">
                     <label className="text-xs text-gray-500 block mb-1">Breed</label>
-                    <p className="text-sm text-gray-800 font-medium">{pet.breed}</p>
+                    <p className="text-sm text-gray-800 font-medium">{pet.breed || "Unknown breed"}</p>
                   </div>
                   
                   <div className="grid grid-cols-2 gap-2">
                     <div className="border border-gray-200 rounded-lg p-2 bg-gray-50">
                       <label className="text-xs text-gray-500 block mb-1">Age</label>
-                      <p className="text-sm text-gray-800 font-medium">{pet.age}</p>
+                      <p className="text-sm text-gray-800 font-medium">{pet.age || "Unknown age"}</p>
                     </div>
                     
                     <div className="border border-gray-200 rounded-lg p-2 bg-gray-50">
                       <label className="text-xs text-gray-500 block mb-1">Gender</label>
-                      <p className="text-sm text-gray-800 font-medium">{pet.gender}</p>
+                      <p className="text-sm text-gray-800 font-medium">{pet.gender || "Unknown"}</p>
                     </div>
                   </div>
                 </div>

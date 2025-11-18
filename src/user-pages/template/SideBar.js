@@ -45,6 +45,25 @@ function SideBar({ isMenuOpen, setIsMenuOpen, refreshTrigger }) {
     fetchPets();
   }, [refreshTrigger]);
 
+  // Listen for custom event when pet image is updated
+  useEffect(() => {
+    const handlePetImageUpdate = () => {
+      console.log("🔄 Pet image update detected, refreshing sidebar...");
+      // Clear cache and refetch
+      localStorage.removeItem('cachedPets');
+      localStorage.removeItem('petsCacheTimestamp');
+      fetchPets();
+    };
+
+    // Add event listener
+    window.addEventListener('petImageUpdated', handlePetImageUpdate);
+    
+    // Cleanup
+    return () => {
+      window.removeEventListener('petImageUpdated', handlePetImageUpdate);
+    };
+  }, []);
+
   const handleLogout = async () => {
     setShowLogoutModal(false);
 
@@ -116,6 +135,9 @@ function SideBar({ isMenuOpen, setIsMenuOpen, refreshTrigger }) {
                             src={`http://localhost:5000${pet.image}`}
                             alt={pet.name}
                             className="w-full h-full object-cover"
+                            onError={(e) => {
+                              e.target.src = "/images/dog-profile.png";
+                            }}
                           />
                         </div>
                       </div>
