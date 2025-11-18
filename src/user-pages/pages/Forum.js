@@ -103,6 +103,7 @@ function Forum() {
     try {
       const res = await api.get("/forum");
       const data = res.data.posts;
+      console.log("Raw Image Data", data[0].images);
       setPosts(data);
       const message = res.data.message || "✅ Forum posts fetched successfully.";
       console.log(message);
@@ -145,7 +146,7 @@ function Forum() {
     if (!files.length) return;
 
     setNewPost((prev) => {
-      const existingCount = prev.images?.length || 0;
+      const existingCount = prev.images?.filter(img => !img.removed).length || 0;
       const allowed = Math.max(0, 5 - existingCount);
       const toTake = files.slice(0, allowed);
 
@@ -154,6 +155,7 @@ function Forum() {
         url: URL.createObjectURL(f),
         name: f.name || "image",
         file: f,
+        isDB: false,
         // Only add removed property when editing
         ...(prev.id && { removed: false })
       }));
@@ -165,6 +167,8 @@ function Forum() {
     setInputKey(Date.now());
   };
 
+  ////// BACK-UP
+  /*
   const removeImageFromEditing = (imgId) => {
     setNewPost((prev) => {
       const updatedImages = prev.images.map(img => 
@@ -185,11 +189,39 @@ function Forum() {
       );
       return { ...prev, images: updatedImages };
     });
+  };*/
+
+  const removeImageFromEditing = (imgId) => {
+    setNewPost(prev => ({
+      ...prev,
+      images: prev.images.filter(img =>
+        img.isDB ? true : img.id !== imgId
+      ).map(img =>
+        img.isDB && img.id === imgId ? { ...img, removed: true } : img
+      )
+    }));
+  };
+
+  const undoRemoveImage = (imgId) => {
+    setNewPost(prev => ({
+      ...prev,
+      images: prev.images.map(img =>
+        img.isDB && img.id === imgId
+          ? { ...img, removed: false }
+          : img
+      )
+    }));
   };
 
   const handleCreateOrUpdatePost = () => {
     if (!newPost.desc.trim()){
-      setErrorMessage("❌ Description is required.");
+      setErrorMessage("❌ Please provide a description");
+      setShowErrorModal(true);
+      return;
+    }
+    const imageCount = newPost.images.filter(img => !img.removed).length;
+    if(imageCount > 5){
+      setErrorMessage("❌ You can only upload up to 5 images.");
       setShowErrorModal(true);
       return;
     }
@@ -253,6 +285,7 @@ function Forum() {
 
     const newImages = newPost.images.filter(img => img.file && !img.removed);
 
+
     if (Object.keys(updates).length === 0 && deletedImages.length === 0 && newImages.length === 0) {
       setErrorMessage("No changes made to the post.");
       setShowErrorModal(true);
@@ -295,12 +328,13 @@ function Forum() {
   };
 
   const handleEditPost = (post) => {
-    const clone = JSON.parse(JSON.stringify(post));
+    const clone = structuredClone(post);
     if (clone.images) {
       clone.images = clone.images.map(img => ({
         ...img,
-        id: img.id || genId("img-"), 
-        removed: false 
+        id: img.id, 
+        removed: false ,
+        isDB: true,
       }));
     }
     setNewPost(clone);
@@ -312,7 +346,7 @@ function Forum() {
   const handleMarkAsFound = async (postId) => {
     try {
       await api.put(`/forum/${postId}`, { postType: "Found" });
-      fetchPosts();
+      await fetchPosts();
       setShowViewModal(false);
 
       setSuccessMessage("Post marked as Found!");
@@ -332,7 +366,7 @@ function Forum() {
   const handleDeletePost = async () => {
     try {
       await api.delete(`/forum/${postToDelete}`);
-      fetchPosts();
+      await fetchPosts();
 
       setSuccessMessage("Post deleted successfully!");
       setShowSuccess(true);

@@ -3,6 +3,7 @@ import path from "path";
 import fs from "fs";
 import e from "express";
 import { em } from "framer-motion/client";
+import { log } from "console";
 
 
 export const createPost = async (req, res) => {
@@ -14,10 +15,10 @@ export const createPost = async (req, res) => {
         return res.status(400).json({ message: "❌ Invalid post type." });
     }
     if(!description?.trim()){
-        return res.status(400).json({ message: "❌ Description is required." });
+        return res.status(400).json({ message: "❌ Please provide a description." });
     }
     if(!contact?.trim() && !email?.trim()){
-        return res.status(400).json({ message: "❌ Either contact or email is required." });
+        return res.status(400).json({ message: "❌ Please provide a contact number or email address." });
     }
     if(contact?.trim() && !/^(09\d{9}|\+63\d{10})$/.test(contact)){
         return res.status(400).json({ message: "❌ Invalid contact number format." });
@@ -28,7 +29,7 @@ export const createPost = async (req, res) => {
 
     {/* Validate images */}
     if(req.files?.length < 1){
-        return res.status(400).json({ message: "❌ At least one image is required." });
+        return res.status(400).json({ message: "❌ Please provide at least 1 image" });
     }
     if(req.files.length > 5){
         return res.status(400).json({ message: "❌ Maximum of 5 images allowed." });
@@ -126,7 +127,7 @@ export const getAllPosts = async (req, res) => {
         images: images
           .filter(img => img.forumID === post.forumID)
           .map(img => ({
-            id: img.id,
+            id: img.forumImageID,
             url: `${req.protocol}://${req.get('host')}/api/forum/images/${img.imageName}`,
             imageName: img.imageName,
           })),
@@ -166,10 +167,10 @@ export const updatePost = async (req, res) => {
       return res.status(400).json({ message: "❌ Invalid post type." });
     }
     if(description !== undefined && !description?.trim()){
-        return res.status(400).json({ message: "❌ Description is required." });
+        return res.status(400).json({ message: "❌ Please provide a description." });
     }
     if(contact !== undefined && !contact?.trim() && email !== undefined && !email?.trim()){
-        return res.status(400).json({ message: "❌ Either contact or email is required." });
+        return res.status(400).json({ message: "❌ Please provide a contact number or email address." });
     }
     if(contact !== undefined && contact?.trim() && !/^(09\d{9}|\+63\d{10})$/.test(contact)){
         return res.status(400).json({ message: "❌ Invalid contact number format." });
@@ -189,7 +190,7 @@ export const updatePost = async (req, res) => {
     if (Object.keys(updates).length === 0 &&
         newImages.length === 0 &&
          (deletedArray.length === 0)) {
-        return res.status(400).json({ message: "❌ No fields to update." });
+        return res.status(400).json({ message: "❌ No updates detected." });
     }
     const dbConn = await db.getConnection();
 
@@ -211,14 +212,31 @@ export const updatePost = async (req, res) => {
           return res.status(404).json({ message: "❌ Post not found." });
       }
 
+      //Check post-update image count
+      const [forumImageCount] = await dbConn.query(
+        "SELECT COUNT(DISTINCT forumImageID) as imageCount " + 
+        "FROM forum_images_tbl " +
+        "WHERE forumID = ? AND isDeleted = FALSE",
+        req.params.id
+      );
+      const existingCount = forumImageCount[0].imageCount;
+      console.log("Existing images: ", existingCount);
+      console.log("Deleting images: ", deletedArray.length);
+      console.log("New Images: ", newImages.length);
+      const remainingImages = existingCount - deletedArray.length + newImages.length;
+      console.log("remainingImages: ", remainingImages)
+      if (remainingImages < 1){
+        return res.status(400).json({ message: "❌ Please provide at least 1 image" });
+      }
+
       //Handle deleted images
       for (const imgId of deletedArray) {
           const [imgRows] = await dbConn.query(
-              "SELECT imageName FROM forum_images_tbl WHERE id = ? AND forumID = ? AND isDeleted = FALSE",
+              "SELECT imageName FROM forum_images_tbl WHERE forumImageID = ? AND forumID = ? AND isDeleted = FALSE",
               [imgId, req.params.id]
           );
           await dbConn.query(
-              "UPDATE forum_images_tbl SET isDeleted = TRUE WHERE id = ? AND forumID = ?",
+              "UPDATE forum_images_tbl SET isDeleted = TRUE WHERE forumImageID = ? AND forumID = ?",
               [imgId, req.params.id]
           );
           if (imgRows.length) {
