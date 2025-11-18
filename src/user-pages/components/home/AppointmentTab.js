@@ -97,6 +97,18 @@ const AppointmentTab = ({ appointments, appointmentFilter, setAppointmentFilter,
     return status === 'upcoming' || status === 'pending';
   };
 
+  // Check if appointment is completed
+  const isCompletedAppointment = (appointment) => {
+    const status = appointment.status?.toLowerCase() || "";
+    return status === 'completed';
+  };
+
+  // Check if appointment is cancelled
+  const isCancelledAppointment = (appointment) => {
+    const status = appointment.status?.toLowerCase() || "";
+    return status === 'cancelled';
+  };
+
   // Handle cancel button click
   const handleCancelClick = (appointment, e) => {
     e.stopPropagation();
@@ -104,14 +116,19 @@ const AppointmentTab = ({ appointments, appointmentFilter, setAppointmentFilter,
     setShowCancelModal(true);
   };
 
-  // Confirm cancellation
+  // Confirm cancellation - goes directly to success toast
   const confirmCancellation = () => {
     if (selectedAppointment) {
-      handleCancelAppointment(selectedAppointment);
+      // Directly show success toast without backend call
       setSuccessMessage(`Appointment for ${selectedAppointment.petName} has been cancelled successfully`);
       setShowSuccessToast(true);
       setShowCancelModal(false);
       setSelectedAppointment(null);
+      
+      // Optional: If you want to call the parent function for any additional logic
+      if (typeof handleCancelAppointment === 'function') {
+        handleCancelAppointment(selectedAppointment);
+      }
     }
   };
 
@@ -126,7 +143,7 @@ const AppointmentTab = ({ appointments, appointmentFilter, setAppointmentFilter,
       <div className="flex flex-col flex-1 gap-3">
         {/* Filter Buttons */}
         <div className="flex gap-3 mb-3 flex-wrap">
-          {["Upcoming", "Pending", "Done", "All"].map((status) => (
+          {["Upcoming", "Pending", "Completed", "Cancelled", "All"].map((status) => (
             <button
               key={status}
               onClick={() => setAppointmentFilter(status)}
@@ -153,6 +170,8 @@ const AppointmentTab = ({ appointments, appointmentFilter, setAppointmentFilter,
               const formattedDate = formatAppointmentDate(appt.date);
               const time = getTimeFromDateString(appt.date);
               const canCancel = canCancelAppointment(appt);
+              const isCompleted = isCompletedAppointment(appt);
+              const isCancelled = isCancelledAppointment(appt);
 
               return (
                 <div
@@ -191,7 +210,8 @@ const AppointmentTab = ({ appointments, appointmentFilter, setAppointmentFilter,
                         <span className={`font-medium ${
                           appt.status === 'Upcoming' ? 'text-green-600' :
                           appt.status === 'Pending' ? 'text-yellow-600' :
-                          appt.status === 'Done' ? 'text-blue-600' :
+                          appt.status === 'Completed' ? 'text-blue-600' :
+                          appt.status === 'Cancelled' ? 'text-red-600' :
                           'text-gray-600'
                         }`}>
                           {appt.status || "Upcoming"}
@@ -226,6 +246,22 @@ const AppointmentTab = ({ appointments, appointmentFilter, setAppointmentFilter,
                         >
                           Cancel
                         </button>
+                      )}
+
+                      {/* Completed Status - Non-clickable with delete icon */}
+                      {isCompleted && (
+                        <div className="bg-gray-300 text-gray-600 px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 whitespace-nowrap cursor-not-allowed">
+                          <i className="fa-solid fa-check"></i>
+                          Completed
+                        </div>
+                      )}
+
+                      {/* Cancelled Status - Non-clickable with delete icon */}
+                      {isCancelled && (
+                        <div className="bg-gray-300 text-gray-600 px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 whitespace-nowrap cursor-not-allowed">
+                          <i className="fa-solid fa-trash"></i>
+                          Cancelled
+                        </div>
                       )}
                     </div>
                   </div>
