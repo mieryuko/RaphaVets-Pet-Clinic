@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Nov 17, 2025 at 06:29 AM
+-- Generation Time: Nov 18, 2025 at 10:39 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -47,16 +47,14 @@ CREATE TABLE `account_tbl` (
 --
 
 INSERT INTO `account_tbl` (`accId`, `roleID`, `firstName`, `lastName`, `email`, `password`, `createdAt`, `lastUpdatedAt`, `passwordChangeAt`, `logInAt`, `logOutAt`, `isDeleted`) VALUES
-(2, 3, 'Marke', 'Mapili', 'markmapili29@gmail.com', '$2b$10$NNG154DuvS/ST/lInE1Pp.XyhniL6YtSE.3UaiAv6/OvON5uMi3MC', '2025-11-19 19:01:01', '2025-11-17 12:36:29', '2025-11-09 12:21:30', '2025-11-17 12:36:29', '2025-11-09 19:26:09', 0),
+(2, 3, 'Marke', 'Mapili', 'markmapili29@gmail.com', '$2b$10$NNG154DuvS/ST/lInE1Pp.XyhniL6YtSE.3UaiAv6/OvON5uMi3MC', '2025-11-19 19:01:01', '2025-11-18 15:36:36', '2025-11-09 12:21:30', '2025-11-18 15:36:36', '2025-11-09 19:26:09', 0),
 (3, 2, 'Fionah Irish', 'Beltran', 'soupcuppy@gmail.com', '$2b$10$l/lPrlJ8Vho/LyqoOiq2sOlSSrZ1t.atCEgMaxBBOW05jri/FfwIS', '0000-00-00 00:00:00', '0000-00-00 00:00:00', '2025-11-09 12:21:30', '2025-11-09 12:20:21', '2025-11-09 12:20:21', 0),
-(5, 2, 'mark', 'mapili', 'markmapili72@gmail.com', '$2b$10$LMTrRhOAEKAweVGBy1NXQeGCWEzgN2d5WueonGDiRibvDGER08YVe', '0000-00-00 00:00:00', '2025-11-17 10:09:31', '2025-11-09 12:21:30', '2025-11-17 10:09:31', '2025-11-09 12:20:21', 0),
-(6, 1, 'Miguel', 'Rojero', 'miguelrojero@gmail.com', '0908@Taks', '2025-11-15 18:31:41', '2025-11-17 10:17:26', '2025-11-15 18:31:41', '2025-11-15 18:31:41', '2025-11-15 18:31:41', 1),
-(5, 2, 'mark', 'mapili', 'markmapili72@gmail.com', '$2b$10$LMTrRhOAEKAweVGBy1NXQeGCWEzgN2d5WueonGDiRibvDGER08YVe', '0000-00-00 00:00:00', '2025-11-17 10:09:31', '2025-11-09 12:21:30', '2025-11-17 10:09:31', '2025-11-09 12:20:21', 0),
+(5, 2, 'mark', 'mapili', 'markmapili72@gmail.com', '$2b$10$LMTrRhOAEKAweVGBy1NXQeGCWEzgN2d5WueonGDiRibvDGER08YVe', '0000-00-00 00:00:00', '2025-11-18 13:18:51', '2025-11-09 12:21:30', '2025-11-18 13:18:51', '2025-11-09 12:20:21', 0),
 (6, 1, 'Miguel', 'Rojero', 'miguelrojero@gmail.com', '0908@Taks', '2025-11-15 18:31:41', '2025-11-17 10:17:26', '2025-11-15 18:31:41', '2025-11-15 18:31:41', '2025-11-15 18:31:41', 1),
 (8, 1, 'Vanerie', 'Parcon', 'vnaerie@gmail.com', '', '2025-11-16 00:09:49', '2025-11-16 14:50:13', '2025-11-16 00:09:49', '2025-11-16 00:09:49', '2025-11-16 00:09:49', 1),
 (9, 1, 'Marvin', 'Tomales', 'marvin@gmail.com09123456789', '', '2025-11-16 00:15:22', '2025-11-16 00:15:22', '2025-11-16 00:15:22', '2025-11-16 00:15:22', '2025-11-16 00:15:22', 0),
-(14, 1, 'Markee', 'MWEHEHEH', 'markmapili2004@gmail.com', '$2b$10$eLEuf0mmdz4C8j54brMNK.tfY1yE9Vx2hCGgV1KAB.WP7wWywJ6l6', '2025-11-16 01:12:32', '2025-11-16 01:13:18', '2025-11-16 01:12:32', '2025-11-16 01:12:32', '2025-11-16 01:12:32', 0),
-(15, 1, 'Mark', 'Mapili', 'markmam@gmail.com', '$2b$10$HtvFEFf/H6rlr5R109DxCu5UXMYAcoVnnkCRZZckloDTavRFUmh62', '2025-11-16 13:46:52', '2025-11-16 13:46:52', '2025-11-16 13:46:52', '2025-11-16 13:46:52', '2025-11-16 13:46:52', 0);
+(15, 1, 'Mark', 'Mapili', 'markmam@gmail.com', '$2b$10$HtvFEFf/H6rlr5R109DxCu5UXMYAcoVnnkCRZZckloDTavRFUmh62', '2025-11-16 13:46:52', '2025-11-16 13:46:52', '2025-11-16 13:46:52', '2025-11-16 13:46:52', '2025-11-16 13:46:52', 0),
+(17, 1, 'Mark', 'Mapili', 'markmapili2004@gmail.com', '$2b$10$IdqYTFMGbjokXYO/KG8gq.HJ/zffX1yPKEUdl1nv21goERJPVb28e', '2025-11-18 09:28:29', '2025-11-18 09:33:18', '2025-11-18 09:28:29', '2025-11-18 09:33:18', '2025-11-18 09:28:29', 0);
 
 -- --------------------------------------------------------
 
@@ -160,8 +158,8 @@ INSERT INTO `clientinfo_tbl` (`cliendInfoId`, `accId`, `gender`, `dateOfBIrth`, 
 (1, 2, 'Male', '0000-00-00', '141-I 16th Avenue East Rembo', '09123456789'),
 (2, 8, 'Female', '2025-11-08', NULL, '09888888888'),
 (3, 9, 'Female', '0000-00-00', NULL, '09123456789'),
-(8, 14, 'Male', '0000-00-00', NULL, '09123456789'),
-(9, 15, 'Male', '2025-11-12', NULL, '09123456789');
+(9, 15, 'Male', '2025-11-12', NULL, '09123456789'),
+(11, 17, 'Male', '2025-11-13', NULL, '09123456789');
 
 -- --------------------------------------------------------
 
@@ -303,7 +301,8 @@ INSERT INTO `pet_care_category_tbl` (`petCareCategoryID`, `categoryName`) VALUES
 (2, 'Nutrition'),
 (3, 'Exercise'),
 (4, 'Hygiene'),
-(5, 'Behavior');
+(5, 'Behavior'),
+(11, 'Hello');
 
 -- --------------------------------------------------------
 
@@ -320,6 +319,8 @@ CREATE TABLE `pet_care_tips_content_tbl` (
   `shortDescription` varchar(250) NOT NULL,
   `learnMoreURL` varchar(250) NOT NULL,
   `detailedContent` varchar(250) NOT NULL,
+  `pubStatusID` int(11) NOT NULL,
+  `createdAt` datetime NOT NULL DEFAULT current_timestamp(),
   `lastUpdated` datetime NOT NULL DEFAULT current_timestamp(),
   `isDeleted` tinyint(1) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -328,13 +329,14 @@ CREATE TABLE `pet_care_tips_content_tbl` (
 -- Dumping data for table `pet_care_tips_content_tbl`
 --
 
-INSERT INTO `pet_care_tips_content_tbl` (`petCareID`, `accID`, `iconID`, `title`, `petCareCategoryID`, `shortDescription`, `learnMoreURL`, `detailedContent`, `lastUpdated`, `isDeleted`) VALUES
-(1, 5, 1, 'Brushed Your Dog’s Fur Daily', 4, 'Prevents mats and reduces shedding.', 'https://lila-loves-it.com/en/magazine/brushing-dogs-why-it-is-so-important/\r\n', '\"Use a suitable brush to remove loose hair and prevent tangles. This keeps your dog comfortable, prevents skin irritation, and helps detect lumps or skin issues early.\"', '2025-11-17 11:53:28', 0),
-(2, 5, 1, 'Trim Your Cat’s Nails Weekly', 4, 'Avoids scratching injuries.', 'https://www.petmd.com/news/view/how-often-should-you-trim-cats-nails-37807', 'Use cat-specific nail clippers. Gently trim the sharp tips, avoid the quick, and reward your cat afterwards. Regular trimming keeps them safe and prevents furniture damage.', '2025-11-17 13:03:22', 0),
-(4, 5, 2, 'Give 30-Minute Walks Daily', 3, 'Keeps your dog healthy and active.', 'https://vcahospitals.com/know-your-pet/the-benefits-of-walking-your-dog', 'Walk your dog twice a day or a single 30-minute session. Walking supports physical fitness, reduces anxiety, and strengthens the bond with your pet.', '2025-11-17 13:04:10', 0),
-(5, 5, 3, 'Offer Fresh Water Multiple Times a Day', 1, 'Prevents dehydration.', 'https://www.wellnesspetfood.com/blog/how-often-should-you-change-your-pets-water/', 'Change your pet\'s water 2–3 times daily. Clean bowls thoroughly to avoid bacteria. Proper hydration keeps pets energetic and prevents kidney and urinary issues.', '2025-11-17 13:04:10', 0),
-(6, 5, 4, 'Feed Measured Portions', 2, 'Controls weight and digestion.', 'https://www.northpointpets.com/whyaccuratelymeasuringyourpetsfoodisessential/', 'Use a measuring cup to feed your pet appropriate portions based on age, size, and activity level. Avoid free-feeding. Consult your vet for dietary adjustments if needed.', '2025-11-17 13:04:10', 0),
-(7, 5, 5, 'Use Puzzle Toys to Stimulate Your Pet', 3, 'Keeps their mind sharp.', 'https://vmc.vet.osu.edu/sites/default/files/documents/behavioral-med-puzzle-toys-2024.pdf', 'Introduce treat puzzles, hide-and-seek games, or interactive toys. Mental stimulation prevents boredom, improves behavior, and strengthens your bond.', '2025-11-17 13:04:10', 0);
+INSERT INTO `pet_care_tips_content_tbl` (`petCareID`, `accID`, `iconID`, `title`, `petCareCategoryID`, `shortDescription`, `learnMoreURL`, `detailedContent`, `pubStatusID`, `createdAt`, `lastUpdated`, `isDeleted`) VALUES
+(1, 5, 1, 'Brushed Your Dog’s Fur Daily', 4, 'Prevents mats and reduces shedding.', 'https://lila-loves-it.com/en/magazine/brushing-dogs-why-it-is-so-important/\r\n', 'Use a suitable brush to remove loose hair and prevent tangles. This keeps your dog comfortable, prevents skin irritation, and helps detect lumps or skin issues early.', 2, '2025-11-18 14:46:13', '2025-11-17 11:53:28', 0),
+(2, 5, 1, 'Trim Your Cat’s Nails Weekly', 1, 'Avoids scratching injuries.', 'https://www.petmd.com/news/view/how-often-should-you-trim-cats-nails-37807', 'Use cat-specific nail clippers. Gently trim the sharp tips, avoid the quick, and reward your cat afterwards. Regular trimming keeps them safe and prevents furniture damage.', 2, '2025-11-18 14:46:13', '2025-11-18 15:35:02', 0),
+(4, 5, 1, 'Give 30-Minute Walks Daily', 1, 'Keeps your dog healthy and active.', 'https://vcahospitals.com/know-your-pet/the-benefits-of-walking-your-dog', 'Walk your dog twice a day or a single 30-minute session. Walking supports physical fitness, reduces anxiety, and strengthens the bond with your pet.', 2, '2025-11-18 14:46:13', '2025-11-18 15:37:42', 0),
+(5, 5, 3, 'Offer Fresh Water Multiple Times a Day', 1, 'Prevents dehydration.', 'https://www.wellnesspetfood.com/blog/how-often-should-you-change-your-pets-water/', 'Change your pet\'s water 2–3 times daily. Clean bowls thoroughly to avoid bacteria. Proper hydration keeps pets energetic and prevents kidney and urinary issues.', 1, '2025-11-18 14:46:13', '2025-11-17 13:04:10', 0),
+(6, 5, 4, 'Feed Measured Portions', 2, 'Controls weight and digestion.', 'https://www.northpointpets.com/whyaccuratelymeasuringyourpetsfoodisessential/', 'Use a measuring cup to feed your pet appropriate portions based on age, size, and activity level. Avoid free-feeding. Consult your vet for dietary adjustments if needed.', 1, '2025-11-18 14:46:13', '2025-11-17 13:04:10', 0),
+(7, 5, 1, 'Use Puzzle Toys to Stimulate Your Pet', 1, 'Keeps their mind sharp.', 'https://vmc.vet.osu.edu/sites/default/files/documents/behavioral-med-puzzle-toys-2024.pdf', 'Introduce treat puzzles, hide-and-seek games, or interactive toys. Mental stimulation prevents boredom, improves behavior, and strengthens your bond.', 1, '2025-11-18 14:46:13', '2025-11-18 15:34:12', 0),
+(9, 2, 2, 'GAGi', 11, 'is it me your looking for', 'miss na miss kita', 'pinyabuhay sarap sustasya', 3, '2025-11-18 17:15:17', '2025-11-18 17:26:52', 0);
 
 -- --------------------------------------------------------
 
@@ -365,10 +367,10 @@ CREATE TABLE `pet_tbl` (
 INSERT INTO `pet_tbl` (`petID`, `accID`, `petName`, `petGender`, `breedID`, `dateOfBirth`, `weight_kg`, `color`, `note`, `imageName`, `createdAt`, `lastUpdatedAt`, `isDeleted`) VALUES
 (53, 6, 'Carpenter', 'Female', 2, '2025-11-23', 1.00, 'dsada', 'dsadsa', '', '2025-11-15 23:53:43', '2025-11-16 14:50:36', 1),
 (54, 15, 'HAHA', 'Male', 1, '2025-11-05', 2.00, 'das', NULL, '', '2025-11-16 13:46:52', '2025-11-16 13:46:52', 0),
-(55, 14, 'MOSHI', 'Male', 2, '2025-11-03', 0.00, NULL, 'mamamama', '', '2025-11-16 14:17:14', '2025-11-16 14:17:44', 0),
 (56, 2, 'Marcy', 'Male', 1, '2025-11-13', NULL, NULL, NULL, 'petImage-1763304525120-946292901.jpg', '2025-11-16 15:08:17', '2025-11-16 22:48:45', 0),
 (57, 2, 'BEBE', 'Female', 1, '2025-11-05', 1.00, 'black', NULL, 'petImage-1763302372637-418073190.jpg', '2025-11-16 16:38:51', '2025-11-16 22:12:52', 0),
-(59, 9, 'Tobi', 'Male', 1, '2025-11-04', 12.00, 'black', NULL, '', '2025-11-17 10:11:43', '2025-11-17 10:11:43', 0);
+(59, 9, 'Tobi', 'Male', 1, '2025-11-04', 12.00, 'black', NULL, '', '2025-11-17 10:11:43', '2025-11-17 10:11:43', 0),
+(60, 17, 'Markei', 'Male', 2, '2025-11-13', 12.00, 'Black', NULL, 'petImage-1763432387512-270847559.jpg', '2025-11-18 09:28:29', '2025-11-18 10:19:47', 0);
 
 -- --------------------------------------------------------
 
@@ -382,22 +384,15 @@ CREATE TABLE `publication_status_tbl` (
   `pubStatusIcon` varchar(250) NOT NULL,
   `description` varchar(250) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-(56, 2, 'Marcy', 'Male', 1, '2025-11-13', NULL, NULL, NULL, 'petImage-1763304525120-946292901.jpg', '2025-11-16 15:08:17', '2025-11-16 22:48:45', 0),
-(57, 2, 'BEBE', 'Female', 1, '2025-11-05', 1.00, 'black', NULL, 'petImage-1763302372637-418073190.jpg', '2025-11-16 16:38:51', '2025-11-16 22:12:52', 0),
-(59, 9, 'Tobi', 'Male', 1, '2025-11-04', 12.00, 'black', NULL, '', '2025-11-17 10:11:43', '2025-11-17 10:11:43', 0);
-
--- --------------------------------------------------------
 
 --
--- Table structure for table `publication_status_tbl`
+-- Dumping data for table `publication_status_tbl`
 --
 
-CREATE TABLE `publication_status_tbl` (
-  `pubStatsID` int(11) NOT NULL,
-  `pubStatus` varchar(250) NOT NULL,
-  `pubStatusIcon` varchar(250) NOT NULL,
-  `description` varchar(250) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+INSERT INTO `publication_status_tbl` (`pubStatsID`, `pubStatus`, `pubStatusIcon`, `description`) VALUES
+(1, 'Draft', 'FileText', 'Save for later editing'),
+(2, 'Published', 'Eye', 'Make visible to users'),
+(3, 'Archived', 'Archive', 'Hide from users');
 
 -- --------------------------------------------------------
 
@@ -591,6 +586,8 @@ CREATE TABLE `video_content_tbl` (
   `videoTitle` varchar(250) NOT NULL,
   `videoCategoryID` int(11) NOT NULL,
   `videoURL` varchar(250) NOT NULL,
+  `pubStatusID` int(11) NOT NULL,
+  `createdAt` datetime NOT NULL DEFAULT current_timestamp(),
   `lastUpdated` datetime NOT NULL DEFAULT current_timestamp(),
   `isDeleted` tinyint(1) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -599,14 +596,14 @@ CREATE TABLE `video_content_tbl` (
 -- Dumping data for table `video_content_tbl`
 --
 
-INSERT INTO `video_content_tbl` (`videoID`, `accID`, `videoTitle`, `videoCategoryID`, `videoURL`, `lastUpdated`, `isDeleted`) VALUES
-(1, 5, 'Dog Training 101: How to Train ANY DOG the Basics', 1, 'https://www.youtube.com/watch?v=jFMA5ggFsXU', '2025-11-17 13:20:19', 0),
-(2, 5, 'How to Bathe your Cat that Hates Water (6 Step Tutorial) | The Cat Butler', 3, 'https://www.youtube.com/watch?v=ORtlZG_RU1s', '2025-11-17 13:22:33', 0),
-(3, 5, 'Top 10 Best Foods for Dogs!!', 4, 'https://www.youtube.com/watch?v=qwKMf_5pU_Y', '2025-11-17 13:23:24', 0),
-(4, 5, '10 Signs Your Cat is Sick And Needs Help (A Vet\'s Advice)', 2, 'https://www.youtube.com/watch?v=rR6aXt-bRGs', '2025-11-17 13:23:24', 0),
-(5, 5, 'How To Stop Your Dog Barking - You Can Do This Right Now', 5, 'https://www.youtube.com/watch?v=pZkzdsjtWc0', '2025-11-17 13:25:26', 0),
-(6, 5, 'How to Trim Dog Nails Safely', 3, 'https://www.youtube.com/watch?v=VnJafu_NMoQ', '2025-11-17 13:25:26', 0),
-(7, 5, 'Cat Nutrition: The Food, The Bad & The Ugly: Part 1: Dry Food!', 4, 'https://www.youtube.com/watch?v=6cvxA1CMbMQ', '2025-11-17 13:25:26', 0);
+INSERT INTO `video_content_tbl` (`videoID`, `accID`, `videoTitle`, `videoCategoryID`, `videoURL`, `pubStatusID`, `createdAt`, `lastUpdated`, `isDeleted`) VALUES
+(1, 5, 'Dog Training 101: How to Train ANY DOG the Basics', 1, 'https://www.youtube.com/watch?v=jFMA5ggFsXU', 1, '2025-11-18 14:45:15', '2025-11-17 13:20:19', 0),
+(2, 5, 'How to Bathe your Cat that Hates Water (6 Step Tutorial) | The Cat Butler', 3, 'https://www.youtube.com/watch?v=ORtlZG_RU1s', 1, '2025-11-18 14:45:15', '2025-11-17 13:22:33', 0),
+(3, 5, 'Top 10 Best Foods for Dogs!!', 4, 'https://www.youtube.com/watch?v=qwKMf_5pU_Y', 1, '2025-11-18 14:45:15', '2025-11-17 13:23:24', 0),
+(4, 5, '10 Signs Your Cat is Sick And Needs Help (A Vet\'s Advice)', 2, 'https://www.youtube.com/watch?v=rR6aXt-bRGs', 1, '2025-11-18 14:45:15', '2025-11-17 13:23:24', 0),
+(5, 5, 'How To Stop Your Dog Barking - You Can Do This Right Now', 5, 'https://www.youtube.com/watch?v=pZkzdsjtWc0', 1, '2025-11-18 14:45:15', '2025-11-17 13:25:26', 0),
+(6, 5, 'How to Trim Dog Nails Safely', 3, 'https://www.youtube.com/watch?v=VnJafu_NMoQ', 2, '2025-11-18 14:45:15', '2025-11-17 13:25:26', 0),
+(7, 5, 'Cat Nutrition: The Food, The Bad & The Ugly: Part 1: Dry Food!', 4, 'https://www.youtube.com/watch?v=6cvxA1CMbMQ', 1, '2025-11-18 14:45:15', '2025-11-17 13:25:26', 0);
 
 --
 -- Indexes for dumped tables
@@ -677,12 +674,6 @@ ALTER TABLE `icon_tbl`
   ADD PRIMARY KEY (`iconID`);
 
 --
--- Indexes for table `icon_tbl`
---
-ALTER TABLE `icon_tbl`
-  ADD PRIMARY KEY (`iconID`);
-
---
 -- Indexes for table `pet_allergies_tbl`
 --
 ALTER TABLE `pet_allergies_tbl`
@@ -702,22 +693,8 @@ ALTER TABLE `pet_care_tips_content_tbl`
   ADD PRIMARY KEY (`petCareID`),
   ADD KEY `petContent_accID_FK` (`accID`),
   ADD KEY `iconID_FK` (`iconID`),
-  ADD KEY `petCareCategoryID_FK` (`petCareCategoryID`);
-
---
--- Indexes for table `pet_care_category_tbl`
---
-ALTER TABLE `pet_care_category_tbl`
-  ADD PRIMARY KEY (`petCareCategoryID`);
-
---
--- Indexes for table `pet_care_tips_content_tbl`
---
-ALTER TABLE `pet_care_tips_content_tbl`
-  ADD PRIMARY KEY (`petCareID`),
-  ADD KEY `petContent_accID_FK` (`accID`),
-  ADD KEY `iconID_FK` (`iconID`),
-  ADD KEY `petCareCategoryID_FK` (`petCareCategoryID`);
+  ADD KEY `petCareCategoryID_FK` (`petCareCategoryID`),
+  ADD KEY `pubStatusID_PetCareTipFK` (`pubStatusID`);
 
 --
 -- Indexes for table `pet_tbl`
@@ -726,12 +703,6 @@ ALTER TABLE `pet_tbl`
   ADD PRIMARY KEY (`petID`),
   ADD KEY `breedID_pet_fk` (`breedID`),
   ADD KEY `accID_pettbl` (`accID`);
-
---
--- Indexes for table `publication_status_tbl`
---
-ALTER TABLE `publication_status_tbl`
-  ADD PRIMARY KEY (`pubStatsID`);
 
 --
 -- Indexes for table `publication_status_tbl`
@@ -790,21 +761,8 @@ ALTER TABLE `video_category_tbl`
 ALTER TABLE `video_content_tbl`
   ADD PRIMARY KEY (`videoID`),
   ADD KEY `accID_videoContentFK` (`accID`),
-  ADD KEY `videoCategoryID_videoContentFK` (`videoCategoryID`);
-
---
--- Indexes for table `video_category_tbl`
---
-ALTER TABLE `video_category_tbl`
-  ADD PRIMARY KEY (`videoCategoryID`);
-
---
--- Indexes for table `video_content_tbl`
---
-ALTER TABLE `video_content_tbl`
-  ADD PRIMARY KEY (`videoID`),
-  ADD KEY `accID_videoContentFK` (`accID`),
-  ADD KEY `videoCategoryID_videoContentFK` (`videoCategoryID`);
+  ADD KEY `videoCategoryID_videoContentFK` (`videoCategoryID`),
+  ADD KEY `pubStatusID_videoContentFK` (`pubStatusID`);
 
 --
 -- AUTO_INCREMENT for dumped tables
@@ -814,7 +772,7 @@ ALTER TABLE `video_content_tbl`
 -- AUTO_INCREMENT for table `account_tbl`
 --
 ALTER TABLE `account_tbl`
-  MODIFY `accId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `accId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT for table `allergen_tbl`
@@ -844,7 +802,7 @@ ALTER TABLE `breed_tbl`
 -- AUTO_INCREMENT for table `clientinfo_tbl`
 --
 ALTER TABLE `clientinfo_tbl`
-  MODIFY `cliendInfoId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `cliendInfoId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `forum_images_tbl`
@@ -868,26 +826,25 @@ ALTER TABLE `icon_tbl`
 -- AUTO_INCREMENT for table `pet_care_category_tbl`
 --
 ALTER TABLE `pet_care_category_tbl`
-  MODIFY `petCareCategoryID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `petCareCategoryID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+
+--
+-- AUTO_INCREMENT for table `pet_care_tips_content_tbl`
+--
+ALTER TABLE `pet_care_tips_content_tbl`
+  MODIFY `petCareID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `pet_tbl`
 --
 ALTER TABLE `pet_tbl`
-  MODIFY `petID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=60;
+  MODIFY `petID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=61;
 
 --
 -- AUTO_INCREMENT for table `publication_status_tbl`
 --
 ALTER TABLE `publication_status_tbl`
-  MODIFY `pubStatsID` int(11) NOT NULL AUTO_INCREMENT;
-  MODIFY `petID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=60;
-
---
--- AUTO_INCREMENT for table `publication_status_tbl`
---
-ALTER TABLE `publication_status_tbl`
-  MODIFY `pubStatsID` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `pubStatsID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `role_tbl`
@@ -988,15 +945,8 @@ ALTER TABLE `pet_allergies_tbl`
 ALTER TABLE `pet_care_tips_content_tbl`
   ADD CONSTRAINT `iconID_FK` FOREIGN KEY (`iconID`) REFERENCES `icon_tbl` (`iconID`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `petCareCategoryID_FK` FOREIGN KEY (`petCareCategoryID`) REFERENCES `pet_care_category_tbl` (`petCareCategoryID`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `petContent_accID_FK` FOREIGN KEY (`accID`) REFERENCES `account_tbl` (`accId`) ON DELETE CASCADE ON UPDATE CASCADE;
-
---
--- Constraints for table `pet_care_tips_content_tbl`
---
-ALTER TABLE `pet_care_tips_content_tbl`
-  ADD CONSTRAINT `iconID_FK` FOREIGN KEY (`iconID`) REFERENCES `icon_tbl` (`iconID`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `petCareCategoryID_FK` FOREIGN KEY (`petCareCategoryID`) REFERENCES `pet_care_category_tbl` (`petCareCategoryID`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `petContent_accID_FK` FOREIGN KEY (`accID`) REFERENCES `account_tbl` (`accId`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `petContent_accID_FK` FOREIGN KEY (`accID`) REFERENCES `account_tbl` (`accId`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `pubStatusID_PetCareTipFK` FOREIGN KEY (`pubStatusID`) REFERENCES `publication_status_tbl` (`pubStatsID`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `pet_tbl`
@@ -1028,13 +978,7 @@ ALTER TABLE `vet_table`
 --
 ALTER TABLE `video_content_tbl`
   ADD CONSTRAINT `accID_videoContentFK` FOREIGN KEY (`accID`) REFERENCES `account_tbl` (`accId`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `videoCategoryID_videoContentFK` FOREIGN KEY (`videoCategoryID`) REFERENCES `video_category_tbl` (`videoCategoryID`) ON DELETE CASCADE ON UPDATE CASCADE;
-
---
--- Constraints for table `video_content_tbl`
---
-ALTER TABLE `video_content_tbl`
-  ADD CONSTRAINT `accID_videoContentFK` FOREIGN KEY (`accID`) REFERENCES `account_tbl` (`accId`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `pubStatusID_videoContentFK` FOREIGN KEY (`pubStatusID`) REFERENCES `publication_status_tbl` (`pubStatsID`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `videoCategoryID_videoContentFK` FOREIGN KEY (`videoCategoryID`) REFERENCES `video_category_tbl` (`videoCategoryID`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
 

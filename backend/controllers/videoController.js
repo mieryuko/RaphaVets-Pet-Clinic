@@ -14,7 +14,7 @@ export const getAllVideos = async (req, res) => {
       FROM video_content_tbl v
       INNER JOIN video_category_tbl vc ON v.videoCategoryID = vc.videoCategoryID
       INNER JOIN account_tbl a ON v.accID = a.accId
-      WHERE v.isDeleted = 0
+      WHERE v.isDeleted = 0 AND v.pubStatusID = 2
       ORDER BY v.lastUpdated DESC
     `;
 
@@ -79,7 +79,7 @@ export const getVideosByCategory = async (req, res) => {
       FROM video_content_tbl v
       INNER JOIN video_category_tbl vc ON v.videoCategoryID = vc.videoCategoryID
       INNER JOIN account_tbl a ON v.accID = a.accId
-      WHERE vc.videoCategory = ? AND v.isDeleted = 0
+      WHERE vc.videoCategory = ? AND v.isDeleted = 0 AND v.pubStatusID = 2
       ORDER BY v.lastUpdated DESC
     `;
 
@@ -175,7 +175,7 @@ export const searchVideos = async (req, res) => {
       FROM video_content_tbl v
       INNER JOIN video_category_tbl vc ON v.videoCategoryID = vc.videoCategoryID
       INNER JOIN account_tbl a ON v.accID = a.accId
-      WHERE v.isDeleted = 0 
+      WHERE v.isDeleted = 0 AND v.pubStatusID = 2
         AND (v.videoTitle LIKE ? OR vc.videoCategory LIKE ?)
       ORDER BY v.lastUpdated DESC
     `;

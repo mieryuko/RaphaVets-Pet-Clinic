@@ -10,6 +10,7 @@ import clientRoute from "./routes/admin_routes/ownerAndPetRoute.js"
 import dashboardRoute from "./routes/admin_routes/dashboardRoute.js"
 import petCareTipsRoutes from './routes/petCareTipsRoute.js';
 import videoRoutes from './routes/videoRoute.js';
+import contentManagementRoute from './routes/admin_routes/contentManagementRoute.js';
 
 const app = express();
 
@@ -34,6 +35,9 @@ app.use('/api/videos', videoRoutes);
 // ADMIN SIDE ROUTES
 app.use("/api/admin", clientRoute);
 app.use("/api/admin/dashboard", dashboardRoute);
+//content management route
+app.use('/api/admin/content', contentManagementRoute);
+
 
 // Serve uploaded pet images
 app.use("/uploads", express.static("uploads"));

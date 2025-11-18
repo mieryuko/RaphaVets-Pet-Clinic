@@ -37,7 +37,7 @@ export const getAllPetCareTips = async (req, res) => {
       INNER JOIN icon_tbl i ON pc.iconID = i.iconID
       INNER JOIN pet_care_category_tbl pcc ON pc.petCareCategoryID = pcc.petCareCategoryID
       INNER JOIN account_tbl a ON pc.accID = a.accId
-      WHERE pc.isDeleted = 0
+      WHERE pc.isDeleted = 0 AND pc.pubStatusID = 2
       ORDER BY pc.lastUpdated DESC
     `;
 
@@ -119,7 +119,7 @@ export const getPetCareTipsByCategory = async (req, res) => {
       INNER JOIN icon_tbl i ON pc.iconID = i.iconID
       INNER JOIN pet_care_category_tbl pcc ON pc.petCareCategoryID = pcc.petCareCategoryID
       INNER JOIN account_tbl a ON pc.accID = a.accId
-      WHERE pc.isDeleted = 0 
+      WHERE pc.isDeleted = 0 AND pc.pubStatusID = 2
       AND pcc.categoryName = ?
       ORDER BY pc.lastUpdated DESC
     `;
@@ -182,7 +182,7 @@ export const searchPetCareTips = async (req, res) => {
       INNER JOIN icon_tbl i ON pc.iconID = i.iconID
       INNER JOIN pet_care_category_tbl pcc ON pc.petCareCategoryID = pcc.petCareCategoryID
       INNER JOIN account_tbl a ON pc.accID = a.accId
-      WHERE pc.isDeleted = 0 
+      WHERE pc.isDeleted = 0 AND pc.pubStatusID = 2
       AND (pc.title LIKE ? OR pc.shortDescription LIKE ? OR pcc.categoryName LIKE ?)
       ORDER BY pc.lastUpdated DESC
     `;

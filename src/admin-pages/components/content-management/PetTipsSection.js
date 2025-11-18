@@ -5,19 +5,40 @@ import {
 
 import DeleteTipModal from './DeleteTipModal';
 
-const PetTipsSection = ({ petTips, onAdd, onEdit, onDelete }) => {
+const PetTipsSection = ({ petTips, onAdd, onEdit, onDelete, loading, allCategories = [], allStatuses = [] }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [tipToDelete, setTipToDelete] = useState(null);
 
-  const categories = ["All", "Health", "Nutrition", "Exercise", "Hygiene", "Behavior"];
-  const statuses = ["All", "Published", "Draft", "Archived"];
+  // Get categories - use allCategories from database if provided, otherwise extract from petTips
+  const categories = ["All", ...(allCategories.length > 0 
+    ? allCategories.map(cat => cat.name || cat.categoryName) 
+    : [...new Set(petTips.map(tip => tip.category).filter(Boolean))]
+  )];
+
+  // Get statuses - use allStatuses from database if provided, otherwise extract from petTips
+  const statuses = ["All", ...(allStatuses.length > 0 
+    ? allStatuses.map(status => status.name || status.pubStatus) 
+    : [...new Set(petTips.map(tip => tip.status).filter(Boolean))]
+  )];
+
+  // Count tips per category for display
+  const getCategoryCount = (categoryName) => {
+    if (categoryName === "All") return petTips.length;
+    return petTips.filter(tip => tip.category === categoryName).length;
+  };
+
+  // Count tips per status for display
+  const getStatusCount = (statusName) => {
+    if (statusName === "All") return petTips.length;
+    return petTips.filter(tip => tip.status === statusName).length;
+  };
 
   const filteredTips = petTips.filter(tip => {
-    const matchesSearch = tip.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         tip.shortDescription.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = tip.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         tip.shortDescription?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = categoryFilter === "All" || tip.category === categoryFilter;
     const matchesStatus = statusFilter === "All" || tip.status === statusFilter;
     return matchesSearch && matchesCategory && matchesStatus;
@@ -33,11 +54,16 @@ const PetTipsSection = ({ petTips, onAdd, onEdit, onDelete }) => {
   };
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
+    if (!dateString) return 'N/A';
+    try {
+      return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+    } catch {
+      return 'Invalid Date';
+    }
   };
 
   const handleDeleteClick = (tip) => {
@@ -45,10 +71,12 @@ const PetTipsSection = ({ petTips, onAdd, onEdit, onDelete }) => {
     setDeleteModalOpen(true);
   };
 
-  const handleConfirmDelete = (tipId) => {
-    onDelete(tipId);
-    setDeleteModalOpen(false);
-    setTipToDelete(null);
+  const handleConfirmDelete = () => {
+    if (tipToDelete) {
+      onDelete(tipToDelete.id);
+      setDeleteModalOpen(false);
+      setTipToDelete(null);
+    }
   };
 
   return (
@@ -70,37 +98,63 @@ const PetTipsSection = ({ petTips, onAdd, onEdit, onDelete }) => {
             />
           </div>
 
+          {/* Category Filter - Shows ALL categories from database */}
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
-            className="p-2 rounded-2xl border border-gray-200 bg-gray-50 text-gray-800 w-36 focus:outline-none focus:ring-2 focus:ring-[#5EE6FE]/50"
+            className="p-2 rounded-2xl border border-gray-200 bg-gray-50 text-gray-800 w-48 focus:outline-none focus:ring-2 focus:ring-[#5EE6FE]/50"
           >
-            <option value="All">All Categories</option>
-            {categories.filter(cat => cat !== "All").map((category) => (
-              <option key={category} value={category}>{category}</option>
-            ))}
+            {categories.map((category) => {
+              const count = getCategoryCount(category);
+              return (
+                <option key={category} value={category}>
+                  {category === "All" ? `All Categories (${count})` : `${category} (${count})`}
+                </option>
+              );
+            })}
           </select>
 
+          {/* Status Filter - Shows ALL statuses from database */}
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="p-2 rounded-2xl border border-gray-200 bg-gray-50 text-gray-800 w-36 focus:outline-none focus:ring-2 focus:ring-[#5EE6FE]/50"
+            className="p-2 rounded-2xl border border-gray-200 bg-gray-50 text-gray-800 w-48 focus:outline-none focus:ring-2 focus:ring-[#5EE6FE]/50"
           >
-            <option value="All">All Status</option>
-            {statuses.filter(status => status !== "All").map((status) => (
-              <option key={status} value={status}>{status}</option>
-            ))}
+            {statuses.map((status) => {
+              const count = getStatusCount(status);
+              return (
+                <option key={status} value={status}>
+                  {status === "All" ? `All Status (${count})` : `${status} (${count})`}
+                </option>
+              );
+            })}
           </select>
         </div>
 
         <button
           onClick={onAdd}
-          className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-xl hover:bg-blue-600 transition font-medium text-sm"
+          disabled={loading}
+          className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-xl hover:bg-blue-600 transition font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Plus size={16} />
           <span>Add New</span>
         </button>
       </div>
+
+      {/* Results Info */}
+      <div className="mb-4 text-sm text-gray-600">
+        Showing {filteredTips.length} of {petTips.length} tips
+        {categoryFilter !== "All" && ` in "${categoryFilter}"`}
+        {statusFilter !== "All" && ` with status "${statusFilter}"`}
+        {searchQuery && ` matching "${searchQuery}"`}
+      </div>
+
+      {/* Loading State */}
+      {loading && petTips.length === 0 && (
+        <div className="text-center p-8 text-gray-500">
+          Loading pet tips...
+        </div>
+      )}
 
       {/* Table */}
       <div className="border border-gray-200 rounded-2xl overflow-hidden bg-white">
@@ -116,10 +170,10 @@ const PetTipsSection = ({ petTips, onAdd, onEdit, onDelete }) => {
             </tr>
           </thead>
           <tbody>
-            {filteredTips.length === 0 ? (
+            {!loading && filteredTips.length === 0 ? (
               <tr>
                 <td colSpan={6} className="text-center p-6 text-gray-400">
-                  No tips found.
+                  {petTips.length === 0 ? "No pet tips found. Click 'Add New' to create one." : "No tips match your search criteria."}
                 </td>
               </tr>
             ) : (
@@ -136,7 +190,7 @@ const PetTipsSection = ({ petTips, onAdd, onEdit, onDelete }) => {
                   </td>
                   <td className="p-3 text-sm">
                     <span className="inline-block px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
-                      {tip.category}
+                      {tip.category || "Uncategorized"}
                     </span>
                   </td>
                   <td className="p-3 text-sm">
@@ -145,20 +199,22 @@ const PetTipsSection = ({ petTips, onAdd, onEdit, onDelete }) => {
                     </span>
                   </td>
                   <td className="p-3 text-sm text-gray-500">
-                    {formatDate(tip.updatedAt || tip.createdAt)}
+                    {formatDate(tip.updated_at || tip.updatedAt || tip.created_at || tip.createdAt)}
                   </td>
                   <td className="p-3 text-sm">
                     <div className="flex gap-2">
                       <button
                         onClick={() => onEdit(tip)}
-                        className="text-blue-500 hover:text-blue-700 transition"
+                        disabled={loading}
+                        className="text-blue-500 hover:text-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                         title="Edit"
                       >
                         <Edit2 size={16} />
                       </button>
                       <button
                         onClick={() => handleDeleteClick(tip)}
-                        className="text-red-500 hover:text-red-700 transition"
+                        disabled={loading}
+                        className="text-red-500 hover:text-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                         title="Delete"
                       >
                         <Trash2 size={16} />
@@ -177,6 +233,7 @@ const PetTipsSection = ({ petTips, onAdd, onEdit, onDelete }) => {
         onClose={() => setDeleteModalOpen(false)}
         onConfirm={handleConfirmDelete}
         tip={tipToDelete}
+        loading={loading}
       />
     </div>
   );
