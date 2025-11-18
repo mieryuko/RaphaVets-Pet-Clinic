@@ -1,4 +1,184 @@
 import React, { useState, useEffect, useRef } from "react";
+import PetTipsOverlay from "./components/PetTipsOverlay";
+
+
+{/* --- about us --- */}
+const AboutUs = () => {
+  const [isOverlayOpen, setIsOverlayOpen] = useState(false);
+
+
+  useEffect(() => {
+    if (isOverlayOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOverlayOpen]);
+
+  return (
+    <>
+      <section className="w-full bg-[#badfea] pt-12 pb-20 px-4 overflow-hidden">
+        <div className="max-w-5xl mx-auto flex flex-col items-center relative">
+          
+          {/* Header Text */}
+          <h2 className="text-5xl md:text-7xl font-bold text-white mb-4 tracking-wide uppercase drop-shadow-sm flex justify-center items-center gap-4">
+            About Us
+            <img
+              src="/images/vertical-white-paws.png"
+              alt="paw icon"
+              className="h-20 w-auto"
+            />
+          </h2>
+
+          {/* Peeking Pets Image */}
+          <div className="relative z-10 w-full max-w-4xl flex justify-center">
+            <img 
+              src="/images/pets-peeking-top.png" 
+              alt="Pets Peeking" 
+              className="w-full h-auto object-contain max-h-[200px] md:max-h-[300px]"
+            />
+          </div>
+
+          {/* White Content Box */}
+          <div className="relative z-0 bg-white border-[6px] border-[#5EE6FE] p-6 md:p-10 pt-12 md:pt-16 -mt-8 md:-mt-14 w-full shadow-sm">
+            
+            <p className="text-gray-900 text-sm md:text-lg font-bold leading-relaxed text-justify uppercase tracking-normal md:tracking-wide">
+              Raphavets Pet Clinic is a highly trusted veterinary clinic known for its commitment to exceptional pet care and veterinary services. Whether your pet requires a simple wellness exam, vaccinations, diagnostics, surgery, or emergency assistance, the team at Raphavets Pet Clinic is fully prepared to help. A highly qualified veterinary team ensures that every pet receives personalized attention and the highest standards of care. The clinic prides itself on combining cutting-edge veterinary medicine with a genuine love for animals. You can count on Raphavets Pet Clinic to provide comprehensive care designed to keep your pets healthy, safe, and happy.
+            </p>
+
+            {/* Button Container */}
+            <div className="flex justify-end mt-6">
+              <button 
+                onClick={() => setIsOverlayOpen(true)}
+                className="bg-[#5EE6FE] hover:bg-[#7AC5D8] text-white px-8 py-3 rounded-lg font-bold shadow-md transform transition duration-200 hover:shadow-3xl hover:-translate-y-0.5"
+              >
+                More About Us
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      {/* --- Overlay / Modal --- */}
+      {isOverlayOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 font-sans">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+            onClick={() => setIsOverlayOpen(false)}
+          ></div>
+
+          {/* Modal Content */}
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto flex flex-col animate-in fade-in zoom-in duration-200">
+            
+            {/* Modal Header  */}
+            <div className="sticky top-0 bg-[#5EE6FE] px-6 py-4 flex justify-between items-center border-b border-blue-200 rounded-t-2xl z-10">
+               <h2 className="text-4xl font-extrabold text-[#ffff] ">
+                More Information
+              </h2>
+              <button 
+                onClick={() => setIsOverlayOpen(false)}
+                className="p-1 bg-white/20 hover:bg-white/40 rounded-full text-white transition-colors"
+              >
+              
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 md:p-40 space-y-6 text-gray-700">
+              <div className="flex flex-col md:flex-row gap-6 items-start">
+                 {/* Placeholder ng facaed */}
+                 <div className="w-full md:w-1/2 h-48 bg-cyan-100 rounded-lg flex items-center justify-center text-gray-400 border-2  border-cyan-300">
+                   
+                          <img 
+              src="/images/raphavets-facade.png" 
+              alt="Clinic facade" 
+              
+            />
+
+
+                 </div>
+                 <div className="w-full md:w-2/3">
+                    <h4 className="text-xl font-bold text-[#5EE6FE] mb-2">Our Mission & Vision</h4>
+                    <p className="text-gray-800 text-sm md:text-lg font-bold leading-relaxed text-justify">
+                     &emsp;&emsp;&emsp; RaphaVets Pet Clinic’s mission is to administer economic, empathetic, and excellent veterinary care to ensure the health and safety of both companion animals and their owners. In the foreseeable future, the clinic aspires to empower a community that compassionately cares for their companion pets with the same dedication and empathy they provide their service.
+
+
+                    </p>
+                 </div>
+              </div>
+
+              <hr className="border-cyan-100" />
+                <div>
+                         <p className="text-gray-800 text-sm md:text-lg font-bold leading-relaxed text-justify ">
+                            &emsp;&emsp;&emsp;&emsp; Raphavets Pet Clinic in Taguig City stands as a beacon of excellence in 
+                            veterinary care, dedicated to providing top-notch services for your beloved pets. 
+                            With a team of highly skilled veterinarians and compassionate staff, Raphavets ensures 
+                            that every animal receives personalized attention tailored to their unique needs. 
+                            From routine check-ups to advanced medical treatments, the clinic is equipped with 
+                            state-of-the-art facilities that guarantee the highest standard of care. The commitment to 
+                            animal welfare is evident in their proactive approach, emphasizing preventive care and early 
+                            diagnosis to keep pets healthy and thriving.
+
+                    </p>
+
+
+
+                  </div>
+                       <div>
+                         <p className="text-gray-800 text-sm md:text-lg font-bold leading-relaxed text-justify ">
+                          Moreover, Raphavets Pet Clinic understands the deep bond between 
+                          pets and their owners, which is why they prioritize open 
+                          communication and education. Pet owners are encouraged to ask
+                           questions and participate actively in their pets' care plans.
+                            With flexible appointment scheduling and a welcoming environment, 
+                            Raphavets strives to make every visit as stress-free as possible. 
+                            Trust Raphavets Pet Clinic to be your partner in ensuring a long, healthy, and happy life for your furry 
+                            friends.
+                    </p>
+
+
+
+                  </div>
+
+
+
+              <div>
+                <h4 className="text-xl font-bold text-[#5EE6FE] mb-3">Why Choose Us?</h4>
+                <ul className="list-disc pl-5 space-y-2">
+                  <li><strong>Compassionate Staff:</strong> Our team is trained in fear-free handling techniques to reduce stress for your pet.</li>
+                  <li><strong>24/7 Emergency Support:</strong> We have a vet on call for those unexpected moments when you need help the most.</li>
+                  <li><strong>Holistic Approach:</strong> We believe in treating the whole pet, combining traditional medicine with nutritional counseling.</li>
+                </ul>
+              </div>
+
+              <div className="bg-blue-50 p-4 rounded-lg border-l-4 border-[#5EE6FE] italic text-gray-600">
+                "We strive to be the partner you trust for your pet's lifelong health journey."
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="bg-gray-50 px-6 py-4 flex justify-end border-t border-gray-100 rounded-b-2xl">
+              <button 
+                onClick={() => setIsOverlayOpen(false)}
+                className="bg-[#5EE6FE] hover:bg-[#7AC5D8] text-white px-8 py-3 rounded-lg font-bold shadow-md transform transition duration-200 hover:shadow-3xl hover:-translate-y-0.5"
+              >
+                Close
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+    </>
+  );
+};
+
+ {/* --- end about us --- */}
 
 // --- COLLAPSIBLE  ---//
 function ServicesWithPrices() {
@@ -10,7 +190,7 @@ return (
 <div className="max-w-7xl mx-auto">
 <button
 onClick={() => setOpen(!open)}
-className="mx-auto mb-6 block bg-[#5EE6FE] text-white px-6 py-3 rounded-lg shadow-md hover:shadow-lg transition"
+className="mx-auto mb-6 block bg-[#5EE6FE] text-white px-8 py-3 rounded-lg font-bold shadow-md transform transition duration-200 hover:shadow-3xl hover:-translate-y-0.5"
 >
 {open ? "Click to hide Services \u2193" : "Click to learn more \u2192" }
 </button>
@@ -149,7 +329,7 @@ className="mx-auto mb-6 block bg-[#5EE6FE] text-white px-6 py-3 rounded-lg shado
 
 
 <div className="mt-12 text-center">
-<a href="#schedule" className="inline-block bg-[#5EE6FE] text-white px-8 py-4 rounded-lg font-bold shadow-md hover:shadow-xl">Schedule a Visit →</a>
+<a href="#schedule" className="inline-block bg-[#5EE6FE] text-white px-20 py-6 rounded-lg font-bold shadow-md transform transition duration-200 hover:shadow-3xl hover:-translate-y-0.5">Schedule a Visit →</a>
 </div>
 </div>
 )}
@@ -241,7 +421,7 @@ const FooterContent = () => {
                                 <ul className="space-y-2">
                                     <li><a href="#" className={linkClasses}>Get Started</a></li>
                                     <li><a href="#" className={linkClasses}>About us</a></li>
-                                    <li><a href="#" className={linkClasses}>Services</a></li>
+                                    <li><a href="#services" className={linkClasses}>Services</a></li>
                                     <li><a href="#" className={linkClasses}>Clinic Location</a></li>
                                 </ul>
                                 <ul className="space-y-2">
@@ -395,9 +575,9 @@ function ClinicLocationMap() {
             {/* "Get Directions" button */}
             <div className="mt-6 w-full">
               
-              {/* "Get Directions" link using Place ID */}
+              {/* "Get Directions"  */}
               <a
-                href={`https://www.google.com/maps/dir/?api=1&destination=place_id:${CLINIC_PLACE_ID}`}
+                href={`https://www.google.com/maps/dir//RaphaVets+Pet+Clinic+Block+3+Lot+22+Camia+Taguig,+Metro+Manila/@14.5473643,121.0610568,19z/data=!4m5!4m4!1m0!1m2!1m1!1s0x3397c96dc01fd759:0x3d190d6e08e48bd1`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-block bg-[#5EE6FE] text-white px-8 py-6 rounded-lg font-bold shadow-md transform transition duration-200 hover:shadow-3xl hover:-translate-y-0.5"
@@ -546,10 +726,18 @@ const TestimonialSlider = () => {
   );
 };
 
+{/* END of testimonies */}
+
+
+
+
+
 function App() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [showNavbar, setShowNavbar] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+  const [showTipsOverlay, setShowTipsOverlay] = useState(false);
+
 
   useEffect(() => {
     const handleScroll = () => {
@@ -677,6 +865,8 @@ function App() {
         </nav>
       </header>
 
+
+
       {/* MAIN CONTENT */}
       <div className="flex flex-col md:flex-row min-h-[calc(100vh-64px)] pt-16">
         {/* LEFT SECTION */}
@@ -737,7 +927,13 @@ function App() {
         </div>
       </div>
 
-      {/* NEW SERVICES SECTION (Shape divider and content) */}
+     <section id="services" className="SERVICES">
+   
+         </section>
+
+
+
+      {/* OUR SERVICES SECTION  */}
       <div className="relative w-full overflow-x-hidden leading-[0] z-[5] -translate-y-[110px]">
         {/* Wave SVG for divider */}
         <svg
@@ -765,8 +961,12 @@ function App() {
                 "linear-gradient(to bottom, #E0F7FA 0%, #B2EBF2 43%, #FFFFFF 100%)",
             }}
           />
+       
+
 
           {/* Title - Discover our services */}
+
+            
           <h2 className="relative z-10 text-3xl sm:text-4xl font-semibold text-gray-800 mt-2 mb-8 md:mb-12">
             Discover our services
           </h2>
@@ -838,7 +1038,9 @@ function App() {
 
 
 
-
+  <section id="pettips" className="PetTips">
+   
+         </section>
         {/* PAW STEPS SECTION */}
         <div className="w-full text-center py-16 px-4">
           {/* Section Title */}
@@ -880,12 +1082,18 @@ function App() {
 
               {/* Button/Link for "See all tips" */}
               <div className="w-1/4 flex justify-end">
-                <a
-                  href="#pettips"
-                  className="text-sm sm:text-base font-bold text-black transition duration-200 hover:text-[#5EE6FE]"
-                >
-                  See all tips →
-                </a>
+                      {/* Button/Link with overlay" */}
+                     <button
+  onClick={() => setShowTipsOverlay(true)}
+  className="text-sm sm:text-base font-bold text-black transition duration-200 hover:text-[#5EE6FE]"
+>
+  See all tips →
+</button>
+
+
+
+
+
               </div>
             </div>
           </div>
@@ -1015,11 +1223,20 @@ function App() {
           </div>
         </div>
         {/* --- END OF TAKE THE NEXT STEP SECTION --- */}
+
+        <section id="aboutus" className="AboutUs">
    
-           
+         </section>
+   
+            {/* about us */}
+          
+              <AboutUs />
+             {/* end of about us*/}
+
+
 
       
-        {/* TESTIMONIAL SLIDER PLACEMENT */}
+        {/* start of TESTIMONIAL SLIDER PLACEMENT */}
              
         <TestimonialSlider />
         {/* --- END OF  SLIDER --- */}
@@ -1116,20 +1333,7 @@ function App() {
 
 {/* end of faqs */}
 
-
-             
-
-
-            {/* footer */}
-
-
-
-
-      
-      {/* end of footer */}
-        
   
-
 
        {/* start of svg  and still have questions area */}
 
@@ -1239,6 +1443,10 @@ function App() {
 
 
 
+
+
+
+
    
 
 
@@ -1248,6 +1456,9 @@ function App() {
 
 
 
+    {showTipsOverlay && (
+  <PetTipsOverlay onClose={() => setShowTipsOverlay(false)} />
+)}
 
 
    

@@ -1,19 +1,43 @@
 import { useState } from "react";
 import { 
-  Plus, Edit2, Trash2, Search, Filter, Video, Eye
+  Plus, Edit2, Trash2, Search, Video, Eye
 } from "lucide-react";
 
-const VideosSection = ({ videos, onAdd, onEdit, onDelete }) => {
+import DeleteModal from "./DeleteTipModal";
+const VideosSection = ({ videos, onAdd, onEdit, onDelete, loading, allCategories = [], allStatuses = [] }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [videoToDelete, setVideoToDelete] = useState(null);
 
-  const categories = ["All", "Training", "Health Tips", "Grooming", "Behavior", "Nutrition"];
-  const statuses = ["All", "Published", "Draft"];
+  // Get categories - use allCategories from database if provided, otherwise extract from videos
+  const categories = ["All", ...(allCategories.length > 0 
+    ? allCategories.map(cat => cat.name || cat.videoCategory) 
+    : [...new Set(videos.map(video => video.category).filter(Boolean))]
+  )];
+
+  // Get statuses - use allStatuses from database if provided, otherwise extract from videos
+  const statuses = ["All", ...(allStatuses.length > 0 
+    ? allStatuses.map(status => status.name || status.pubStatus) 
+    : [...new Set(videos.map(video => video.status).filter(Boolean))]
+  )];
+
+  // Count videos per category for display
+  const getCategoryCount = (categoryName) => {
+    if (categoryName === "All") return videos.length;
+    return videos.filter(video => video.category === categoryName).length;
+  };
+
+  // Count videos per status for display
+  const getStatusCount = (statusName) => {
+    if (statusName === "All") return videos.length;
+    return videos.filter(video => video.status === statusName).length;
+  };
 
   const filteredVideos = videos.filter(video => {
-    const matchesSearch = video.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         video.shortDescription.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = video.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         video.shortDescription?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = categoryFilter === "All" || video.category === categoryFilter;
     const matchesStatus = statusFilter === "All" || video.status === statusFilter;
     return matchesSearch && matchesCategory && matchesStatus;
@@ -23,16 +47,35 @@ const VideosSection = ({ videos, onAdd, onEdit, onDelete }) => {
     switch (status) {
       case "Published": return "bg-green-100 text-green-800";
       case "Draft": return "bg-yellow-100 text-yellow-800";
+      case "Archived": return "bg-gray-100 text-gray-800";
       default: return "bg-blue-100 text-blue-800";
     }
   };
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
+    if (!dateString) return 'N/A';
+    try {
+      return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+    } catch {
+      return 'Invalid Date';
+    }
+  };
+
+  const handleDeleteClick = (video) => {
+    setVideoToDelete(video);
+    setDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (videoToDelete) {
+      onDelete(videoToDelete.id);
+      setDeleteModalOpen(false);
+      setVideoToDelete(null);
+    }
   };
 
   return (
@@ -54,37 +97,63 @@ const VideosSection = ({ videos, onAdd, onEdit, onDelete }) => {
             />
           </div>
 
+          {/* Category Filter - Shows ALL categories from database */}
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
-            className="p-2 rounded-2xl border border-gray-200 bg-gray-50 text-gray-800 w-36 focus:outline-none focus:ring-2 focus:ring-[#5EE6FE]/50"
+            className="p-2 rounded-2xl border border-gray-200 bg-gray-50 text-gray-800 w-48 focus:outline-none focus:ring-2 focus:ring-[#5EE6FE]/50"
           >
-            <option value="All">All Categories</option>
-            {categories.filter(cat => cat !== "All").map((category) => (
-              <option key={category} value={category}>{category}</option>
-            ))}
+            {categories.map((category) => {
+              const count = getCategoryCount(category);
+              return (
+                <option key={category} value={category}>
+                  {category === "All" ? `All Categories (${count})` : `${category} (${count})`}
+                </option>
+              );
+            })}
           </select>
 
+          {/* Status Filter - Shows ALL statuses from database */}
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="p-2 rounded-2xl border border-gray-200 bg-gray-50 text-gray-800 w-36 focus:outline-none focus:ring-2 focus:ring-[#5EE6FE]/50"
+            className="p-2 rounded-2xl border border-gray-200 bg-gray-50 text-gray-800 w-48 focus:outline-none focus:ring-2 focus:ring-[#5EE6FE]/50"
           >
-            <option value="All">All Status</option>
-            {statuses.filter(status => status !== "All").map((status) => (
-              <option key={status} value={status}>{status}</option>
-            ))}
+            {statuses.map((status) => {
+              const count = getStatusCount(status);
+              return (
+                <option key={status} value={status}>
+                  {status === "All" ? `All Status (${count})` : `${status} (${count})`}
+                </option>
+              );
+            })}
           </select>
         </div>
 
         <button
           onClick={onAdd}
-          className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-xl hover:bg-blue-600 transition font-medium text-sm"
+          disabled={loading}
+          className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-xl hover:bg-blue-600 transition font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Plus size={16} />
           <span>Add New</span>
         </button>
       </div>
+
+      {/* Results Info */}
+      <div className="mb-4 text-sm text-gray-600">
+        Showing {filteredVideos.length} of {videos.length} videos
+        {categoryFilter !== "All" && ` in "${categoryFilter}"`}
+        {statusFilter !== "All" && ` with status "${statusFilter}"`}
+        {searchQuery && ` matching "${searchQuery}"`}
+      </div>
+
+      {/* Loading State */}
+      {loading && videos.length === 0 && (
+        <div className="text-center p-8 text-gray-500">
+          Loading videos...
+        </div>
+      )}
 
       {/* Table */}
       <div className="border border-gray-200 rounded-2xl overflow-hidden bg-white">
@@ -99,10 +168,10 @@ const VideosSection = ({ videos, onAdd, onEdit, onDelete }) => {
             </tr>
           </thead>
           <tbody>
-            {filteredVideos.length === 0 ? (
+            {!loading && filteredVideos.length === 0 ? (
               <tr>
-                <td colSpan={6} className="text-center p-6 text-gray-400">
-                  No videos found.
+                <td colSpan={5} className="text-center p-6 text-gray-400">
+                  {videos.length === 0 ? "No videos found. Click 'Add New' to create one." : "No videos match your search criteria."}
                 </td>
               </tr>
             ) : (
@@ -121,7 +190,7 @@ const VideosSection = ({ videos, onAdd, onEdit, onDelete }) => {
                   </td>
                   <td className="p-3 text-sm">
                     <span className="inline-block px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
-                      {video.category}
+                      {video.category || "Uncategorized"}
                     </span>
                   </td>
                   <td className="p-3 text-sm">
@@ -130,20 +199,22 @@ const VideosSection = ({ videos, onAdd, onEdit, onDelete }) => {
                     </span>
                   </td>
                   <td className="p-3 text-sm text-gray-500">
-                    {formatDate(video.updatedAt || video.createdAt)}
+                    {formatDate(video.updated_at || video.updatedAt || video.created_at || video.createdAt)}
                   </td>
                   <td className="p-3 text-sm">
                     <div className="flex gap-2">
                       <button
                         onClick={() => onEdit(video)}
-                        className="text-blue-500 hover:text-blue-700 transition"
+                        disabled={loading}
+                        className="text-blue-500 hover:text-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                         title="Edit"
                       >
                         <Edit2 size={16} />
                       </button>
                       <button
-                        onClick={() => onDelete(video.id)}
-                        className="text-red-500 hover:text-red-700 transition"
+                        onClick={() => handleDeleteClick(video)}
+                        disabled={loading}
+                        className="text-red-500 hover:text-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                         title="Delete"
                       >
                         <Trash2 size={16} />
@@ -156,6 +227,15 @@ const VideosSection = ({ videos, onAdd, onEdit, onDelete }) => {
           </tbody>
         </table>
       </div>
+
+      <DeleteModal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        item={videoToDelete}
+        loading={loading}
+        type="video"
+      />
     </div>
   );
 };

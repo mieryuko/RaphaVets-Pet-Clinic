@@ -1,5 +1,7 @@
 import db from "../../config/db.js";
 
+//PET CARE TIPS
+
 export const getAllPetCareTips = async (req, res) => {
   try {
     const query = `
@@ -393,3 +395,4 @@ export const getPublicationStatuses = async (req, res) => {
     });
   }
 };
+

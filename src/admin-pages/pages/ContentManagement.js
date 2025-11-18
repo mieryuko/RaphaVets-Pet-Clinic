@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "../template/Header";
 import { Video, FileText, MessageSquare, Archive } from "lucide-react";
+import api from "../../api/axios";
 
 // Import components from organized structure
 import {
@@ -16,45 +17,48 @@ const ContentManagement = () => {
   const [showPetTipModal, setShowPetTipModal] = useState(false);
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  // Sample data
-  const [petTips, setPetTips] = useState([
-    {
-      id: 1,
-      icon: "scissors",
-      category: "Hygiene",
-      title: "Brush Your Dog's Fur Daily",
-      shortDescription: "Prevents mats and reduces shedding",
-      longDescription: "Use a suitable brush to remove loose hair and prevent tangles...",
-      url: "https://example.com/dog-grooming",
-      status: "Published",
-      createdAt: "2024-01-15",
-      updatedAt: "2024-01-15"
-    },
-    {
-      id: 2,
-      icon: "dumbbell",
-      category: "Exercise",
-      title: "Give 30-Minute Walks Daily",
-      shortDescription: "Keeps your dog healthy and active",
-      longDescription: "Walk your dog twice a day or a single 30-minute session...",
-      url: "https://example.com/dog-walking",
-      status: "Draft",
-      createdAt: "2024-01-14",
-      updatedAt: "2024-01-14"
+  // State for data from backend
+  const [petTips, setPetTips] = useState([]);
+  const [videos, setVideos] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [icons, setIcons] = useState([]);
+  const [publicationStatuses, setPublicationStatuses] = useState([]);
+
+  const [videoCategories, setVideoCategories] = useState([]);
+
+
+  // Handle new video category creation
+  const handleNewVideoCategoryCreated = async (newCategory) => {
+    console.log('New video category created:', newCategory);
+    await fetchVideoCategories(); // Refresh the video categories list
+  };
+  // Fetch videos
+  const fetchVideos = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get("/admin/content/videos/videos/");
+      setVideos(response.data.data);
+    } catch (error) {
+      console.error('Error fetching videos:', error);
+      alert('Failed to fetch videos');
+    } finally {
+      setLoading(false);
     }
-  ]);
+  };
 
-  const [videos, setVideos] = useState([
-    {
-      id: 1,
-      category: "Training",
-      title: "Basic Obedience Training",
-      shortDescription: "Essential commands every dog should know",
-      youtubeUrl: "https://youtube.com/watch?v=example"
+  // Fetch video categories
+  const fetchVideoCategories = async () => {
+    try {
+      const response = await api.get("/admin/content/videos/categories");
+      setVideoCategories(response.data.data);
+    } catch (error) {
+      console.error('Error fetching video categories:', error);
     }
-  ]);
+  };
 
+  // Mock data for forum posts (not from backend)
   const [forumPosts, setForumPosts] = useState([
     {
       id: 1,
@@ -66,7 +70,7 @@ const ContentManagement = () => {
       contactNumber: "+1 (555) 123-4567",
       email: "john@email.com",
       images: ["img1.jpg", "img2.jpg", "img3.jpg"],
-      status: "active" // Added status field
+      status: "active"
     },
     {
       id: 2,
@@ -78,7 +82,7 @@ const ContentManagement = () => {
       contactNumber: "+1 (555) 987-6543",
       email: "sarah@email.com",
       images: ["img1.jpg"],
-      status: "archived" // Added status field
+      status: "archived"
     },
     {
       id: 3,
@@ -90,69 +94,302 @@ const ContentManagement = () => {
       contactNumber: "+1 (555) 456-7890",
       email: "mike@email.com",
       images: [],
-      status: "active" // Added status field
+      status: "active"
     }
   ]);
 
-  const petCategories = ["Health", "Nutrition", "Exercise", "Hygiene", "Behavior"];
-  const videoCategories = ["Training", "Health Tips", "Grooming", "Behavior"];
+  // Stats state
+  const [stats, setStats] = useState({
+    publishedTips: 0,
+    publishedVideos: 0,
+    archives: 0,
+    forumPosts: 0
+  });
 
-  // Calculate stats
-  const totalPublishedTips = petTips.filter(tip => tip.status === "Published").length;
-  const totalPublishedVideos = 12;
-  const totalArchives = petTips.filter(tip => tip.status === "Archived").length + 8;
-  const totalForumPosts = 45;
+  
 
-  const handleAddPetTip = (data) => {
-    if (editingItem) {
-      setPetTips(petTips.map(tip => tip.id === editingItem.id ? { ...data, id: editingItem.id } : tip));
-    } else {
-      setPetTips([...petTips, { ...data, id: Date.now() }]);
+  // Fetch all data on component mount (except forum posts)
+  useEffect(() => {
+    fetchPetCareTips();
+    fetchVideos(); 
+    fetchCategories();
+    fetchVideoCategories(); 
+    fetchIcons();
+    fetchPublicationStatuses();
+  }, []);
+
+  // Update stats when data changes
+  useEffect(() => {
+    updateStats();
+  }, [petTips, videos, forumPosts]);
+
+  // Fetch pet care tips
+  const fetchPetCareTips = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get("/admin/content/pet-care-tips");
+      setPetTips(response.data.data);
+    } catch (error) {
+      console.error('Error fetching pet care tips:', error);
+      alert('Failed to fetch pet care tips');
+    } finally {
+      setLoading(false);
     }
-    setShowPetTipModal(false);
-    setEditingItem(null);
   };
 
-  const handleAddVideo = (data) => {
-    if (editingItem) {
-      setVideos(videos.map(video => video.id === editingItem.id ? { ...data, id: editingItem.id } : video));
-    } else {
-      setVideos([...videos, { ...data, id: Date.now() }]);
+  // Fetch categories
+  const fetchCategories = async () => {
+    try {
+      const response = await api.get("/admin/content/pet-care-categories");
+      setCategories(response.data.data);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
     }
-    setShowVideoModal(false);
-    setEditingItem(null);
   };
 
-  const handleEdit = (item, type) => {
+  // Fetch icons
+  const fetchIcons = async () => {
+    try {
+      const response = await api.get("/admin/content/pet-care-tips/icons");
+      setIcons(response.data.data);
+    } catch (error) {
+      console.error('Error fetching icons:', error);
+    }
+  };
+
+  // Fetch publication statuses
+  const fetchPublicationStatuses = async () => {
+    try {
+      const response = await api.get("/admin/content/publication-statuses");
+      setPublicationStatuses(response.data.data);
+    } catch (error) {
+      console.error('Error fetching publication statuses:', error);
+    }
+  };
+
+  // Handle new category creation
+  const handleNewCategoryCreated = (newCategory) => {
+    console.log('New category created:', newCategory);
+    setCategories(prev => [...prev, newCategory]);
+  };
+
+  // Update stats
+  const updateStats = () => {
+    const publishedTips = petTips.filter(tip => tip.status === "Published").length;
+    const publishedVideos = videos.filter(video => video.status === "Published").length;
+    const archives = petTips.filter(tip => tip.status === "Archived").length + 
+                    videos.filter(video => video.status === "Archived").length;
+    
+    setStats({
+      publishedTips,
+      publishedVideos,
+      archives,
+      forumPosts: forumPosts.length
+    });
+  };
+
+  // Handle add/edit pet tip
+  const handleAddPetTip = async (data) => {
+    try {
+      setLoading(true);
+
+
+      const requestData = {
+        title: data.title,
+        shortDescription: data.shortDescription,
+        detailedContent: data.detailedContent,
+        learnMoreURL: data.learnMoreURL || '',
+        iconID: data.iconID,
+        petCareCategoryID: data.petCareCategoryID,
+        pubStatusID: data.pubStatusID || 1
+      };
+
+      console.log('Final request data to backend:', requestData);
+
+      let response;
+      
+      if (editingItem) {
+        console.log('Updating existing tip with ID:', editingItem.id);
+        response = await api.put(`/admin/content/pet-care-tips/updatePetCare/${editingItem.id}`, requestData);
+      } else {
+        console.log('Creating new tip');
+        response = await api.post("/admin/content/pet-care-tips/createPetCare", requestData);
+      }
+
+      console.log('Backend response:', response.data);
+
+      if (response.data.success) {
+        await fetchPetCareTips();
+        setShowPetTipModal(false);
+        setEditingItem(null);
+      } else {
+        alert(response.data.message || 'Failed to save pet tip');
+      }
+    } catch (error) {
+      console.error('Error saving pet tip:', error);
+      console.error('Error details:', error.response?.data);
+      alert(error.response?.data?.message || 'Failed to save pet tip');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getCurrentUserId = async () => {
+    try {
+      const response = await api.get('/auth/current-user');
+      if (response.data.success) {
+        return response.data.data.accId;
+      }
+    } catch (error) {
+      console.error('Error getting current user from API:', error);
+    }
+    
+    return "no id";
+  };
+
+  // Handle delete pet tip
+  const handleDeletePetTip = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this pet tip?')) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await api.delete(`/admin/content/pet-care-tips/deletePetCare/${id}`);
+
+      if (response.data.success) {
+        await fetchPetCareTips();
+      } else {
+        alert(response.data.message || 'Failed to delete pet tip');
+      }
+    } catch (error) {
+      console.error('Error deleting pet tip:', error);
+      alert(error.response?.data?.message || 'Failed to delete pet tip');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle edit pet tip
+  const handleEditPetTip = (item) => {
+    console.log('Editing item data:', {
+      id: item.id,
+      title: item.title,
+      pubStatusID: item.pubStatusID,
+      status: item.status,
+      iconID: item.iconID,
+      petCareCategoryID: item.petCareCategoryID
+    });
+    
     setEditingItem(item);
-    if (type === 'pet-tips') {
-      setShowPetTipModal(true);
-    } else if (type === 'videos') {
-      setShowVideoModal(true);
+    setShowPetTipModal(true);
+  };
+
+  // Handle edit video
+  const handleEditVideo = (item) => {
+    console.log('Editing video data:', {
+      id: item.id,
+      videoTitle: item.title,
+      videoURL: item.videoURL,
+      videoCategoryID: item.videoCategoryID,
+      pubStatusID: item.pubStatusID,
+      status: item.status
+    });
+    
+    setEditingItem(item);
+    setShowVideoModal(true);
+  };
+
+  // Handle add/edit video
+  const handleAddVideo = async (data) => {
+    try {
+      setLoading(true);
+      
+      const currentUserId = await getCurrentUserId();
+      
+      if (!currentUserId) {
+        alert('User not authenticated. Please log in again.');
+        return;
+      }
+
+      const requestData = {
+        videoTitle: data.videoTitle,
+        videoURL: data.videoURL,
+        videoCategoryID: data.videoCategoryID,
+        pubStatusID: data.pubStatusID || 1
+      };
+
+      let response;
+      
+      if (editingItem) {
+        response = await api.put(`/admin/content/videos/update/${editingItem.id}`, requestData);
+      } else {
+        response = await api.post("/admin/content/videos/create", requestData);
+      }
+
+      if (response.data.success) {
+        await fetchVideos();
+        setShowVideoModal(false);
+        setEditingItem(null);
+      } else {
+        alert(response.data.message || 'Failed to save video');
+      }
+    } catch (error) {
+      console.error('Error saving video:', error);
+      alert(error.response?.data?.message || 'Failed to save video');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleDelete = (id, type) => {
-    if (type === 'pet-tips') {
-      setPetTips(petTips.filter(tip => tip.id !== id));
-    } else if (type === 'videos') {
-      setVideos(videos.filter(video => video.id !== id));
-    } else if (type === 'forum-posts') {
-      setForumPosts(forumPosts.filter(post => post.id !== id));
+  // Handle delete video
+  const handleDeleteVideo = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this video?')) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await api.delete(`/admin/content/videos/delete/${id}`);
+
+      if (response.data.success) {
+        await fetchVideos();
+      } else {
+        alert(response.data.message || 'Failed to delete video');
+      }
+    } catch (error) {
+      console.error('Error deleting video:', error);
+      alert(error.response?.data?.message || 'Failed to delete video');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleArchive = (id, newStatus) => {
-    setForumPosts(forumPosts.map(post => 
-      post.id === id ? { ...post, status: newStatus } : post
-    ));
+  // Forum post handlers - using mock data only
+  const handleDeleteForumPost = (id) => {
+    if (window.confirm('Are you sure you want to delete this forum post?')) {
+      setForumPosts(prevPosts => prevPosts.filter(post => post.id !== id));
+    }
   };
 
-  console.log('ForumPostsSection component:', ForumPostsSection);
+  const handleArchiveForumPost = (id, newStatus) => {
+    setForumPosts(prevPosts => 
+      prevPosts.map(post => 
+        post.id === id ? { ...post, status: newStatus } : post
+      )
+    );
+  };
 
   return (
     <div className="flex flex-col h-screen bg-[#FBFBFB] p-6 gap-2 font-sans">
       <Header title="Content Management" />
+
+      {/* Loading overlay */}
+      {loading && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-4 rounded-lg">Loading...</div>
+        </div>
+      )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-2 overflow-auto">
@@ -160,7 +397,7 @@ const ContentManagement = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-blue-600 text-sm font-semibold">Published Tips</p>
-              <p className="text-3xl font-bold text-gray-900 mt-2">{totalPublishedTips}</p>
+              <p className="text-3xl font-bold text-gray-900 mt-2">{stats.publishedTips}</p>
             </div>
             <div className="p-3 bg-white rounded-xl shadow-sm">
               <FileText className="h-6 w-6 text-blue-500" />
@@ -172,7 +409,7 @@ const ContentManagement = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-green-600 text-sm font-semibold">Published Videos</p>
-              <p className="text-3xl font-bold text-gray-900 mt-2">{totalPublishedVideos}</p>
+              <p className="text-3xl font-bold text-gray-900 mt-2">{stats.publishedVideos}</p>
             </div>
             <div className="p-3 bg-white rounded-xl shadow-sm">
               <Video className="h-6 w-6 text-green-500" />
@@ -184,7 +421,7 @@ const ContentManagement = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-purple-600 text-sm font-semibold">Archives</p>
-              <p className="text-3xl font-bold text-gray-900 mt-2">{totalArchives}</p>
+              <p className="text-3xl font-bold text-gray-900 mt-2">{stats.archives}</p>
             </div>
             <div className="p-3 bg-white rounded-xl shadow-sm">
               <Archive className="h-6 w-6 text-purple-500" />
@@ -196,7 +433,7 @@ const ContentManagement = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-orange-600 text-sm font-semibold">Forum Posts</p>
-              <p className="text-3xl font-bold text-gray-900 mt-2">{totalForumPosts}</p>
+              <p className="text-3xl font-bold text-gray-900 mt-2">{stats.forumPosts}</p>
             </div>
             <div className="p-3 bg-white rounded-xl shadow-sm">
               <MessageSquare className="h-6 w-6 text-orange-500" />
@@ -239,8 +476,11 @@ const ContentManagement = () => {
           <PetTipsSection
             petTips={petTips}
             onAdd={() => setShowPetTipModal(true)}
-            onEdit={(item) => handleEdit(item, 'pet-tips')}
-            onDelete={(id) => handleDelete(id, 'pet-tips')}
+            onEdit={handleEditPetTip}
+            onDelete={handleDeletePetTip}
+            loading={loading}
+            allCategories={categories}
+            allStatuses={publicationStatuses}
           />
         )}
 
@@ -249,8 +489,11 @@ const ContentManagement = () => {
           <VideosSection
             videos={videos}
             onAdd={() => setShowVideoModal(true)}
-            onEdit={(item) => handleEdit(item, 'videos')}
-            onDelete={(id) => handleDelete(id, 'videos')}
+            onEdit={handleEditVideo}
+            onDelete={handleDeleteVideo}
+            loading={loading}
+            allCategories={videoCategories}
+            allStatuses={publicationStatuses} 
           />
         )}
 
@@ -258,8 +501,8 @@ const ContentManagement = () => {
         {activeTab === "forum-posts" && (
           <ForumPostsSection
             posts={forumPosts}
-            onDelete={(id) => handleDelete(id, 'forum-posts')}
-            onArchive={handleArchive}
+            onDelete={handleDeleteForumPost}
+            onArchive={handleArchiveForumPost}
           />
         )}
       </div>
@@ -268,12 +511,16 @@ const ContentManagement = () => {
       {showPetTipModal && (
         <PetTipModal
           item={editingItem}
-          categories={petCategories}
+          categories={categories}
+          icons={icons}
+          publicationStatuses={publicationStatuses}
           onClose={() => {
             setShowPetTipModal(false);
             setEditingItem(null);
           }}
           onSave={handleAddPetTip}
+          loading={loading}
+          onNewCategoryCreated={handleNewCategoryCreated}
         />
       )}
 
@@ -281,11 +528,14 @@ const ContentManagement = () => {
         <VideoModal
           item={editingItem}
           categories={videoCategories}
+          publicationStatuses={publicationStatuses}
           onClose={() => {
             setShowVideoModal(false);
             setEditingItem(null);
           }}
           onSave={handleAddVideo}
+          loading={loading}
+          onNewCategoryCreated={handleNewVideoCategoryCreated}
         />
       )}
     </div>

@@ -3,7 +3,7 @@ import {
   Plus, Edit2, Trash2, Search, Filter, Eye
 } from "lucide-react";
 
-import DeleteTipModal from './DeleteTipModal';
+import DeleteModal from "./DeleteTipModal";
 
 const PetTipsSection = ({ petTips, onAdd, onEdit, onDelete, loading, allCategories = [], allStatuses = [] }) => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -228,12 +228,13 @@ const PetTipsSection = ({ petTips, onAdd, onEdit, onDelete, loading, allCategori
         </table>
       </div>
 
-      <DeleteTipModal
+      <DeleteModal
         isOpen={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}
         onConfirm={handleConfirmDelete}
-        tip={tipToDelete}
+        item={tipToDelete}
         loading={loading}
+        type="tip"
       />
     </div>
   );

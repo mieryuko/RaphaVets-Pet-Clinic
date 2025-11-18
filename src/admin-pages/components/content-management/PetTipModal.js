@@ -244,7 +244,7 @@ const PetTipModal = ({ item, categories, icons, publicationStatuses, onClose, on
       console.log('=== DEBUG CATEGORY CREATION ===');
       console.log('Category name to create:', categoryName);
       
-      const response = await api.post('/admin/content/createCategory', {
+      const response = await api.post('/admin/content/pet-care-tips/createCategory', {
         categoryName: categoryName.trim()
       });
 

@@ -80,11 +80,14 @@ function SideBar({ isMenuOpen, setIsMenuOpen, refreshTrigger }) {
       }
     }
 
+    // REMOVE ALL THESE ITEMS:
     localStorage.removeItem("token");
     localStorage.removeItem("userId");
-    localStorage.removeItem("role");
-    localStorage.removeItem('cachedPets');
-    localStorage.removeItem('petsCacheTimestamp');
+    localStorage.removeItem("userRole");
+    localStorage.removeItem("user");
+    localStorage.removeItem("petsCacheTimestamp");
+    localStorage.removeItem("selectedPet");
+    localStorage.removeItem("cachedPets");
 
     navigate("/");
   };

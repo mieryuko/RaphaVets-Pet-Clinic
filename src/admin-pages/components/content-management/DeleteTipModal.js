@@ -1,8 +1,35 @@
-// DeleteTipModal.jsx
 import { AlertTriangle, X } from "lucide-react";
 
-const DeleteTipModal = ({ isOpen, onClose, onConfirm, tip, loading }) => {
+const DeleteModal = ({ 
+  isOpen, 
+  onClose, 
+  onConfirm, 
+  item, 
+  loading, 
+  type = "tip",
+  itemName = "item" 
+}) => {
   if (!isOpen) return null;
+
+  const getTypeConfig = () => {
+    switch (type) {
+      case 'video':
+        return {
+          title: 'Delete Video',
+          message: 'Are you sure you want to delete this video? This action cannot be undone.',
+          confirmText: 'Delete Video'
+        };
+      case 'tip':
+      default:
+        return {
+          title: 'Delete Tip', 
+          message: 'Are you sure you want to delete this pet tip? This action cannot be undone.',
+          confirmText: 'Delete Tip'
+        };
+    }
+  };
+
+  const config = getTypeConfig();
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
@@ -12,7 +39,7 @@ const DeleteTipModal = ({ isOpen, onClose, onConfirm, tip, loading }) => {
             <div className="p-2 bg-red-100 rounded-lg">
               <AlertTriangle className="h-5 w-5 text-red-600" />
             </div>
-            <h2 className="text-xl font-semibold text-gray-800">Delete Tip</h2>
+            <h2 className="text-xl font-semibold text-gray-800">{config.title}</h2>
           </div>
           <button 
             onClick={onClose}
@@ -25,23 +52,25 @@ const DeleteTipModal = ({ isOpen, onClose, onConfirm, tip, loading }) => {
 
         <div className="p-6">
           <p className="text-gray-600 mb-4">
-            Are you sure you want to delete this pet tip? This action cannot be undone.
+            {config.message}
           </p>
           
-          {tip && (
+          {item && (
             <div className="bg-gray-50 rounded-lg p-4 mb-6 border border-gray-200">
-              <h3 className="font-medium text-gray-900 mb-1">{tip.title}</h3>
-              <p className="text-sm text-gray-600">{tip.shortDescription}</p>
+              <h3 className="font-medium text-gray-900 mb-1">{item.title}</h3>
+              {item.shortDescription && (
+                <p className="text-sm text-gray-600">{item.shortDescription}</p>
+              )}
               <div className="flex gap-2 mt-2">
                 <span className="inline-block px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
-                  {tip.category}
+                  {item.category}
                 </span>
                 <span className={`inline-block px-2 py-1 rounded-full text-xs ${
-                  tip.status === "Published" ? "bg-green-100 text-green-800" :
-                  tip.status === "Draft" ? "bg-yellow-100 text-yellow-800" :
+                  item.status === "Published" ? "bg-green-100 text-green-800" :
+                  item.status === "Draft" ? "bg-yellow-100 text-yellow-800" :
                   "bg-gray-100 text-gray-800"
                 }`}>
-                  {tip.status}
+                  {item.status}
                 </span>
               </div>
             </div>
@@ -57,7 +86,7 @@ const DeleteTipModal = ({ isOpen, onClose, onConfirm, tip, loading }) => {
             Cancel
           </button>
           <button
-            onClick={() => onConfirm(tip?.id)}
+            onClick={() => onConfirm(item?.id)}
             disabled={loading}
             className="px-4 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
@@ -67,7 +96,7 @@ const DeleteTipModal = ({ isOpen, onClose, onConfirm, tip, loading }) => {
                 Deleting...
               </>
             ) : (
-              "Delete Tip"
+              config.confirmText
             )}
           </button>
         </div>
@@ -76,4 +105,4 @@ const DeleteTipModal = ({ isOpen, onClose, onConfirm, tip, loading }) => {
   );
 };
 
-export default DeleteTipModal;
+export default DeleteModal;
