@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Nov 18, 2025 at 10:39 AM
+-- Generation Time: Nov 18, 2025 at 11:10 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -101,19 +101,22 @@ CREATE TABLE `appointment_tbl` (
   `accID` int(11) NOT NULL,
   `petID` int(11) NOT NULL,
   `serviceID` int(11) NOT NULL,
-  `appointmentDate` date NOT NULL,
-  `scheduledTimeID` int(11) NOT NULL,
+  `appointmentDate` date DEFAULT NULL,
+  `scheduledTimeID` int(11) DEFAULT NULL,
+  `visitDateTime` datetime DEFAULT NULL,
+  `visitType` enum('Scheduled','Walk-in') NOT NULL,
   `statusID` int(11) NOT NULL,
   `createdAt` datetime NOT NULL DEFAULT current_timestamp(),
-  `lastUpdatedAt` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `lastUpdatedAt` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `isDeleted` tinyint(1) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `appointment_tbl`
 --
 
-INSERT INTO `appointment_tbl` (`appointmentID`, `accID`, `petID`, `serviceID`, `appointmentDate`, `scheduledTimeID`, `statusID`, `createdAt`, `lastUpdatedAt`) VALUES
-(5, 2, 56, 2, '2025-11-22', 5, 1, '2025-11-16 15:19:32', '2025-11-16 15:19:32');
+INSERT INTO `appointment_tbl` (`appointmentID`, `accID`, `petID`, `serviceID`, `appointmentDate`, `scheduledTimeID`, `visitDateTime`, `visitType`, `statusID`, `createdAt`, `lastUpdatedAt`, `isDeleted`) VALUES
+(5, 2, 56, 2, '2025-11-22', 5, NULL, 'Scheduled', 1, '2025-11-16 15:19:32', '2025-11-18 18:08:44', 0);
 
 -- --------------------------------------------------------
 
