@@ -3,7 +3,9 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import LoginPage from "./LoginPage";
 import SignupPage from "./SignupPage";
 import HomePage from "./guest-pages/HomePage";
+import ChangePassword from "./ChangePassword";
 
+/*user*/
 import Home from "./user-pages/pages/Home";
 import Profile from "./user-pages/pages/Profile";
 import PetDetails from "./user-pages/pages/PetDetails";
@@ -35,6 +37,7 @@ function App() {
         <Route path="/" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/home" element={<HomePage />} />
+        <Route path="/change-password" element={<ChangePassword />} />
 
         {/*user*/}
         <Route path="/user-home" element={<Home />} />

@@ -177,8 +177,11 @@ function LoginPage() {
     const role = localStorage.getItem("userRole");
     if (role === "2") {
       navigate("/admin-pages");
-    } else {
+    } else if (role === "3") {
+      navigate("/vet");
+    }else{
       navigate("/user-home");
+
     }
   };
 
