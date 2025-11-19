@@ -20,7 +20,6 @@ import AdminLayout from "./admin-pages/AdminLayout";
 import Dashboard from "./admin-pages/pages/Dashboard";
 import PetPatientManagement from "./admin-pages/pages/PetPatientManagement";
 import Appointments from "./admin-pages/pages/AppointmentsVisits";
-import Tools from "./admin-pages/pages/DiagnosticTools";
 import ContentManager from "./admin-pages/pages/ContentManagement";
 import Reports from "./admin-pages/pages/Reports";
 import AdminSettings from "./admin-pages/pages/AdminSetting";
@@ -57,16 +56,13 @@ function App() {
           <Route path="appointments" element={<Appointments />} />
           <Route path="appointments/add" element={<AddAppointment />} />
           <Route path="visits/add" element={<AddVisit />} />
-          <Route path="tools" element={<Tools />} />
           <Route path="content-manager" element={<ContentManager />} />
           <Route path="reports" element={<Reports />} />
           <Route path="settings" element={<AdminSettings />} />
         </Route>
 
         {/*vet*/}
-        <Route path="/vet" element={<VetLayout />}>
-          {/* Define vet-specific routes here */}
-        </Route>
+        <Route path="/vet" element={<VetLayout />} />
 
       </Routes>
     </BrowserRouter>
