@@ -53,6 +53,8 @@ const SERVICE_TYPES = [
   { id: "dental", label: "Dental Prophylaxis", note: "Cleaning & check" },
 ];
 
+
+
 const AddAppointment = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
@@ -70,6 +72,8 @@ const AddAppointment = () => {
   const [toast, setToast] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedClientId, setSelectedClientId] = useState(null);
+  const [owners, setOwners] = useState([]);
+  const [pets, setPets] = useState([]);
 
   // Calendar state
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -129,7 +133,7 @@ const AddAppointment = () => {
     const fetchTimeSlots = async () => {
       try {
         const res = await api.get("/appointment/time");
-        const formatted = res.data.map((t) => formatTime(t.startTime));
+        const formatted = res.data.map((t) => formatTime(t.scheduleTime));
         setTimeSlots(formatted);
       } catch (err) {
         console.error("❌ Failed to load time slots:", err);
@@ -165,6 +169,68 @@ const AddAppointment = () => {
     date.setHours(hour);
     date.setMinutes(minute);
     return date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  };
+
+  //fetch owner and pets data
+  useEffect(() => {
+    const fetchOwnersAndPets = async () => {
+      try {
+        const res = await api.get("/admin/owners-with-pets");
+        const data = res.data;
+
+        setOwners(
+          data.map(o => ({
+            id: o.accId,
+            name: o.name,
+            gender: o.gender,
+            dateOfBirth: formatDate(o.dateOfBirth),
+            email: o.email,
+            phone: o.contactNo,
+            address: o.address,
+            createdAt: formatDate(o.createdAt),
+            pets: o.pets
+          }))
+        );
+
+        setPets(
+          data.flatMap(owner =>
+            (owner.pets || []).map(p => ({
+              id: p.petID,
+              name: p.petName,
+              petType: p.petType,
+              gender: p.petGender,
+              breed: p.breedName,
+              age: calculateAge(p.dateOfBirth),
+              petDateOfBirth: formatDate(p.dateOfBirth),
+              weight: (p.weight_kg ?? 0) + " kg",
+              color: p.color,
+              note: p.note,
+              owner: owner.name,
+              image: p.imageName ? `http://localhost:5000/api/pets/images/${p.imageName}` : "/images/sad-dog.png"
+            }))
+          )
+        );
+
+      } catch (err) {
+        console.error(err);
+        setOwners(sampleUsers);
+        setPets(samplePets);
+      }
+    };
+
+    fetchOwnersAndPets();
+  }, [])
+
+  useEffect(() => console.log("Owners updated: ", owners),[owners]);
+  useEffect(() => console.log("pets updated: ", pets), [pets]);
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    return new Date(dateString).toLocaleDateString("en-US", {
+      month: "short",
+      day: "2-digit",
+      year: "numeric"
+    });
   };
 
   // Filter users based on search

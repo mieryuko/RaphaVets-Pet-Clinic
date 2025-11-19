@@ -85,11 +85,11 @@ export const getBookedSlots = async (req, res) => {
 
 export const getAllTime = async (req, res) => {
   try {
-    const [rows] = await db.query("SELECT * FROM scheduleTIme_tbl");
+    const [rows] = await db.query("SELECT * FROM scheduleTime_tbl");
     
     // Convert to frontend format
     const formattedTimes = rows.map(row => {
-      const [hours, minutes] = row.startTime.split(':');
+      const [hours, minutes] = row.scheduleTime.split(':');
       const hour = parseInt(hours, 10);
       const ampm = hour >= 12 ? 'PM' : 'AM';
       const displayHour = hour % 12 || 12;
@@ -181,8 +181,8 @@ export const bookAppointment = async (req, res) => {
 
     const sql = `
       INSERT INTO appointment_tbl
-        (accID, petID, serviceID, appointmentDate, scheduledTimeID, statusID)
-      VALUES (?, ?, ?, ?, ?, 1)
+        (accID, petID, serviceID, appointmentDate, scheduledTimeID, visitType, statusID)
+      VALUES (?, ?, ?, ?, ?, "Scheduled", 1)
     `;
 
     console.log("💾 Inserting appointment with:", {

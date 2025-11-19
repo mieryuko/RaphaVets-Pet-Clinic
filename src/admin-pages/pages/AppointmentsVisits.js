@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "../template/Header";
 import { useNavigate } from "react-router-dom";
 
@@ -12,6 +12,9 @@ import AppointmentDetailsModal from "../components/appointments/AppointmentDetai
 import DeleteConfirmationModal from "../components/appointments/DeleteConfirmationModal";
 import CancelAppointmentModal from "../components/appointments/CancelAppointmentModal";
 import SuccessToast from "../../template/SuccessToast";
+import { ca } from "date-fns/locale";
+
+import api from "../../api/axios";
 
 const currentYear = new Date().getFullYear();
 const currentMonth = String(new Date().getMonth() + 1).padStart(2, "0");
@@ -76,13 +79,34 @@ const AppointmentsVisits = () => {
   const [appointmentToCancel, setAppointmentToCancel] = useState(null);
   const navigate = useNavigate();
 
+  const fetchAppointmentData = async() => {
+    try{
+      const res = await api.get("/admin/appointments");
+      const data = res.data;
+      const appointments = data.cleanedAppointments;
+      const visits = data.cleanedVisits;
+
+      console.log("appointments: ", appointments);
+      console.log("visits: ", visits);
+      setAppointments(appointments);
+      setVisits(visits);
+
+    }catch(err){
+
+    }
+  }
+
+  useEffect(() => {
+    fetchAppointmentData();
+  }, [])
+
   const filteredAppointments = appointments.filter(app => {
     if (activeTab === "Appointments" && app.status === "Pending") return false;
     if (activeTab === "Appointments" && statusFilter !== "All" && app.status !== statusFilter)
       return false;
     return (
-      app.petName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      app.owner.toLowerCase().includes(searchQuery.toLowerCase())
+      app.petName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      app.owner?.toLowerCase().includes(searchQuery.toLowerCase())
     );
   });
 

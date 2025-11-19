@@ -2,13 +2,23 @@ import db from "../../config/db.js";
 
 export const getDashboardStats = async (req, res) => {
   try {
-    // Get admin name (first admin user found)
+    // Get the logged-in admin's ID from the token (set by authMiddleware)
+    const adminId = req.user.id;
+
+    if (!adminId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    // Get the logged-in admin's name
     const [adminRows] = await db.query(`
       SELECT firstName, lastName 
       FROM account_tbl 
-      WHERE roleID = 2 AND isDeleted = 0
-      LIMIT 1
-    `);
+      WHERE accId = ? AND roleID = 2 AND isDeleted = 0
+    `, [adminId]);
+
+    if (adminRows.length === 0) {
+      return res.status(404).json({ message: "Admin not found" });
+    }
 
     // Get total pet owners (all client users who are not deleted)
     const [ownerRows] = await db.query(`
@@ -25,9 +35,7 @@ export const getDashboardStats = async (req, res) => {
       WHERE p.isDeleted = 0 AND a.isDeleted = 0 AND a.roleID = 1
     `);
 
-    const adminName = adminRows.length > 0 
-      ? `${adminRows[0].firstName} ${adminRows[0].lastName}`
-      : 'Admin';
+    const adminName = `${adminRows[0].firstName} ${adminRows[0].lastName}`;
 
     const stats = {
       adminName,

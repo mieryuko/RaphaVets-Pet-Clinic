@@ -3,32 +3,25 @@ import jwt from "jsonwebtoken";
 import { validationResult } from "express-validator";
 import pool from "../config/db.js";
 import nodemailer from "nodemailer";
+import crypto from "crypto";
 
-export const registerUser = async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+// ✅ FIX: Use createTransport (singular), not createTransporter
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
 
-  const { firstName, lastName, email, password } = req.body;
-
-  try {
-    const [existing] = await pool.query("SELECT * FROM account_tbl WHERE email = ?", [email]);
-    if (existing.length > 0)
-      return res.status(400).json({ message: "Email already registered" });
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-    await pool.query("INSERT INTO account_tbl (firstName, lastName, email, password) VALUES (?, ?, ?, ?)", [
-      firstName,
-      lastName,
-      email,
-      hashedPassword,
-    ]);
-
-    res.status(201).json({ message: "User registered successfully" });
-  } catch (error) {
-    console.error("❌ Server error in registerUser:", error);
-    res.status(500).json({ message: "Server error", error: error.message });
+// Test the email configuration (optional)
+transporter.verify(function (error, success) {
+  if (error) {
+    console.log("❌ Email transporter error:", error);
+  } else {
+    console.log("✅ Email server is ready to send messages");
   }
-};
+});
 
 export const checkEmailExists = async (req, res) => {
   const { email } = req.body;
@@ -47,6 +40,159 @@ export const checkEmailExists = async (req, res) => {
   }
 };
 
+export const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    // Check if user exists
+    const [users] = await pool.query("SELECT * FROM account_tbl WHERE email = ?", [email]);
+    if (users.length === 0) {
+      return res.status(400).json({ 
+        success: false,
+        message: "Account not found" 
+      });
+    }
+
+    const user = users[0];
+    
+    // Generate reset token
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetTokenExpiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+    // Store reset token in database
+    await pool.query(
+      "UPDATE account_tbl SET resetToken = ?, resetTokenExpiry = ? WHERE accId = ?",
+      [resetToken, resetTokenExpiry, user.accId]
+    );
+
+    // Create reset link - using localhost for development
+    const resetLink = `http://localhost:3000/change-password?token=${resetToken}`;
+
+    // Send email
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: 'Password Reset Request - RaphaVets Pet Clinic',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #5EE6FE;">Password Reset Request</h2>
+          <p>Hello ${user.firstName},</p>
+          <p>You requested to reset your password for your RaphaVets Pet Clinic account.</p>
+          <p>Click the button below to reset your password:</p>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${resetLink}" 
+               style="background-color: #5EE6FE; color: white; padding: 12px 24px; 
+                      text-decoration: none; border-radius: 8px; font-weight: bold;">
+              Reset Password
+            </a>
+          </div>
+          <p>This link will expire in 1 hour.</p>
+          <p>If you didn't request this reset, please ignore this email.</p>
+          <br>
+          <p>Best regards,<br>RaphaVets Pet Clinic Team</p>
+        </div>
+      `
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.status(200).json({
+      success: true,
+      message: "Password reset link sent to your email"
+    });
+
+  } catch (error) {
+    console.error("❌ Forgot password error:", error);
+    res.status(500).json({ 
+      success: false,
+      message: "Server error sending reset email" 
+    });
+  }
+};
+
+export const verifyResetToken = async (req, res) => {
+  const { token } = req.params;
+
+  try {
+    const [users] = await pool.query(
+      "SELECT * FROM account_tbl WHERE resetToken = ? AND resetTokenExpiry > NOW()",
+      [token]
+    );
+
+    if (users.length === 0) {
+      return res.status(400).json({ 
+        success: false,
+        message: "Invalid or expired reset token" 
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Token is valid",
+      email: users[0].email
+    });
+
+  } catch (error) {
+    console.error("❌ Token verification error:", error);
+    res.status(500).json({ 
+      success: false,
+      message: "Server error verifying token" 
+    });
+  }
+};
+
+export const resetPassword = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ 
+      success: false,
+      message: errors.array()[0].msg 
+    });
+  }
+
+  const { token, newPassword } = req.body;
+
+  try {
+    // Verify token
+    const [users] = await pool.query(
+      "SELECT * FROM account_tbl WHERE resetToken = ? AND resetTokenExpiry > NOW()",
+      [token]
+    );
+
+    if (users.length === 0) {
+      return res.status(400).json({ 
+        success: false,
+        message: "Invalid or expired reset token" 
+      });
+    }
+
+    const user = users[0];
+
+    // Hash new password
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+
+    // Update password and clear reset token
+    await pool.query(
+      "UPDATE account_tbl SET password = ?, resetToken = NULL, resetTokenExpiry = NULL WHERE accId = ?",
+      [hashedPassword, user.accId]
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Password reset successfully"
+    });
+
+  } catch (error) {
+    console.error("❌ Password reset error:", error);
+    res.status(500).json({ 
+      success: false,
+      message: "Server error during password reset" 
+    });
+  }
+};
+
+// Your existing loginUser and other functions remain the same...
 export const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
@@ -98,57 +244,6 @@ export const loginUser = async (req, res) => {
   } catch (error) {
     console.error("❌ Login error:", error);
     res.status(500).json({ message: "Server error", error: error.message });
-  }
-};
-
-
-let verificationCodes = {}; // temporary store (you can use Redis or DB for production)
-
-// ✅ Send verification code to email
-export const sendVerificationCode = async (req, res) => {
-  const { email } = req.body;
-  if (!email) return res.status(400).json({ success: false, message: "Email is required" });
-
-  const code = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit code
-  verificationCodes[email] = code;
-
-  console.log(`📩 Verification code for ${email}: ${code}`);
-
-  // OPTIONAL: Send via email using nodemailer
-  try {
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
-
-    await transporter.sendMail({
-      from: `"My App" <${process.env.EMAIL_USER}>`,
-      to: email,
-      subject: "Your Verification Code",
-      text: `Your verification code is: ${code}`,
-    });
-
-    res.json({ success: true, message: "Verification code sent." });
-  } catch (err) {
-    console.error("❌ Error sending email:", err);
-    res.status(500).json({ success: false, message: "Failed to send verification code" });
-  }
-};
-
-// ✅ Verify code entered by user
-export const verifyCode = async (req, res) => {
-  const { email, code } = req.body;
-  if (!email || !code)
-    return res.status(400).json({ success: false, message: "Missing email or code" });
-
-  if (verificationCodes[email] === code) {
-    delete verificationCodes[email]; // remove after use
-    return res.json({ success: true, message: "Code verified" });
-  } else {
-    return res.status(400).json({ success: false, message: "Invalid or expired code" });
   }
 };
 
