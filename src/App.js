@@ -25,6 +25,9 @@ import AdminSettings from "./admin-pages/pages/AdminSetting";
 import AddAppointment from "./admin-pages/pages/AddAppointment";
 import AddVisit from "./admin-pages/pages/AddVisit";
 
+/*vet*/
+import VetLayout from "./vet-pages/VetLayout";
+
 function App() {
   return (
     <BrowserRouter>
@@ -55,6 +58,11 @@ function App() {
           <Route path="content-manager" element={<ContentManager />} />
           <Route path="reports" element={<Reports />} />
           <Route path="settings" element={<AdminSettings />} />
+        </Route>
+
+        {/*vet*/}
+        <Route path="/vet" element={<VetLayout />}>
+          {/* Define vet-specific routes here */}
         </Route>
 
       </Routes>
