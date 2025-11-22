@@ -23,8 +23,15 @@ export default function Step2DateTime({
     const fetchTimeSlots = async () => {
       try {
         const res = await api.get("/appointment/time");
-        const formatted = res.data.map((t) => formatTime(t.startTime));
-        setTimeSlots(formatted);
+        console.log('Time slots response:', res.data);
+        
+        // Store both raw and formatted times
+        const slots = res.data.map(slot => ({
+          raw: slot.scheduleTime, // "08:00:00" - using scheduleTime field
+          formatted: formatTime(slot.scheduleTime) // "8:00 AM"
+        }));
+        
+        setTimeSlots(slots);
       } catch (err) {
         console.error("❌ Failed to load time slots:", err);
       }
@@ -40,9 +47,10 @@ export default function Step2DateTime({
       try {
         const formattedDate = format(selectedDate, 'yyyy-MM-dd');
         const res = await api.get(`/appointment/booked-slots?date=${formattedDate}`);
-        const bookedTimes = res.data.map(slot => formatTime(slot.startTime));
-        console.log('Booked times:', bookedTimes);
-        setBookedSlots(bookedTimes);
+        console.log('Booked slots response:', res.data);
+        
+        // Store booked slots in raw format for comparison
+        setBookedSlots(res.data);
       } catch (err) {
         console.error("❌ Failed to fetch booked slots:", err);
       }
@@ -53,16 +61,22 @@ export default function Step2DateTime({
 
   // Helper to format "08:00:00" → "8:00 AM"
   const formatTime = (timeStr) => {
-    const [hour, minute] = timeStr.split(":").map(Number);
+    const [hour, minute, second] = timeStr.split(":").map(Number);
     const date = new Date();
     date.setHours(hour);
     date.setMinutes(minute);
+    date.setSeconds(second || 0);
     return date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  };
+
+  // Helper to check if a time slot is booked
+  const isTimeBooked = (rawTime) => {
+    return bookedSlots.includes(rawTime);
   };
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-      {/* Calendar */}
+      {/* Calendar (unchanged) */}
       <div className="lg:col-span-2">
         <div className="flex items-center justify-between mb-3">
           <div>
@@ -125,13 +139,13 @@ export default function Step2DateTime({
                 <div className="text-gray-400 text-sm">No time slots available</div>
               ) : (
                 timeSlots.map((slot) => {
-                  const active = selectedTime === slot;
-                  const isBooked = bookedSlots.includes(slot);
+                  const active = selectedTime === slot.raw;
+                  const isBooked = isTimeBooked(slot.raw);
                   
                   return (
                     <button
-                      key={slot}
-                      onClick={() => !isBooked && setSelectedTime(slot)}
+                      key={slot.raw}
+                      onClick={() => !isBooked && setSelectedTime(slot.raw)}
                       disabled={isBooked}
                       className={`text-sm rounded-lg py-2 px-2 transition ${
                         active
@@ -141,7 +155,7 @@ export default function Step2DateTime({
                           : "bg-white border border-gray-100 hover:bg-[#EEF8FA]"
                       }`}
                     >
-                      {slot}
+                      {slot.formatted}
                       {isBooked && <span className="ml-1 text-xs">(Booked)</span>}
                     </button>
                   );
