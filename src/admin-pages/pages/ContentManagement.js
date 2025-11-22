@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import Header from "../template/Header";
-import { Video, FileText, MessageSquare, Archive } from "lucide-react";
+import { Video, FileText, MessageSquare, Archive, ChevronDown, ChevronUp } from "lucide-react";
 import api from "../../api/axios";
 
 // Import components from organized structure
@@ -18,6 +18,7 @@ const ContentManagement = () => {
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [showStats, setShowStats] = useState(true); // New state for stats visibility
 
   // State for data from backend
   const [petTips, setPetTips] = useState([]);
@@ -381,7 +382,7 @@ const ContentManagement = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-[#FBFBFB] p-6 gap-2 font-sans">
+    <div className="flex flex-col h-screen bg-[#FBFBFB] p-6 gap-1 font-sans">
       <Header title="Content Management" />
 
       {/* Loading overlay */}
@@ -391,52 +392,78 @@ const ContentManagement = () => {
         </div>
       )}
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-2 overflow-auto">
-        <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6 border border-blue-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-blue-600 text-sm font-semibold">Published Tips</p>
-              <p className="text-3xl font-bold text-gray-900 mt-2">{stats.publishedTips}</p>
-            </div>
-            <div className="p-3 bg-white rounded-xl shadow-sm">
-              <FileText className="h-6 w-6 text-blue-500" />
+      {/* Stats Section Header with Toggle */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold text-gray-800">Overview</h2>
+        <button
+          onClick={() => setShowStats(!showStats)}
+          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all duration-300"
+        >
+          {showStats ? (
+            <>
+              <ChevronUp size={16} />
+              Hide Stats
+            </>
+          ) : (
+            <>
+              <ChevronDown size={16} />
+              Show Stats
+            </>
+          )}
+        </button>
+      </div>
+
+      {/* Stats Cards with Smooth Collapse/Expand */}
+      <div className={`
+        transition-all duration-500 ease-in-out overflow-hidden
+        ${showStats ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0 mb-0'}
+      `}>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6 border border-blue-200 transform transition-transform duration-300 hover:scale-[1.02]">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-blue-600 text-sm font-semibold">Published Tips</p>
+                <p className="text-3xl font-bold text-gray-900 mt-2">{stats.publishedTips}</p>
+              </div>
+              <div className="p-3 bg-white rounded-xl shadow-sm">
+                <FileText className="h-6 w-6 text-blue-500" />
+              </div>
             </div>
           </div>
-        </div>
-        
-        <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-6 border border-green-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-green-600 text-sm font-semibold">Published Videos</p>
-              <p className="text-3xl font-bold text-gray-900 mt-2">{stats.publishedVideos}</p>
-            </div>
-            <div className="p-3 bg-white rounded-xl shadow-sm">
-              <Video className="h-6 w-6 text-green-500" />
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-6 border border-purple-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-purple-600 text-sm font-semibold">Archives</p>
-              <p className="text-3xl font-bold text-gray-900 mt-2">{stats.archives}</p>
-            </div>
-            <div className="p-3 bg-white rounded-xl shadow-sm">
-              <Archive className="h-6 w-6 text-purple-500" />
+          
+          <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-6 border border-green-200 transform transition-transform duration-300 hover:scale-[1.02]">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-green-600 text-sm font-semibold">Published Videos</p>
+                <p className="text-3xl font-bold text-gray-900 mt-2">{stats.publishedVideos}</p>
+              </div>
+              <div className="p-3 bg-white rounded-xl shadow-sm">
+                <Video className="h-6 w-6 text-green-500" />
+              </div>
             </div>
           </div>
-        </div>
-        
-        <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-2xl p-6 border border-orange-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-orange-600 text-sm font-semibold">Forum Posts</p>
-              <p className="text-3xl font-bold text-gray-900 mt-2">{stats.forumPosts}</p>
+          
+          <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-6 border border-purple-200 transform transition-transform duration-300 hover:scale-[1.02]">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-purple-600 text-sm font-semibold">Archives</p>
+                <p className="text-3xl font-bold text-gray-900 mt-2">{stats.archives}</p>
+              </div>
+              <div className="p-3 bg-white rounded-xl shadow-sm">
+                <Archive className="h-6 w-6 text-purple-500" />
+              </div>
             </div>
-            <div className="p-3 bg-white rounded-xl shadow-sm">
-              <MessageSquare className="h-6 w-6 text-orange-500" />
+          </div>
+          
+          <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-2xl p-6 border border-orange-200 transform transition-transform duration-300 hover:scale-[1.02]">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-orange-600 text-sm font-semibold">Forum Posts</p>
+                <p className="text-3xl font-bold text-gray-900 mt-2">{stats.forumPosts}</p>
+              </div>
+              <div className="p-3 bg-white rounded-xl shadow-sm">
+                <MessageSquare className="h-6 w-6 text-orange-500" />
+              </div>
             </div>
           </div>
         </div>

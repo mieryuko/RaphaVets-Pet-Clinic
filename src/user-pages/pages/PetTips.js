@@ -204,7 +204,7 @@ export default function PetTips() {
           variants={containerVariants}
           className="flex flex-wrap gap-3 mb-6"
         >
-          {["All", ...categories].map((cat, index) => (
+        {categories.map((cat, index) => (
             <motion.button
               key={cat}
               variants={filterVariants}

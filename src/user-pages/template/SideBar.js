@@ -95,7 +95,7 @@ function SideBar({ isMenuOpen, setIsMenuOpen, refreshTrigger }) {
   const menuItems = [
     { label: "Home", path: "/user-home", icon: "fa-house" },
     { label: "Profile", path: "/profile", icon: "fa-user" },
-    { label: "Try Breed Detect", path: "/breed-detect", icon: "fa-shield-dog" },
+    { label: "Breed Detector", path: "/breed-detect", icon: "fa-shield-dog" },
   ];
 
   const resourceItems = [
