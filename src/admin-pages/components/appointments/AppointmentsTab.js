@@ -23,7 +23,7 @@ const AppointmentsTab = ({
   statusColors
 }) => {
   return (
-    <div className="mt-">
+    <div className="">
       {/* Search & Filter with New Select Controls */}
       <div className="flex gap-2 mb-4 flex-wrap items-center justify-between">
         <div className="flex gap-2 items-center">

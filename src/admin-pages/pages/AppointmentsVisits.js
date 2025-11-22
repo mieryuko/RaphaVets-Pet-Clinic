@@ -18,17 +18,17 @@ const currentMonth = String(new Date().getMonth() + 1).padStart(2, "0");
 
 const sampleAppointments = [
   { id: 1, petName: "Bogart", owner: "Mark Mapili", date: `${currentYear}-${currentMonth}-10`, time: "9:00 AM", status: "Completed", visitType: "Scheduled" },
-  { id: 2, petName: "Tan tan", owner: "Miguel Rojero", date: `${currentYear}-${currentMonth}-12`, time: "11:30 AM", status: "Pending", visitType: "Scheduled" },
-  { id: 3, petName: "Ming", owner: "Jordan Frando", date: `${currentYear}-${currentMonth}-15`, time: "1:00 PM", status: "Upcoming", visitType: "Scheduled" },
-  { id: 4, petName: "Rocky", owner: "Anna Cruz", date: `${currentYear}-${currentMonth}-16`, time: "3:00 PM", status: "Pending", visitType: "Scheduled" },
-  { id: 5, petName: "Snow", owner: "Ella Santos", date: `${currentYear}-${currentMonth}-18`, time: "10:00 AM", status: "Completed", visitType: "Scheduled" },
-  { id: 6, petName: "Snow", owner: "Ella Santos", date: `${currentYear}-${currentMonth}-18`, time: "10:00 AM", status: "Pending", visitType: "Scheduled" },
-  { id: 7, petName: "Snow", owner: "Ella Santos", date: `${currentYear}-${currentMonth}-18`, time: "10:00 AM", status: "Pending", visitType: "Scheduled" },
-  { id: 8, petName: "Snow", owner: "Ella Santos", date: `${currentYear}-${currentMonth}-18`, time: "10:00 AM", status: "Pending", visitType: "Scheduled" },
-  { id: 9, petName: "Snow", owner: "Ella Santos", date: `${currentYear}-${currentMonth}-18`, time: "10:00 AM", status: "Completed", visitType: "Scheduled" },
-  { id: 10, petName: "Snow", owner: "Ella Santos", date: `${currentYear}-${currentMonth}-18`, time: "10:00 AM", status: "Pending", visitType: "Scheduled" },
-  { id: 11, petName: "Snow", owner: "Ella Santos", date: `${currentYear}-${currentMonth}-18`, time: "10:00 AM", status: "Upcoming", visitType: "Scheduled" },
-  { id: 12, petName: "Snow", owner: "Ella Santos", date: `${currentYear}-${currentMonth}-18`, time: "10:00 AM", status: "Pending", visitType: "Scheduled" },
+  { id: 2, petName: "Tan tan", owner: "Miguel Rojero", date: `${currentYear}-${currentMonth}-12`, time: "11:30 AM", status: "Cancelled", visitType: "Scheduled" },
+  { id: 3, petName: "Ming", owner: "Jordan Frando", date: `${currentYear}-${currentMonth}-15`, time: "1:00 PM", status: "Completed", visitType: "Scheduled" },
+  { id: 4, petName: "Rocky", owner: "Fionah Beltran", date: `${currentYear}-${currentMonth}-16`, time: "3:00 PM", status: "Cancelled", visitType: "Scheduled" },
+  { id: 5, petName: "Tobi", owner: "Vanerie Parcon", date: `${currentYear}-${currentMonth}-18`, time: "10:00 AM", status: "Cancelled", visitType: "Scheduled" },
+  { id: 6, petName: "Garfield", owner: "Marvin Tomales", date: `${currentYear}-${currentMonth}-18`, time: "11:00 AM", status: "Completed", visitType: "Scheduled" },
+  { id: 7, petName: "Tanza", owner: "Clark raguhos", date: `${currentYear}-${currentMonth}-18`, time: "12:00 PM", status: "Completed", visitType: "Scheduled" },
+  { id: 8, petName: "Mark", owner: "Lars Bernardez", date: `${currentYear}-${currentMonth}-18`, time: "1:00 PM", status: "Completed", visitType: "Scheduled" },
+  { id: 9, petName: "Miguel", owner: "Jerome Bulatao", date: `${currentYear}-${currentMonth}-25`, time: "2:00 PM", status: "Pending", visitType: "Scheduled" },
+  { id: 10, petName: "Brownie", owner: "Irick Beltran", date: `${currentYear}-${currentMonth}-25`, time: "3:00 PM", status: "Upcoming", visitType: "Scheduled" },
+  { id: 11, petName: "Blackie", owner: "Caiden Levi", date: `${currentYear}-${currentMonth}-25`, time: "4:00 PM", status: "Upcoming", visitType: "Scheduled" },
+  { id: 12, petName: "Whamie", owner: "Zyram Beltran", date: `${currentYear}-${currentMonth}-28`, time: "5:00 PM", status: "Upcoming", visitType: "Scheduled" },
 ];
 
 const sampleVisits = [
