@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -15,6 +15,8 @@ const Sidebar = ({
 }) => {
   const navigate = useNavigate();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [userName, setUserName] = useState("Dr. Eric");
+  const [loading, setLoading] = useState(true);
 
   const navItems = [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -22,6 +24,24 @@ const Sidebar = ({
     { id: "customers-pets", label: "Customers & Pets", icon: Users },
     { id: "appointments", label: "Appointments & Visits", icon: Calendar },
   ];
+
+  useEffect(() => {
+    const fetchUserName = async () => {
+      try {
+        const response = await api.get('/admin/dashboard/stats');
+        // Use adminName from backend response
+        setUserName(response.data.adminName || "Dr. Eric");
+      } catch (err) {
+        console.error("❌ Failed to fetch user name:", err);
+        // Fallback to static name if API fails
+        setUserName("Dr. Eric");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserName();
+  }, []);
 
   const handleLogout = async () => {
     setShowLogoutModal(false);
@@ -89,7 +109,9 @@ const Sidebar = ({
             <span className="text-white font-medium text-xs">DR</span>
           </div>
           <div>
-            <p className="text-gray-800 font-medium text-sm">Dr. Eric</p>
+            <p className="text-gray-800 font-medium text-sm">
+              {loading ? "Loading..." : userName}
+            </p>
             <p className="text-gray-500 text-xs">Veterinarian</p>
           </div>
         </div>

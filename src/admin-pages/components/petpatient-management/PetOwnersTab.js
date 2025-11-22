@@ -5,7 +5,8 @@ const PetOwnersTab = ({
   setSelectedOwner, 
   handleEdit, 
   setDeleteTarget, 
-  setShowDeleteModal 
+  setShowDeleteModal,
+  isVetView = false 
 }) => {
   return (
     <table className="w-full text-left border-collapse">
@@ -15,7 +16,7 @@ const PetOwnersTab = ({
           <th className="p-2 text-sm text-gray-600 dark:text-gray-300">Name</th>
           <th className="p-2 text-sm text-gray-600 dark:text-gray-300">Email</th>
           <th className="p-2 text-sm text-gray-600 dark:text-gray-300">Phone</th>
-          <th className="p-2 text-sm text-gray-600 dark:text-gray-300">Actions</th>
+          {!isVetView && <th className="p-2 text-sm text-gray-600 dark:text-gray-300">Actions</th>}
         </tr>
       </thead>
       <tbody>
@@ -29,18 +30,20 @@ const PetOwnersTab = ({
             <td className="p-2 text-sm">{owner.name}</td>
             <td className="p-2 text-sm">{owner.email}</td>
             <td className="p-2 text-sm">{owner.phone}</td>
-            <td className="p-2 text-sm flex gap-2">
-              <Edit2
-                size={16}
-                className="text-blue-500 cursor-pointer hover:text-blue-600"
-                onClick={e => { e.stopPropagation(); handleEdit(owner, "owner"); }}
-              />
-              <Trash2
-                size={16}
-                className="text-red-500 cursor-pointer hover:text-red-600"
-                onClick={e => { e.stopPropagation(); setDeleteTarget({ type: 'owner', id: owner.id }); setShowDeleteModal(true); }}
-              />
-            </td>
+            {!isVetView && (
+              <td className="p-2 text-sm flex gap-2">
+                <Edit2
+                  size={16}
+                  className="text-blue-500 cursor-pointer hover:text-blue-600"
+                  onClick={e => { e.stopPropagation(); handleEdit(owner, "owner"); }}
+                />
+                <Trash2
+                  size={16}
+                  className="text-red-500 cursor-pointer hover:text-red-600"
+                  onClick={e => { e.stopPropagation(); setDeleteTarget({ type: 'owner', id: owner.id }); setShowDeleteModal(true); }}
+                />
+              </td>
+            )}
           </tr>
         ))}
       </tbody>

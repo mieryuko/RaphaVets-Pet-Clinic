@@ -5,7 +5,6 @@ import {
   PawPrint,
   UserCheck,
   Clock,
-  PlusCircle,
   Brain,
   Stethoscope,
   View,
@@ -31,13 +30,32 @@ const Dashboard = () => {
   });
   const [loading, setLoading] = useState(true);
 
+  // Simple mock data for appointments only
+  const mockAppointmentData = {
+    todayAppointments: 5,
+    weeklyVisits: 10,
+  };
+
   useEffect(() => {
     const fetchDashboardStats = async () => {
       try {
-        const response = await api.get('/vet/dashboard/stats');
-        setStats(response.data);
+        const response = await api.get('/admin/dashboard/stats');
+        // Combine real data with mock appointment data
+        setStats({
+          ...response.data,
+          todayAppointments: mockAppointmentData.todayAppointments,
+          weeklyVisits: mockAppointmentData.weeklyVisits,
+        });
       } catch (err) {
         console.error("❌ Failed to fetch dashboard stats:", err);
+        // Use mock data as fallback
+        setStats({
+          vetName: "Dr. Eric",
+          todayAppointments: mockAppointmentData.todayAppointments,
+          weeklyVisits: mockAppointmentData.weeklyVisits,
+          totalOwners: 0,
+          totalPets: 0,
+        });
       } finally {
         setLoading(false);
       }
@@ -120,7 +138,7 @@ const Dashboard = () => {
         <div className="bg-gradient-to-r from-[#E5FBFF] to-[#FDFBFF] dark:from-[#1F1F1F] dark:to-[#232323] rounded-2xl p-4 mb-3 flex justify-between items-center shadow-sm border border-gray-100 dark:border-gray-800">
           <div>
             <h1 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
-              Welcome back, {stats.vetName} 👋
+              Welcome back, {stats.adminName} 👋
             </h1>
             <p className="text-xs text-gray-500 dark:text-gray-400">
               Here's your clinical overview for today at Rapha Vet Clinic.

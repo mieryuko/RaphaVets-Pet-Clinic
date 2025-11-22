@@ -13,7 +13,7 @@ export const getDashboardStats = async (req, res) => {
     const [adminRows] = await db.query(`
       SELECT firstName, lastName 
       FROM account_tbl 
-      WHERE accId = ? AND roleID = 2 AND isDeleted = 0
+      WHERE accId = ? AND roleID = 2 OR roleID = 3 AND isDeleted = 0
     `, [adminId]);
 
     if (adminRows.length === 0) {
@@ -36,6 +36,7 @@ export const getDashboardStats = async (req, res) => {
     `);
 
     const adminName = `${adminRows[0].firstName} ${adminRows[0].lastName}`;
+    console.log(adminName);
 
     const stats = {
       adminName,

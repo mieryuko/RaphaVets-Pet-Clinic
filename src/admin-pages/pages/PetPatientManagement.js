@@ -54,6 +54,15 @@ const PetPatientManagement = () => {
     { id: 3, petName: "Ming", owner: "Jordan Frando", type: "Lab Record", uploadedOn: "2025-09-28", fileName: "sample_medicalreport.pdf" },
   ]);
 
+  // Check if user is veterinarian (role 3)
+  const [isVet, setIsVet] = useState(false);
+
+  useEffect(() => {
+    // Check user role from localStorage or API
+    const userRole = localStorage.getItem('userRole') || 2; // Default to admin if not found
+    setIsVet(userRole === '3');
+  }, []);
+
   const formatDate = (dateString) => {
     if (!dateString) return "";
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -402,15 +411,18 @@ const PetPatientManagement = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="p-2 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#1B1B1B] text-gray-800 dark:text-gray-200 w-full max-w-xs focus:outline-none focus:ring-2 focus:ring-[#5EE6FE]/50"
             />
-            <button
-              className="ml-2 flex items-center gap-2 bg-[#5EE6FE] hover:bg-[#40c6e3] text-white px-3 py-2 rounded-lg transition"
-              onClick={handleAddButtonClick}
-            >
-              <PlusCircle size={16} />
-              <span className="text-sm font-semibold">
-                {getAddButtonText()}
-              </span>
-            </button>
+            {/* Hide Add button for veterinarians */}
+            {!isVet && (
+              <button
+                className="ml-2 flex items-center gap-2 bg-[#5EE6FE] hover:bg-[#40c6e3] text-white px-3 py-2 rounded-lg transition"
+                onClick={handleAddButtonClick}
+              >
+                <PlusCircle size={16} />
+                <span className="text-sm font-semibold">
+                  {getAddButtonText()}
+                </span>
+              </button>
+            )}
           </div>
 
           {/* Render Active Tab */}
@@ -421,6 +433,7 @@ const PetPatientManagement = () => {
               handleEdit={handleEdit}
               setDeleteTarget={setDeleteTarget}
               setShowDeleteModal={setShowDeleteModal}
+              isVetView={isVet}
             />
           )}
 
@@ -431,6 +444,7 @@ const PetPatientManagement = () => {
               handleEdit={handleEdit}
               setDeleteTarget={setDeleteTarget}
               setShowDeleteModal={setShowDeleteModal}
+              isVetView={isVet}
             />
           )}
 
@@ -440,6 +454,7 @@ const PetPatientManagement = () => {
               setSelectedRecord={setSelectedRecord}
               handleEditRecord={handleEditRecord}
               handleDeleteRecordClick={handleDeleteRecordClick}
+              isVetView={isVet}
             />
           )}
         </div>
@@ -451,61 +466,66 @@ const PetPatientManagement = () => {
           selectedPet={selectedPet}
           selectedRecord={selectedRecord}
           setIsPdfModalOpen={setIsPdfModalOpen}
+          isVetView={isVet}
         />
       </div>
 
-      {/* Add/Edit Modals */}
-      <AddOwnerModal
-        isOpen={isAddOwnerModalOpen}
-        onClose={() => { setIsAddOwnerModalOpen(false); setEditingItem(null); }}
-        onSave={handleSaveOwner}
-        refreshOwners={fetchOwnersAndPets}
-        initialData={editingItem?.type === "owner" ? editingItem : null}
-      />
-      <AddPetModal
-        key={editingItem ? editingItem.id : "new"}
-        isOpen={isAddPetModalOpen}
-        onClose={() => { setIsAddPetModalOpen(false); setEditingItem(null); }}
-        onSave={handleSavePet}
-        owners={petOwners}
-        refreshPets={fetchOwnersAndPets}
-        initialData={editingItem}
-      />
+      {/* Add/Edit Modals - Only show for non-veterinarians */}
+      {!isVet && (
+        <>
+          <AddOwnerModal
+            isOpen={isAddOwnerModalOpen}
+            onClose={() => { setIsAddOwnerModalOpen(false); setEditingItem(null); }}
+            onSave={handleSaveOwner}
+            refreshOwners={fetchOwnersAndPets}
+            initialData={editingItem?.type === "owner" ? editingItem : null}
+          />
+          <AddPetModal
+            key={editingItem ? editingItem.id : "new"}
+            isOpen={isAddPetModalOpen}
+            onClose={() => { setIsAddPetModalOpen(false); setEditingItem(null); }}
+            onSave={handleSavePet}
+            owners={petOwners}
+            refreshPets={fetchOwnersAndPets}
+            initialData={editingItem}
+          />
 
-      {/* Delete Confirmation Modal */}
-      {showDeleteModal && (
-        <DeleteModal
-          isOpen={showDeleteModal}
-          onClose={() => {
-            setShowDeleteModal(false);
-            setDeleteTarget(null);
-          }}
-          onDelete={handleDelete}
-          itemType={deleteTarget?.type === "owner" ? "owner" : deleteTarget?.type === "pet" ? "pet" : "record"}
-          deleteTarget={deleteTarget}
-          refreshData={fetchOwnersAndPets}
-        />
+          {/* Delete Confirmation Modal */}
+          {showDeleteModal && (
+            <DeleteModal
+              isOpen={showDeleteModal}
+              onClose={() => {
+                setShowDeleteModal(false);
+                setDeleteTarget(null);
+              }}
+              onDelete={handleDelete}
+              itemType={deleteTarget?.type === "owner" ? "owner" : deleteTarget?.type === "pet" ? "pet" : "record"}
+              deleteTarget={deleteTarget}
+              refreshData={fetchOwnersAndPets}
+            />
+          )}
+
+          {/* Upload Record Modal */}
+          {showUploadRecordModal && (
+            <UploadRecordModal
+              isOpen={showUploadRecordModal}
+              onClose={() => {
+                setShowUploadRecordModal(false);
+                setSelectedPet(null);
+                setSearchQuery("");
+              }}
+              pets={pets}
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              selectedPet={selectedPet}
+              setSelectedPet={setSelectedPet}
+              setSuccessMessage={setSuccessMessage}
+            />
+          )}
+        </>
       )}
 
-      {/* Upload Record Modal */}
-      {showUploadRecordModal && (
-        <UploadRecordModal
-          isOpen={showUploadRecordModal}
-          onClose={() => {
-            setShowUploadRecordModal(false);
-            setSelectedPet(null);
-            setSearchQuery("");
-          }}
-          pets={pets}
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          selectedPet={selectedPet}
-          setSelectedPet={setSelectedPet}
-          setSuccessMessage={setSuccessMessage}
-        />
-      )}
-
-      {/* PDF Modal */}
+      {/* PDF Modal - Show for both roles */}
       {isPdfModalOpen && selectedRecord && (
         <PdfModal
           isOpen={isPdfModalOpen}
