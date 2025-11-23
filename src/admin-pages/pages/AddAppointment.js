@@ -53,6 +53,9 @@ const SERVICE_TYPES = [
   { id: "dental", label: "Dental Prophylaxis", note: "Cleaning & check" },
 ];
 
+const token = localStorage.getItem("token");
+
+
 const AddAppointment = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
@@ -70,6 +73,9 @@ const AddAppointment = () => {
   const [toast, setToast] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedClientId, setSelectedClientId] = useState(null);
+  const [owners, setOwners] = useState([]);
+  const [pets, setPets] = useState([]);
+  const [serviceTypes, setServiceTypes] = useState([]);
 
   // Calendar state
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -129,7 +135,7 @@ const AddAppointment = () => {
     const fetchTimeSlots = async () => {
       try {
         const res = await api.get("/appointment/time");
-        const formatted = res.data.map((t) => formatTime(t.startTime));
+        const formatted = res.data.map((t) => formatTime(t.scheduleTime));
         setTimeSlots(formatted);
       } catch (err) {
         console.error("❌ Failed to load time slots:", err);
@@ -167,16 +173,100 @@ const AddAppointment = () => {
     return date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
   };
 
+  //fetch owner and pets data
+  useEffect(() => {
+    const fetchOwnersAndPets = async () => {
+      try {
+        const res = await api.get("/admin/owners-with-pets");
+        const data = res.data;
+
+        setOwners(
+          data.map(o => ({
+            id: o.accId,
+            firstName: o.firstName,
+            lastName: o.lastName,
+            email: o.email,
+            phone: o.contactNo,
+            address: o.address,
+            createdAt: formatDate(o.createdAt),
+            pets: o.pets
+          }))
+        );
+
+        setPets(
+          data.flatMap(owner =>
+            (owner.pets || []).map(p => ({
+              id: p.petID,
+              userId: p.accID,
+              name: p.petName,
+              type: p.petType,
+              gender: p.petGender,
+              breed: p.breedName,
+              age: calculateAge(p.dateOfBirth),
+              birthDate: formatDate(p.dateOfBirth),
+              sex: p.petGender,
+              weight: (p.weight_kg ?? 0) + " kg",
+              color: p.color,
+              notes: p.note,
+            }))
+          )
+        );
+
+      } catch (err) {
+        console.error(err);
+        setOwners(sampleUsers);
+        setPets(samplePets);
+      }
+    };
+
+    fetchOwnersAndPets();
+  }, []);
+
+  useEffect(() => console.log("Owners updated: ", owners),[owners]);
+  useEffect(() => console.log("pets updated: ", pets), [pets]);
+
+  useEffect(() => {
+    if (currentStep !== 2) return;
+
+    const fetchServices = async () => {
+      try{
+        const res = await api.get("/appointment/services");
+        const data = res.data;
+
+        setServiceTypes(
+          data.map(s => ({
+            id: s.serviceID,
+            label: s.service,
+            note: s.shortDescription,
+          }))
+        )
+      }catch(err){
+        console.error(`Failed to fetch services: ${err.messages}`)
+      }
+    };
+
+    fetchServices();
+  }, [currentStep]);
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    return new Date(dateString).toLocaleDateString("en-US", {
+      month: "short",
+      day: "2-digit",
+      year: "numeric"
+    });
+  };
+
   // Filter users based on search
   const filteredUsers = useMemo(() => {
-    if (!searchQuery) return sampleUsers;
+    if (!searchQuery) return owners;
     const query = searchQuery.toLowerCase();
-    return sampleUsers.filter(user => 
+    return owners.filter(user => 
       `${user.firstName} ${user.lastName}`.toLowerCase().includes(query) ||
       user.email.toLowerCase().includes(query) ||
       user.phone.includes(query)
     );
-  }, [searchQuery]);
+  }, [searchQuery, owners]);
 
   const handleUserSelect = (user) => {
     setAppointmentData(prev => ({ ...prev, user, pet: null }));
@@ -292,7 +382,31 @@ const AddAppointment = () => {
     setCurrentStep(3); // Go to step 3 (Date & Time)
   };
 
-  const handleFinalSubmit = () => {
+  const handleFinalSubmit = async () => {
+    try{
+      
+      const serviceSelected = serviceTypes.find(
+        s => s.label === appointmentData.serviceType
+      );
+
+      console.log("Service selected: ", serviceSelected);
+
+      const payload = {
+        userID: appointmentData.user.id,
+        petID: appointmentData.pet.id,
+        serviceID: serviceSelected.id,
+        date: appointmentData.date,
+        time: appointmentData.time,
+      }
+
+      await api.post("/admin/appointments/assign", payload, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        }
+      });
+    }catch(err){
+      console.error("Booking error: ", err.message);
+    }
     // In real app, you would send this to backend
     console.log("Final appointment data:", appointmentData);
     
@@ -300,7 +414,7 @@ const AddAppointment = () => {
     setCurrentStep(5); // Go to success page
   };
 
-  const userPets = samplePets.filter(pet => pet.userId === appointmentData.user?.id);
+  const userPets = pets.filter(pet => pet.userId === appointmentData.user?.id);
 
   const steps = [
     { title: "Select Client", number: 0, icon: User },
@@ -401,7 +515,7 @@ const AddAppointment = () => {
                   </thead>
                   <tbody className="divide-y divide-gray-200">
                     {filteredUsers.map(user => {
-                      const userPetCount = samplePets.filter(pet => pet.userId === user.id).length;
+                      const userPetCount = pets.filter(pet => pet.userId === user.id).length;
                       return (
                         <tr 
                           key={user.id}
@@ -683,7 +797,7 @@ const AddAppointment = () => {
             <p className="text-gray-600 mb-6">Choose the type of service needed</p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {SERVICE_TYPES.map(service => (
+              {serviceTypes.map(service => (
                 <div
                   key={service.id}
                   onClick={() => handleServiceSelect(service.label)}

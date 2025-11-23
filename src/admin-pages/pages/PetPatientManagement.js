@@ -36,23 +36,9 @@ const PetPatientManagement = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
 
-  const [petOwners, setPetOwners] = useState([
-    { id: 1, name: "Mark Mapili", email: "sample@example.com", phone: "09123456789", createdAt: "2022-03-05" },
-    { id: 2, name: "Miguel Rojero", email: "sample@example.com", phone: "09987654321", createdAt: "2022-04-12" },
-    { id: 3, name: "Jordan Frando", email: "sample@example.com", phone: "09234567890", createdAt: "2022-05-20" },
-  ]);
-
-  const [pets, setPets] = useState([
-    { id: 1, name: "Bogart", type: "Dog", owner: "Mark Mapili" },
-    { id: 2, name: "Tan tan", type: "Cat", owner: "Miguel Rojero" },
-    { id: 3, name: "Ming", type: "Cat", owner: "Jordan Frando" },
-  ]);
-
-  const [records, setRecords] = useState([
-    { id: 1, petName: "Bogart", owner: "Mark Mapili", type: "Lab Record", uploadedOn: "2025-10-01", fileName: "sample_medicalreport.pdf" },
-    { id: 2, petName: "Tan tan", owner: "Miguel Rojero", type: "Medical History", uploadedOn: "2025-09-25", fileName: "sample_medicalreport.pdf" },
-    { id: 3, petName: "Ming", owner: "Jordan Frando", type: "Lab Record", uploadedOn: "2025-09-28", fileName: "sample_medicalreport.pdf" },
-  ]);
+  const [petOwners, setPetOwners] = useState([]);
+  const [pets, setPets] = useState([]);
+  const [records, setRecords] = useState([]);
 
   // Check if user is veterinarian (role 3)
   const [isVet, setIsVet] = useState(false);
@@ -61,6 +47,10 @@ const PetPatientManagement = () => {
     // Check user role from localStorage or API
     const userRole = localStorage.getItem('userRole') || 2; // Default to admin if not found
     setIsVet(userRole === '3');
+    
+    // Load initial data
+    fetchOwnersAndPets();
+    fetchMedicalRecords();
   }, []);
 
   const formatDate = (dateString) => {
@@ -100,6 +90,19 @@ const PetPatientManagement = () => {
     }
   };
 
+  // Fetch medical records from backend
+  const fetchMedicalRecords = async () => {
+    try {
+      const response = await api.get("/admin/pet-records/lab-records"); // Correct path
+      if (response.data.success) {
+        setRecords(response.data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching medical records:", error);
+      setErrorMessage("Failed to load medical records");
+    }
+  };
+
   const fetchOwnersAndPets = async () => {
     try {
       const res = await api.get("/admin/owners-with-pets");
@@ -123,6 +126,7 @@ const PetPatientManagement = () => {
         data.flatMap(owner =>
           (owner.pets || []).map(p => ({
             id: p.petID,
+            petID: p.petID, // Add petID for medical records
             name: p.petName,
             petType: p.petType,
             gender: p.petGender,
@@ -133,62 +137,16 @@ const PetPatientManagement = () => {
             color: p.color,
             note: p.note,
             owner: owner.name,
+            accID: owner.id, // Add accID for medical records
             image: p.imageName ? `http://localhost:5000/api/pets/images/${p.imageName}` : "/images/sad-dog.png"
           }))
         )
       );
     } catch (err) {
       console.error(err);
+      setErrorMessage("Failed to load owners and pets");
     }
   };
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await api.get("/admin/owners-with-pets");
-        const data = res.data;
-
-        setPetOwners(
-          data.map(o => ({
-            id: o.accId,
-            name: o.name,
-            gender: o.gender,
-            dateOfBirth: formatDate(o.dateOfBirth),
-            email: o.email,
-            phone: o.contactNo,
-            address: o.address,
-            createdAt: formatDate(o.createdAt),
-            pets: o.pets
-          }))
-        );
-
-        setPets(
-          data.flatMap(owner =>
-            (owner.pets || []).map(p => ({
-              id: p.petID,
-              name: p.petName,
-              petType: p.petType,
-              gender: p.petGender,
-              breed: p.breedName,
-              age: calculateAge(p.dateOfBirth),
-              petDateOfBirth: formatDate(p.dateOfBirth),
-              weight: (p.weight_kg ?? 0) + " kg",
-              color: p.color,
-              note: p.note,
-              owner: owner.name,
-              image: p.imageName 
-                ? `http://localhost:5000/api/pets/images/${p.imageName}`
-                : "/images/sad-dog.png"
-            }))
-          )
-        );
-      } catch (error) {
-        console.error("Fetch owners failed:", error);
-      }
-    };
-
-    fetchData();
-  }, []);
 
   const handleEditRecord = (record) => {
     setEditingItem({ ...record, type: "record" });
@@ -200,6 +158,20 @@ const PetPatientManagement = () => {
     setShowDeleteModal(true);
   };
 
+  // Handle medical record deletion
+  const handleDeleteRecord = async (recordId) => {
+    try {
+      const response = await api.delete(`/admin/pet-records/${recordId}`); // Correct path
+      if (response.data.success) {
+        setSuccessMessage("Medical record deleted successfully!");
+        fetchMedicalRecords(); // Refresh the records list
+      }
+    } catch (error) {
+      console.error("Error deleting medical record:", error);
+      setErrorMessage("Failed to delete medical record");
+    }
+  };
+
   const filteredOwners = petOwners.filter(o =>
     o.name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -208,16 +180,23 @@ const PetPatientManagement = () => {
     p.name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleDelete = (id, type) => {
+  const filteredRecords = records.filter(r =>
+    r.petName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    r.owner?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const handleDelete = async (id, type) => {
     try {
       if (type === "owner") {
         setPetOwners(prev => prev.filter(o => o.id !== id));
         if (selectedOwner?.id === id) setSelectedOwner(null);
         setSuccessMessage("Owner deleted successfully!");
-      } else {
+      } else if (type === "pet") {
         setPets(prev => prev.filter(p => p.id !== id));
         if (selectedPet?.id === id) setSelectedPet(null);
         setSuccessMessage("Pet deleted successfully!");
+      } else if (type === "record") {
+        await handleDeleteRecord(id);
       }
     } catch {
       setErrorMessage("Failed to delete!");
@@ -340,7 +319,13 @@ const PetPatientManagement = () => {
     setActiveTab(tab);
     setSelectedOwner(null);
     setSelectedPet(null);
+    setSelectedRecord(null);
     setSearchQuery("");
+    
+    // Refresh records when switching to Lab/Medical Records tab
+    if (tab === "Lab/Medical Records") {
+      fetchMedicalRecords();
+    }
   };
 
   const handleAddButtonClick = () => {
@@ -450,7 +435,7 @@ const PetPatientManagement = () => {
 
           {activeTab === "Lab/Medical Records" && (
             <RecordsTab
-              records={records}
+              records={filteredRecords}
               setSelectedRecord={setSelectedRecord}
               handleEditRecord={handleEditRecord}
               handleDeleteRecordClick={handleDeleteRecordClick}
@@ -501,7 +486,7 @@ const PetPatientManagement = () => {
               onDelete={handleDelete}
               itemType={deleteTarget?.type === "owner" ? "owner" : deleteTarget?.type === "pet" ? "pet" : "record"}
               deleteTarget={deleteTarget}
-              refreshData={fetchOwnersAndPets}
+              refreshData={deleteTarget?.type === "record" ? fetchMedicalRecords : fetchOwnersAndPets}
             />
           )}
 
@@ -513,6 +498,7 @@ const PetPatientManagement = () => {
                 setShowUploadRecordModal(false);
                 setSelectedPet(null);
                 setSearchQuery("");
+                setEditingItem(null);
               }}
               pets={pets}
               searchQuery={searchQuery}
@@ -520,6 +506,9 @@ const PetPatientManagement = () => {
               selectedPet={selectedPet}
               setSelectedPet={setSelectedPet}
               setSuccessMessage={setSuccessMessage}
+              setErrorMessage={setErrorMessage}
+              refreshRecords={fetchMedicalRecords}
+              editingItem={editingItem}
             />
           )}
         </>

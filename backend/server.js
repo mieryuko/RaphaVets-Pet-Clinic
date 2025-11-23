@@ -2,8 +2,8 @@
 import express from "express";
 import cors from "cors";
 import authRoutes from "./routes/authRoutes.js";
-import forumRoutes from "./routes/forumRoutes.js"; 
-import userRoute from "./routes/userRoute.js"; 
+import forumRoutes from "./routes/forumRoutes.js";
+import userRoute from "./routes/userRoute.js";
 import appointmentRoute from "./routes/appointmentRoute.js";
 import petRoute from "./routes/petRoute.js";
 import clientRoute from "./routes/admin_routes/ownerAndPetRoute.js"
@@ -11,6 +11,9 @@ import dashboardRoute from "./routes/admin_routes/dashboardRoute.js"
 import petCareTipsRoutes from './routes/petCareTipsRoute.js';
 import videoRoutes from './routes/videoRoute.js';
 import contentManagementRoute from './routes/admin_routes/contentManagementRoute.js';
+import appointmentVisitRoute from "./routes/admin_routes/appointmentVisitRoute.js";
+import labRecordRoute from './routes/admin_routes/labRecordRoute.js';
+
 
 const app = express();
 
@@ -29,14 +32,18 @@ app.use("/api/appointment", appointmentRoute);
 //pet routes
 app.use("/api/pets", petRoute);
 //pet care tips route
-app.use('/api/pet-care-tips', petCareTipsRoutes);
-app.use('/api/videos', videoRoutes);
+app.use("/api/pet-care-tips", petCareTipsRoutes);
+app.use("/api/videos", videoRoutes);
 
 // ADMIN SIDE ROUTES
 app.use("/api/admin", clientRoute);
 app.use("/api/admin/dashboard", dashboardRoute);
 //content management route
 app.use('/api/admin/content', contentManagementRoute);
+//admin appointment route
+app.use("/api/admin/appointments", appointmentVisitRoute);
+//lab/medical records
+app.use('/api/admin/pet-records', labRecordRoute);
 
 
 // Serve uploaded pet images

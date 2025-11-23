@@ -9,6 +9,8 @@
       SELECT 
         a.accId,
         CONCAT(a.firstName, ' ', a.lastName) AS name,
+        a.firstName,
+        a.lastName,
         a.email,
         c.gender,
         c.dateOfBirth,
@@ -144,7 +146,7 @@
 
   export const updatePet = async (req, res) => {
     try {
-      const { petId } = req.params; // <-- get from URL
+      const { petId } = req.params;
       const { type, breed, name, age, sex, weight, color, dob, notes } = req.body;
 
       if (!petId) {

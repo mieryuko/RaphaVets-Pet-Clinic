@@ -20,6 +20,7 @@ const AppointmentsTab = ({
   setIsDetailsModalOpen,
   handleSingleDelete,
   handleCancelAppointment,
+  handleUpdateStatus,
   statusColors
 }) => {
   return (
@@ -182,6 +183,7 @@ const AppointmentsTab = ({
                           } else {
                             // This would typically update the appointment status
                             console.log("Update status to:", e.target.value);
+                            handleUpdateStatus(item.id, e.target.value);
                           }
                         }}
                         className={`p-1 rounded-xl text-xs font-semibold border border-gray-200 dark:border-gray-700 ${

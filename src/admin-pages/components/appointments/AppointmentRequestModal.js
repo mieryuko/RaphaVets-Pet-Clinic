@@ -1,5 +1,6 @@
 import { useState } from "react";
 import SuccessToast from "../../../template/SuccessToast";
+import api from "../../../api/axios";
 
 const AppointmentRequestModal = ({ isOpen, onClose, appointment, onUpdateStatus }) => {
   const [loading, setLoading] = useState(false);
@@ -11,7 +12,7 @@ const AppointmentRequestModal = ({ isOpen, onClose, appointment, onUpdateStatus 
   const handleApprove = async () => {
     setLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await api.patch(`/admin/appointments/status/`, {status: "Upcoming", idsToUpdate: appointment.id})
       if (onUpdateStatus) {
         onUpdateStatus(appointment.id, "Upcoming");
       }
@@ -30,10 +31,11 @@ const AppointmentRequestModal = ({ isOpen, onClose, appointment, onUpdateStatus 
   const confirmReject = async () => {
     setLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      await api.patch(`/admin/appointments/status/`, {status: "Rejected", idsToUpdate: appointment.id});
       if (onUpdateStatus) {
-        onUpdateStatus(appointment.id, "Rejected");
-      }
+        await onUpdateStatus(appointment.id, "Rejected");
+      } 
       setToast({ type: "success", message: "Appointment rejected successfully!" });
       setShowRejectConfirm(false);
       setTimeout(() => {

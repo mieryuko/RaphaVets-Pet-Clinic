@@ -60,22 +60,18 @@ export const getBookedSlots = async (req, res) => {
     const [rows] = await db.query(
       `SELECT st.scheduleTime 
        FROM appointment_tbl a
-       JOIN scheduleTIme_tbl st ON a.scheduledTimeID = st.scheduledTimeID
+       JOIN scheduleTime_tbl st ON a.scheduledTimeID = st.scheduledTimeID
        WHERE a.appointmentDate = ? 
        AND a.statusID != 4`, // statusID 4 is 'Cancelled'
       [date]
     );
 
-    // Convert database times to frontend format
-    const bookedSlots = rows.map(row => {
-      const [hours, minutes] = row.startTime.split(':');
-      const hour = parseInt(hours, 10);
-      const ampm = hour >= 12 ? 'PM' : 'AM';
-      const displayHour = hour % 12 || 12;
-      return `${displayHour}:${minutes} ${ampm}`;
-    });
+    console.log('Database booked slots:', rows);
 
-    console.log('Booked slots found:', bookedSlots);
+    // Return the raw time format from database (e.g., "08:00:00")
+    const bookedSlots = rows.map(row => row.scheduleTime);
+    
+    console.log('Returning booked slots:', bookedSlots);
     res.json(bookedSlots);
   } catch (err) {
     console.error("❌ Failed to fetch booked slots:", err);
@@ -85,21 +81,18 @@ export const getBookedSlots = async (req, res) => {
 
 export const getAllTime = async (req, res) => {
   try {
-    const [rows] = await db.query("SELECT * FROM scheduleTIme_tbl");
+    const [rows] = await db.query("SELECT * FROM scheduleTime_tbl");
     
-    // Convert to frontend format
-    const formattedTimes = rows.map(row => {
-      const [hours, minutes] = row.startTime.split(':');
-      const hour = parseInt(hours, 10);
-      const ampm = hour >= 12 ? 'PM' : 'AM';
-      const displayHour = hour % 12 || 12;
-      return {
-        ...row,
-        displayTime: `${displayHour}:${minutes} ${ampm}`
-      };
-    });
+    console.log('Raw time slots from DB:', rows);
+    
+    // Return the raw time format - let frontend handle formatting
+    const timeSlots = rows.map(row => ({
+      scheduledTimeID: row.scheduledTimeID,
+      scheduleTime: row.scheduleTime, // Use scheduleTime field
+      endTime: row.endTime
+    }));
 
-    res.json(formattedTimes);
+    res.json(timeSlots);
   } catch (err) {
     console.error("❌ Failed to fetch time slots:", err);
     res.status(500).json({ message: "Server error" });
@@ -126,7 +119,7 @@ export const bookAppointment = async (req, res) => {
       petID,
       serviceID,
       appointmentDate,
-      startTime
+      startTime // This should be in "08:00:00" format now
     });
 
     // Validate required fields
@@ -144,28 +137,10 @@ export const bookAppointment = async (req, res) => {
       });
     }
 
-    // Convert "12:00 PM" to "12:00:00" format
-    const convertTo24Hour = (timeStr) => {
-      const [time, modifier] = timeStr.split(' ');
-      let [hours, minutes] = time.split(':');
-      
-      if (modifier === 'PM' && hours !== '12') {
-        hours = parseInt(hours, 10) + 12;
-      }
-      if (modifier === 'AM' && hours === '12') {
-        hours = '00';
-      }
-      
-      return `${hours.toString().padStart(2, '0')}:${minutes}:00`;
-    };
-
-    const dbTimeFormat = convertTo24Hour(startTime);
-    console.log("🕒 Converted time:", { original: startTime, converted: dbTimeFormat });
-
-    console.log("🔍 Looking up time slot:", dbTimeFormat);
+    console.log("🔍 Looking up time slot:", startTime);
     const [timeRows] = await db.query(
-      "SELECT scheduledTimeID FROM scheduleTIme_tbl WHERE scheduleTime = ?",
-      [dbTimeFormat]
+      "SELECT scheduledTimeID FROM scheduleTime_tbl WHERE scheduleTime = ?",
+      [startTime] // Use scheduleTime field
     );
 
     console.log("⏰ Time lookup results:", timeRows);
@@ -177,12 +152,12 @@ export const bookAppointment = async (req, res) => {
       });
     }
 
-    const scheduledTimeID = timeRows[0].startTimeID;
+    const scheduledTimeID = timeRows[0].scheduledTimeID;
 
     const sql = `
       INSERT INTO appointment_tbl
-        (accID, petID, serviceID, appointmentDate, scheduledTimeID, statusID)
-      VALUES (?, ?, ?, ?, ?, 1)
+        (accID, petID, serviceID, appointmentDate, scheduledTimeID, visitType, statusID)
+      VALUES (?, ?, ?, ?, ?, "Scheduled", 1)
     `;
 
     console.log("💾 Inserting appointment with:", {
@@ -215,6 +190,7 @@ export const bookAppointment = async (req, res) => {
     });
   }
 };
+
 export const getUserAppointments = async (req, res) => {
   try {
     if (!req.user) {

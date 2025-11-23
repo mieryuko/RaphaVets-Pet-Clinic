@@ -1,10 +1,11 @@
 // AddVisit.js
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Plus, Search, Calendar, Layers, User, PawPrint, CheckCircle, Clock } from "lucide-react";
 import { format } from 'date-fns';
 import SuccessToast from "../../template/SuccessToast";
 import AddOwnerModal from "../components/petpatient-management/AddOwnerModal";
+import api from "../../api/axios";
 
 // Sample existing users data
 const sampleUsers = [
@@ -61,6 +62,27 @@ const AddVisit = () => {
   const [toast, setToast] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedClientId, setSelectedClientId] = useState(null);
+  const [owners, setOweners] = useState([]);
+  const [pets, setPets] = useState([]);
+  const [appointments, setAppointments] = useState([]);
+
+  useEffect(() => console.log("Fetched owners: ", owners), [owners]);
+  useEffect(() => console.log("Fetched pets: ", pets), [pets]);
+  useEffect(() => console.log("Fetched appointments: ", appointments), [appointments])
+
+  useEffect(() => {
+    const fetchOwnerDetails = async () => {
+      try{
+        const res = await api.get("/admin/appointments/owners");
+        const { cleanedOwners, cleanedPets, cleanedAppointments} = res.data;
+
+
+      }catch(err){
+        console.error("Error fetching owner details: ", err.message);
+      }
+    };
+    fetchOwnerDetails();
+  }, []);
 
   const handleUserSelect = (user) => {
     setVisitData(prev => ({ ...prev, user, appointment: null, pet: null }));

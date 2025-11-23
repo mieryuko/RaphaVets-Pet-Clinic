@@ -2,7 +2,6 @@ import db from "../../config/db.js";
 
 export const getDashboardStats = async (req, res) => {
   try {
-    // Get the logged-in admin's ID from the token (set by authMiddleware)
     const adminId = req.user.id;
 
     if (!adminId) {
@@ -13,7 +12,7 @@ export const getDashboardStats = async (req, res) => {
     const [adminRows] = await db.query(`
       SELECT firstName, lastName 
       FROM account_tbl 
-      WHERE accId = ? AND roleID = 2 OR roleID = 3 AND isDeleted = 0
+      WHERE accId = ? AND (roleID = 2 OR roleID = 3) AND isDeleted = 0
     `, [adminId]);
 
     if (adminRows.length === 0) {

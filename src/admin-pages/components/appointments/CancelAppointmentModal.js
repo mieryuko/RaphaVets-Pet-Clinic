@@ -1,4 +1,5 @@
 import { useState } from "react";
+import api from "../../../api/axios"
 
 const CancelAppointmentModal = ({ isOpen, onClose, onConfirm, appointment }) => {
   const [loading, setLoading] = useState(false);
@@ -9,9 +10,14 @@ const CancelAppointmentModal = ({ isOpen, onClose, onConfirm, appointment }) => 
   const appointmentCount = isBulkCancel ? appointment.length : 1;
 
   const handleConfirm = async () => {
+    if(!appointment) return;
     setLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const idsToCancel = Array.isArray(appointment)
+        ? appointment.map(apt => apt.id)
+        : [appointment.id];
+
+      await api.patch("/admin/appointments/status", {status: "Cancelled", idsToUpdate: idsToCancel});
       onConfirm();
     } catch (error) {
       console.error("Error cancelling appointment:", error);
