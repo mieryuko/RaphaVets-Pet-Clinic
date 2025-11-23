@@ -383,7 +383,7 @@ const ContentManagement = () => {
 
   return (
     <div className="flex flex-col h-screen bg-[#FBFBFB] p-6 gap-1 font-sans">
-      <Header title="Content Management" />
+      <Header title=" Content Management" />
 
       {/* Loading overlay */}
       {loading && (
