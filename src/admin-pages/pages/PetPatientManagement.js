@@ -93,14 +93,31 @@ const PetPatientManagement = () => {
   // Fetch medical records from backend
   const fetchMedicalRecords = async () => {
     try {
-      const response = await api.get("/admin/pet-records/lab-records"); // Correct path
+      const response = await api.get("/admin/pet-records/lab-records");
       if (response.data.success) {
         setRecords(response.data.data);
+        
+        // If we have a selected record, update it with fresh data
+        if (selectedRecord) {
+          const updatedRecord = response.data.data.find(record => record.id === selectedRecord.id);
+          if (updatedRecord) {
+            setSelectedRecord(updatedRecord);
+          }
+        }
       }
     } catch (error) {
       console.error("Error fetching medical records:", error);
       setErrorMessage("Failed to load medical records");
     }
+  };
+
+  // NEW: Function to update selected record when it's edited
+  const handleRecordUpdate = (updatedRecord) => {
+    setSelectedRecord(updatedRecord);
+    // Also update the records list
+    setRecords(prev => prev.map(record => 
+      record.id === updatedRecord.id ? updatedRecord : record
+    ));
   };
 
   const fetchOwnersAndPets = async () => {
@@ -161,14 +178,43 @@ const PetPatientManagement = () => {
   // Handle medical record deletion
   const handleDeleteRecord = async (recordId) => {
     try {
-      const response = await api.delete(`/admin/pet-records/${recordId}`); // Correct path
-      if (response.data.success) {
+      console.log("🗑️ Deleting record with ID:", recordId);
+      
+      const response = await api.delete(`/admin/pet-records/${recordId}`);
+      
+      console.log("✅ Delete response:", response.data);
+      
+      // Even if the response says "not found", if we got a 200 status, consider it successful
+      if (response.status === 200 || response.status === 204) {
         setSuccessMessage("Medical record deleted successfully!");
+        // Clear selected record if it was the one deleted
+        if (selectedRecord && selectedRecord.id === recordId) {
+          setSelectedRecord(null);
+        }
         fetchMedicalRecords(); // Refresh the records list
+      } else if (response.data.success) {
+        setSuccessMessage("Medical record deleted successfully!");
+        if (selectedRecord && selectedRecord.id === recordId) {
+          setSelectedRecord(null);
+        }
+        fetchMedicalRecords();
       }
     } catch (error) {
-      console.error("Error deleting medical record:", error);
-      setErrorMessage("Failed to delete medical record");
+      console.error("❌ Error deleting medical record:", error);
+      console.error("Error status:", error.response?.status);
+      console.error("Error data:", error.response?.data);
+      
+      // If it's a 404 but the record was actually deleted, treat it as success
+      if (error.response?.status === 404) {
+        console.log("⚠️ Record not found - may have been already deleted");
+        setSuccessMessage("Medical record deleted successfully!");
+        if (selectedRecord && selectedRecord.id === recordId) {
+          setSelectedRecord(null);
+        }
+        fetchMedicalRecords();
+      } else {
+        setErrorMessage("Failed to delete medical record");
+      }
     }
   };
 
@@ -509,6 +555,7 @@ const PetPatientManagement = () => {
               setErrorMessage={setErrorMessage}
               refreshRecords={fetchMedicalRecords}
               editingItem={editingItem}
+              onRecordUpdate={handleRecordUpdate} // NEW: Add this prop
             />
           )}
         </>

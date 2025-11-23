@@ -13,7 +13,8 @@ const UploadRecordModal = ({
   setSuccessMessage,
   setErrorMessage,
   refreshRecords,
-  editingItem
+  editingItem,
+  onRecordUpdate // NEW: Add this prop
 }) => {
   const [formData, setFormData] = useState({
     recordTitle: '',
@@ -116,7 +117,7 @@ const UploadRecordModal = ({
           uploadFormData.append('file', file);
         }
 
-        const response = await api.put(`/admin/pet-records/medical-records/${editingItem.id}`, uploadFormData, {
+        const response = await api.put(`/admin/pet-records/${editingItem.id}`, uploadFormData, {
           headers: {
             'Content-Type': 'multipart/form-data'
           }
@@ -124,6 +125,17 @@ const UploadRecordModal = ({
         
         if (response.data.success) {
           setSuccessMessage('Record updated successfully!');
+          
+          // NEW: Re-fetch the updated record to get fresh data
+          try {
+            const updatedResponse = await api.get(`/admin/pet-records/${editingItem.id}`);
+            if (updatedResponse.data.success && onRecordUpdate) {
+              onRecordUpdate(updatedResponse.data.data);
+            }
+          } catch (fetchError) {
+            console.error('Error fetching updated record:', fetchError);
+          }
+          
           refreshRecords();
           onClose();
         }
@@ -171,11 +183,11 @@ const UploadRecordModal = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"> {/* Added p-4 */}
-      <div className="bg-white dark:bg-[#1C1C1E] rounded-2xl p-6 w-[900px] max-w-full max-h-[85vh] flex gap-6 overflow-hidden"> {/* Removed shadow-xl, added overflow-hidden */}
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div className="bg-white dark:bg-[#1C1C1E] rounded-2xl p-6 w-[900px] max-w-full max-h-[85vh] flex gap-6 overflow-hidden">
         
         {/* Left Panel: Pet Selection */}
-        <div className="flex-1 flex flex-col gap-4 border-r border-gray-200 dark:border-gray-700 pr-4 min-w-0 overflow-hidden"> {/* Added overflow-hidden */}
+        <div className="flex-1 flex flex-col gap-4 border-r border-gray-200 dark:border-gray-700 pr-4 min-w-0 overflow-hidden">
           <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 flex-shrink-0">Select Pet</h3>
     
           <input
@@ -188,7 +200,7 @@ const UploadRecordModal = ({
           />
 
           {/* Scrollable Pet List */}
-          <div className="flex-1 overflow-y-auto min-h-0"> {/* Added min-h-0 */}
+          <div className="flex-1 overflow-y-auto min-h-0">
             {pets.filter(p =>
               p.petName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
               p.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -228,7 +240,7 @@ const UploadRecordModal = ({
         </div>
 
         {/* Right Half: File Upload */}
-        <div className="flex-1 flex flex-col gap-4 pl-4 min-w-0 overflow-hidden"> {/* Added min-w-0 and overflow-hidden */}
+        <div className="flex-1 flex flex-col gap-4 pl-4 min-w-0 overflow-hidden">
           <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 flex-shrink-0">
             {editingItem ? 'Edit Medical Record' : 'Upload Medical Record'}
           </h3>
@@ -263,7 +275,7 @@ const UploadRecordModal = ({
           )}
 
           {/* Upload Form Card */}
-          <div className="flex flex-col gap-4 bg-gray-50 dark:bg-[#222] border border-gray-200 dark:border-gray-700 rounded-xl p-5 shadow-sm overflow-y-auto min-h-0"> {/* Added overflow-y-auto and min-h-0 */}
+          <div className="flex flex-col gap-4 bg-gray-50 dark:bg-[#222] border border-gray-200 dark:border-gray-700 rounded-xl p-5 shadow-sm overflow-y-auto min-h-0">
 
             {/* Record Title */}
             <div className="flex flex-col flex-shrink-0">

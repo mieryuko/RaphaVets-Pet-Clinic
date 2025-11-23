@@ -10,25 +10,33 @@ const DeleteModal = ({ isOpen, onClose, onDelete, itemType, deleteTarget, refres
     setIsLoading(true);
     try {
       let endpoint = "";
+      let method = "delete"; // Default to DELETE method
       
       // Determine the endpoint based on item type
       switch (deleteTarget.type) {
         case "owner":
-          endpoint = `admin/soft-delete-owner/${deleteTarget.id}`; // Remove leading /
+          endpoint = `admin/soft-delete-owner/${deleteTarget.id}`;
+          method = "put"; // Use PUT for soft delete
           break;
         case "pet":
-          endpoint = `admin/soft-delete-pet/${deleteTarget.id}`; // Remove leading /
+          endpoint = `admin/soft-delete-pet/${deleteTarget.id}`;
+          method = "put"; // Use PUT for soft delete
           break;
         case "record":
-          endpoint = `admin/soft-delete-record/${deleteTarget.id}`; // Remove leading /
+          endpoint = `admin/pet-records/${deleteTarget.id}`; // Use the correct endpoint
+          method = "delete"; // Use DELETE method
           break;
         default:
           console.error("Unknown item type for deletion");
           return;
       }
 
-      // Make API call for soft deletion
-      await api.put(endpoint);
+      // Make API call with appropriate method
+      if (method === "delete") {
+        await api.delete(endpoint);
+      } else {
+        await api.put(endpoint);
+      }
       
       // Call the parent's onDelete function to update UI
       onDelete(deleteTarget.id, deleteTarget.type);

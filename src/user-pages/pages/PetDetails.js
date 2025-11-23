@@ -16,7 +16,13 @@ function PetDetails() {
 
   const [pet, setPet] = useState(null);
   const [appointments, setAppointments] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [medicalRecords, setMedicalRecords] = useState([]);
+  const [labRecords, setLabRecords] = useState([]);
+  const [loading, setLoading] = useState({
+    pet: true,
+    medical: true,
+    lab: true
+  });
   const [appointmentFilter, setAppointmentFilter] = useState("Upcoming");
   const [activeTab, setActiveTab] = useState("Appointments");
   const [showEditModal, setShowEditModal] = useState(false);
@@ -33,11 +39,50 @@ function PetDetails() {
 
   const tabs = ["Appointments", "Medical Reports", "Lab Records"];
 
+  // Fetch medical records for this specific pet
+  const fetchMedicalRecords = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      console.log("🔍 Fetching medical records for pet:", id);
+      
+      const res = await api.get(`/medical-records/pet/${id}?recordType=medical`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      
+      console.log("✅ Medical records response:", res.data);
+      setMedicalRecords(res.data.data || []);
+      setLoading(prev => ({ ...prev, medical: false }));
+    } catch (err) {
+      console.error("❌ Error fetching medical records:", err);
+      setMedicalRecords([]);
+      setLoading(prev => ({ ...prev, medical: false }));
+    }
+  };
+
+  // Fetch lab records for this specific pet
+  const fetchLabRecords = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      console.log("🔍 Fetching lab records for pet:", id);
+      
+      const res = await api.get(`/medical-records/pet/${id}?recordType=lab`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      
+      console.log("✅ Lab records response:", res.data);
+      setLabRecords(res.data.data || []);
+      setLoading(prev => ({ ...prev, lab: false }));
+    } catch (err) {
+      console.error("❌ Error fetching lab records:", err);
+      setLabRecords([]);
+      setLoading(prev => ({ ...prev, lab: false }));
+    }
+  };
+
   const calculateAge = (dob) => {
     if (!dob) return "Unknown";
     
     const birth = new Date(dob);
-    // Handle invalid dates
     if (isNaN(birth.getTime())) return "Unknown";
     
     const today = new Date();
@@ -50,26 +95,21 @@ function PetDetails() {
   // Helper function to safely parse dates
   const parseAppointmentDate = (appointment) => {
     try {
-      // If the API returns a formatted date string like "Nov 22, 2025 - 12:00:00"
-      // We need to extract the date part and create a valid Date object
       if (appointment.date && typeof appointment.date === 'string') {
-        // Split the date string to get the date part (before the '-')
         const datePart = appointment.date.split(' - ')[0];
         if (datePart) {
           return new Date(datePart);
         }
       }
       
-      // Fallback: If we have appointmentDate from the raw data
       if (appointment.appointmentDate) {
         return new Date(appointment.appointmentDate);
       }
       
-      // Last resort: return current date
       return new Date();
     } catch (error) {
       console.error("Error parsing date:", error);
-      return new Date(); // Return current date as fallback
+      return new Date();
     }
   };
 
@@ -77,7 +117,6 @@ function PetDetails() {
   const formatAppointmentDate = (appointment) => {
     const dateObj = parseAppointmentDate(appointment);
     
-    // Format: "Nov 22, 2025 - 12:00 PM"
     const options = { 
       month: 'short', 
       day: 'numeric', 
@@ -86,7 +125,6 @@ function PetDetails() {
     
     const dateStr = dateObj.toLocaleDateString('en-US', options);
     
-    // Get time part from the original date string if available
     if (appointment.date && typeof appointment.date === 'string') {
       const timePart = appointment.date.split(' - ')[1];
       if (timePart) {
@@ -114,14 +152,13 @@ function PetDetails() {
   // Helper function to format time
   const formatTime = (timeString) => {
     try {
-      // Convert "12:00:00" to "12:00 PM"
       const [hours, minutes] = timeString.split(':');
       const hour = parseInt(hours);
       const ampm = hour >= 12 ? 'PM' : 'AM';
       const displayHour = hour % 12 || 12;
       return `${displayHour}:${minutes} ${ampm}`;
     } catch (error) {
-      return timeString; // Return original if parsing fails
+      return timeString;
     }
   };
 
@@ -140,7 +177,6 @@ function PetDetails() {
 
       console.log("📤 Upload Response:", res.data);
 
-      // Update local pet state
       setPet(prev => ({
         ...prev,
         image: res.data.imageUrl
@@ -148,16 +184,10 @@ function PetDetails() {
 
       setPreviewImage(null);
 
-      // Clear the pets cache to force sidebar refresh
       localStorage.removeItem('cachedPets');
       localStorage.removeItem('petsCacheTimestamp');
 
-      // Trigger sidebar refresh through multiple methods:
-      
-      // Method 1: Trigger custom event
       window.dispatchEvent(new Event('petImageUpdated'));
-      
-      // Method 2: Use the refresh trigger
       setRefreshTrigger(prev => prev + 1);
 
       setToastMessage("Profile picture updated successfully!");
@@ -173,14 +203,35 @@ function PetDetails() {
   // Handle appointment cancellation
   const handleCancelAppointment = (appointment) => {
     console.log("Cancelling appointment:", appointment.id);
-    // Add your cancellation logic here
-    // This will trigger the success toast from the AppointmentTab component
   };
 
   // Handle view details
   const handleViewDetails = (appt) => {
     setSelectedAppointment(appt);
     setShowDetailsModal(true);
+  };
+
+  // Handle download for medical/lab records
+  const handleDownload = async (fileID, fileName) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await api.get(`/medical-records/download/${fileID}`, {
+        headers: { Authorization: `Bearer ${token}` },
+        responseType: 'blob'
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', fileName);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Error downloading file:", err);
+      alert('Failed to download file');
+    }
   };
 
   useEffect(() => {
@@ -192,7 +243,7 @@ function PetDetails() {
         });
 
         const petData = res.data;
-        console.log("📊 Pet Data from API:", petData); // Debug log
+        console.log("📊 Pet Data from API:", petData);
 
         const mappedPet = {
           id: petData.petID || petData.id,
@@ -208,17 +259,14 @@ function PetDetails() {
           note: petData.note
         };
         
-        console.log("🔄 Mapped Pet:", mappedPet); // Debug log
+        console.log("🔄 Mapped Pet:", mappedPet);
         
-        // FIX: Only set pet once, don't overwrite it
         if (previewImage) {
-          // If we have a preview image, keep it but update other fields
           setPet(prev => ({
             ...mappedPet,
-            image: prev?.image || mappedPet.image // Keep existing image if available
+            image: prev?.image || mappedPet.image
           }));
         } else {
-          // Otherwise set the complete mapped pet
           setPet(mappedPet);
         }
 
@@ -231,15 +279,20 @@ function PetDetails() {
        
         console.log("📅 Mapped Appointments:", mappedAppointments);
         setAppointments(mappedAppointments);
+        setLoading(prev => ({ ...prev, pet: false }));
+
+        // Fetch medical and lab records after pet data is loaded
+        fetchMedicalRecords();
+        fetchLabRecords();
+
       } catch (err) {
         console.error("❌ Failed to fetch pet details:", err);
-      } finally {
-        setLoading(false);
+        setLoading(prev => ({ ...prev, pet: false, medical: false, lab: false }));
       }
     };
 
     fetchPetData();
-  }, [id, refreshTrigger]); // Removed previewImage from dependencies to prevent infinite loops
+  }, [id, refreshTrigger]);
 
   const filteredAppointments = appointments.filter((appt) =>
     appointmentFilter === "All" ? true : appt.status === appointmentFilter
@@ -310,7 +363,7 @@ function PetDetails() {
     }
   };
 
-  if (loading)
+  if (loading.pet)
     return (
       <ClientLayout>
         <div className="flex flex-col gap-6">
@@ -475,7 +528,7 @@ function PetDetails() {
               >
                 {activeTab === "Appointments" && (
                   <AppointmentTab
-                    appointments={appointments}
+                    appointments={filteredAppointments}
                     appointmentFilter={appointmentFilter}
                     setAppointmentFilter={setAppointmentFilter}
                     handleViewDetails={handleViewDetails}
@@ -484,162 +537,20 @@ function PetDetails() {
                 )}
 
                 {activeTab === "Medical Reports" && (
-                  <MedicalReportsTab />
+                  <MedicalReportsTab 
+                    records={medicalRecords} 
+                    onDownload={handleDownload}
+                    loading={loading.medical}
+                  />
                 )}
 
                 {activeTab === "Lab Records" && (
-                  <LabRecordsTab />
+                  <LabRecordsTab 
+                    records={labRecords} 
+                    onDownload={handleDownload}
+                    loading={loading.lab}
+                  />
                 )}
-
-                {/*
-                {activeTab === "Appointments" && (
-                  <>
-                    
-                    <motion.div 
-                      variants={containerVariants}
-                      className="flex gap-3 mb-3"
-                    >
-                      {["Upcoming", "Pending", "Done", "All"].map((status, index) => (
-                        <motion.button
-                          key={status}
-                          variants={itemVariants}
-                          onClick={() => setAppointmentFilter(status)}
-                          className={`px-3 py-1 rounded-full text-sm font-medium ${
-                            appointmentFilter === status
-                              ? "bg-[#5EE6FE] text-white shadow"
-                              : "bg-gray-100 text-gray-600 hover:bg-[#d3f2fa]"
-                          }`}
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          transition={{ delay: index * 0.1 }}
-                        >
-                          {status}
-                        </motion.button>
-                      ))}
-                    </motion.div>
-
-                    
-                    {filteredAppointments.length > 0 ? (
-                      <motion.div
-                        variants={containerVariants}
-                        className="space-y-4"
-                      >
-                        {filteredAppointments.map((appt, index) => (
-                          <motion.div
-                            key={appt.id}
-                            variants={cardVariants}
-                            className="bg-white/70 backdrop-blur-md border border-[#5EE6FE]/30 p-4 rounded-xl flex justify-between items-center shadow-md hover:shadow-lg hover:bg-[#EFFFFF]/60 cursor-pointer"
-                            whileHover="hover"
-                            transition={{ delay: index * 0.05 }}
-                            onClick={() => handleViewDetails(appt)}
-                          >
-                            <div className="flex flex-col items-center justify-center w-16 text-center bg-[#EFFFFF] rounded-lg py-2 border border-[#5EE6FE]/20 shadow-sm">
-                              <span className="text-xs font-semibold text-[#5EE6FE] uppercase tracking-wide">
-                                {appt.dateObj?.toLocaleString("default", { month: "short" })}
-                              </span>
-                              <span className="text-xl font-bold text-gray-800 leading-tight">
-                                {appt.dateObj?.getDate()}
-                              </span>
-                              <span className="text-[10px] text-gray-500 capitalize">
-                                {appt.dateObj?.toLocaleString("default", { weekday: "short" })}
-                              </span>
-                            </div>
-
-                            <div className="flex justify-between items-center flex-1 ml-4">
-                              <div>
-                                <p className="font-semibold text-gray-800">
-                                  {pet.name || "Pet"} — {appt.type}
-                                </p>
-                                <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
-                                  <i className="fa-solid fa-clock text-[#5EE6FE]"></i>
-                                  {formatAppointmentDate(appt)} • {appt.status}
-                                </p>
-                              </div>
-                              <motion.button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleViewDetails(appt);
-                                }}
-                                className="bg-[#5EE6FE] text-white px-4 py-2 rounded-lg text-xs font-semibold"
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                              >
-                                View Details
-                              </motion.button>
-                            </div>
-                          </motion.div>
-                        ))}
-                      </motion.div>
-                    ) : (
-                      <motion.p 
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="text-center text-gray-500 mt-6"
-                      >
-                        No appointments found.
-                      </motion.p>
-                    )}
-                  </>
-                )}
-
-                {activeTab === "Medical Reports" && (
-                  <motion.div
-                    variants={containerVariants}
-                    className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"
-                  >
-                    {(pet.medicalReports || []).map((report, index) => (
-                      <motion.div
-                        key={index}
-                        variants={cardVariants}
-                        className="rounded-2xl bg-[#FFF8F9] p-5 shadow-sm border border-[#F3D6D8] flex flex-col justify-between"
-                        whileHover={{ scale: 1.02 }}
-                        transition={{ delay: index * 0.1 }}
-                      >
-                        <div>
-                          <h3 className="text-lg font-semibold text-gray-700">{report.title}</h3>
-                          <p className="text-gray-500 text-sm mt-1">{report.date}</p>
-                        </div>
-                        <motion.button 
-                          className="mt-4 bg-[#FFB6C1] text-white px-3 py-2 rounded-lg"
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                        >
-                          Download PDF
-                        </motion.button>
-                      </motion.div>
-                    ))}
-                  </motion.div>
-                )}
-
-                {activeTab === "Lab Records" && (
-                  <motion.div
-                    variants={containerVariants}
-                    className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"
-                  >
-                    {(pet.labRecords || []).map((record, index) => (
-                      <motion.div
-                        key={index}
-                        variants={cardVariants}
-                        className="rounded-2xl bg-[#E3FAF7] p-5 shadow-sm border border-[#A6E3E9] flex flex-col justify-between"
-                        whileHover={{ scale: 1.02 }}
-                        transition={{ delay: index * 0.1 }}
-                      >
-                        <div>
-                          <h3 className="text-lg font-semibold text-gray-700">{record.title}</h3>
-                          <p className="text-gray-500 text-sm mt-1">{record.date}</p>
-                        </div>
-                        <motion.button 
-                          className="mt-4 bg-[#5EE6FE] text-white px-3 py-2 rounded-lg"
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                        >
-                          View Report
-                        </motion.button>
-                      </motion.div>
-                    ))}
-                  </motion.div>
-                )}
-                */}
               </motion.div>
             </AnimatePresence>
           </div>
