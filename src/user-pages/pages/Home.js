@@ -17,22 +17,114 @@ function Home() {
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [appointments, setAppointments] = useState([]);
+  const [medicalRecords, setMedicalRecords] = useState([]);
+  const [labRecords, setLabRecords] = useState([]);
+  const [loading, setLoading] = useState({
+    appointments: true,
+    medical: true,
+    lab: true
+  });
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchAppointments = async () => {
-      try {
-        const token = localStorage.getItem("token"); 
-        const res = await api.get("/appointment/user", {
+    fetchAppointments();
+    fetchMedicalRecords();
+    fetchLabRecords();
+  }, []);
+
+  const fetchAppointments = async () => {
+    try {
+      const token = localStorage.getItem("token"); 
+      const res = await api.get("/appointment/user", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setAppointments(res.data);
+      setLoading(prev => ({ ...prev, appointments: false }));
+    } catch (err) {
+      console.error("Error fetching appointments:", err);
+      setLoading(prev => ({ ...prev, appointments: false }));
+    }
+  };
+
+  const fetchMedicalRecords = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      
+      // Get user ID from localStorage - using the correct key
+      const userId = localStorage.getItem("userId");
+      const userData = JSON.parse(localStorage.getItem("user"));
+      
+      console.log("🔍 Fetching medical records...");
+      console.log("📱 User ID from localStorage:", userId);
+      console.log("📱 User data from localStorage:", userData);
+      
+      // Use userId (17) from localStorage
+      if (userId) {
+        const res = await api.get(`/medical-records/user/${userId}?recordType=medical`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setAppointments(res.data);
-      } catch (err) {
-        console.error("Error fetching appointments:", err);
+        console.log("✅ Medical records API response:", res.data);
+        setMedicalRecords(res.data.data || []);
+      } else {
+        console.log("❌ No user ID found in localStorage");
       }
-    };
-    fetchAppointments();
-  }, []);
+      setLoading(prev => ({ ...prev, medical: false }));
+    } catch (err) {
+      console.error("❌ Error fetching medical records:", err);
+      console.error("Error details:", err.response?.data);
+      setMedicalRecords([]);
+      setLoading(prev => ({ ...prev, medical: false }));
+    }
+  };
+
+  const fetchLabRecords = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      
+      // Get user ID from localStorage - using the correct key
+      const userId = localStorage.getItem("userId");
+      
+      console.log("🔍 Fetching lab records...");
+      console.log("📱 User ID from localStorage:", userId);
+      
+      // Use userId (17) from localStorage
+      if (userId) {
+        const res = await api.get(`/medical-records/user/${userId}?recordType=lab`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        console.log("✅ Lab records API response:", res.data);
+        setLabRecords(res.data.data || []);
+      }
+      setLoading(prev => ({ ...prev, lab: false }));
+    } catch (err) {
+      console.error("❌ Error fetching lab records:", err);
+      console.error("Error details:", err.response?.data);
+      setLabRecords([]);
+      setLoading(prev => ({ ...prev, lab: false }));
+    }
+  };
+
+  const handleDownload = async (fileID, fileName) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await api.get(`/medical-records/download/${fileID}`, {
+        headers: { Authorization: `Bearer ${token}` },
+        responseType: 'blob'
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', fileName);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Error downloading file:", err);
+      alert('Failed to download file');
+    }
+  };
 
   const filteredAppointments = appointments.filter(
     (a) => appointmentFilter === "All" || a.status === appointmentFilter
@@ -47,6 +139,16 @@ function Home() {
     setShowDetailsModal(false);
     setSelectedAppointment(null);
   };
+
+  // Debug logs
+  console.log("📊 Current state:", {
+    activeTab,
+    medicalRecordsCount: medicalRecords.length,
+    labRecordsCount: labRecords.length,
+    medicalRecords,
+    labRecords,
+    loading
+  });
 
   // Animation variants
   const containerVariants = {
@@ -188,8 +290,20 @@ function Home() {
                     handleViewDetails={handleViewDetails} 
                   />
                 )}
-                {activeTab === "Medical Reports" && <MedicalReportsTab />}
-                {activeTab === "Lab Records" && <LabRecordsTab />}
+                {activeTab === "Medical Reports" && (
+                  <MedicalReportsTab 
+                    records={medicalRecords} 
+                    onDownload={handleDownload}
+                    loading={loading.medical}
+                  />
+                )}
+                {activeTab === "Lab Records" && (
+                  <LabRecordsTab 
+                    records={labRecords} 
+                    onDownload={handleDownload}
+                    loading={loading.lab}
+                  />
+                )}
               </motion.div>
             </AnimatePresence>
           </div>

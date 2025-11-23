@@ -254,8 +254,8 @@ function Header({ darkMode, setDarkMode, setIsMenuOpen }) {
           onClick={() => navigate("/forum")}
           className="flex items-center gap-1 sm:gap-2 cursor-pointer"
         >
-          <i className="fa-solid fa-users text-lg sm:text-xl"></i>
-          <span className="font-semibold text-sm sm:text-base hidden sm:inline">Forum</span>
+          <i className="fa-solid fa-paw text-lg sm:text-xl"></i>
+          <span className="font-semibold text-sm sm:text-base hidden sm:inline">Lost Pets</span>
         </div>
 
         {/* Mode Toggle - Hide text only on small screens */}

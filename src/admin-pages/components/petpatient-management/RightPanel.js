@@ -130,159 +130,179 @@ const RightPanel = ({
   return (
     <div className="w-1/3 bg-white dark:bg-[#181818] rounded-2xl shadow-md border border-gray-100 dark:border-gray-800 p-6 flex flex-col min-h-0 overflow-y-auto">
       {/* Pet Owners Details */}
-      {activeTab === "Pet Owners" && selectedOwner && (
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
-              {selectedOwner.firstName} {selectedOwner.lastName}
-            </h3>
-            <span className="text-sm text-gray-500 dark:text-gray-400">ID: {selectedOwner.accId || selectedOwner.id}</span>
-          </div>
-          
-          <div className="flex flex-col gap-2">
-            <div className="flex justify-between border-b border-gray-200 dark:border-gray-700 pb-2">
-              <span className="font-medium text-gray-600 dark:text-gray-400">Email</span>
-              <span className="text-gray-800 dark:text-gray-200 text-right max-w-[60%] break-words">
-                {selectedOwner.email || 'N/A'}
-              </span>
+      {activeTab === "Pet Owners" && (
+        <div className="flex-1 flex flex-col min-h-0">
+          {selectedOwner ? (
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
+                  {selectedOwner.firstName} {selectedOwner.lastName}
+                </h3>
+                <span className="text-sm text-gray-500 dark:text-gray-400">ID: {selectedOwner.accId || selectedOwner.id}</span>
+              </div>
+              
+              <div className="flex flex-col gap-2">
+                <div className="flex justify-between border-b border-gray-200 dark:border-gray-700 pb-2">
+                  <span className="font-medium text-gray-600 dark:text-gray-400">Email</span>
+                  <span className="text-gray-800 dark:text-gray-200 text-right max-w-[60%] break-words">
+                    {selectedOwner.email || 'N/A'}
+                  </span>
+                </div>
+                
+                <div className="flex justify-between border-b border-gray-200 dark:border-gray-700 pb-2">
+                  <span className="font-medium text-gray-600 dark:text-gray-400">Phone</span>
+                  <span className="text-gray-800 dark:text-gray-200">
+                    {formatPhone(selectedOwner.contactNo || selectedOwner.phone)}
+                  </span>
+                </div>
+                
+                <div className="flex justify-between border-b border-gray-200 dark:border-gray-700 pb-2">
+                  <span className="font-medium text-gray-600 dark:text-gray-400">Address</span>
+                  <span className="text-gray-800 dark:text-gray-200 text-right max-w-[60%]">
+                    {selectedOwner.address || 'No address provided'}
+                  </span>
+                </div>
+                
+                <div className="flex justify-between border-b border-gray-200 dark:border-gray-700 pb-2">
+                  <span className="font-medium text-gray-600 dark:text-gray-400">Gender</span>
+                  <span className="text-gray-800 dark:text-gray-200 capitalize">
+                    {selectedOwner.gender?.toLowerCase() || 'N/A'}
+                  </span>
+                </div>
+                
+                <div className="flex justify-between border-b border-gray-200 dark:border-gray-700 pb-2">
+                  <span className="font-medium text-gray-600 dark:text-gray-400">Date of Birth</span>
+                  <span className="text-gray-800 dark:text-gray-200">
+                    {formatDate(selectedOwner.dateOfBirth || selectedOwner.dateOfBIrth)}
+                  </span>
+                </div>
+                
+                <div className="flex justify-between border-b border-gray-200 dark:border-gray-700 pb-2">
+                  <span className="font-medium text-gray-600 dark:text-gray-400">Pets</span>
+                  <span className="text-gray-800 dark:text-gray-200 text-right max-w-[60%]">
+                    {selectedOwner?.pets?.length
+                      ? selectedOwner.pets.map(p => p.petName || p.name).join(", ")
+                      : "No pets registered"}
+                  </span>
+                </div>
+                
+                <div className="flex justify-between pt-2">
+                  <span className="font-medium text-gray-600 dark:text-gray-400">Account Created</span>
+                  <span className="text-gray-800 dark:text-gray-200">
+                    {formatDate(selectedOwner.createdAt)}
+                  </span>
+                </div>
+              </div>
             </div>
-            
-            <div className="flex justify-between border-b border-gray-200 dark:border-gray-700 pb-2">
-              <span className="font-medium text-gray-600 dark:text-gray-400">Phone</span>
-              <span className="text-gray-800 dark:text-gray-200">
-                {formatPhone(selectedOwner.contactNo || selectedOwner.phone)}
-              </span>
+          ) : (
+            <div className="flex flex-col justify-center items-center h-full text-gray-400 dark:text-gray-500 p-4 text-center">
+              <i className="fas fa-user text-4xl mb-3 text-gray-300"></i>
+              <p className="text-lg font-medium mb-2">No Owner Selected</p>
+              <p className="text-sm">Select an owner from the list to view details</p>
             </div>
-            
-            <div className="flex justify-between border-b border-gray-200 dark:border-gray-700 pb-2">
-              <span className="font-medium text-gray-600 dark:text-gray-400">Address</span>
-              <span className="text-gray-800 dark:text-gray-200 text-right max-w-[60%]">
-                {selectedOwner.address || 'No address provided'}
-              </span>
-            </div>
-            
-            <div className="flex justify-between border-b border-gray-200 dark:border-gray-700 pb-2">
-              <span className="font-medium text-gray-600 dark:text-gray-400">Gender</span>
-              <span className="text-gray-800 dark:text-gray-200 capitalize">
-                {selectedOwner.gender?.toLowerCase() || 'N/A'}
-              </span>
-            </div>
-            
-            <div className="flex justify-between border-b border-gray-200 dark:border-gray-700 pb-2">
-              <span className="font-medium text-gray-600 dark:text-gray-400">Date of Birth</span>
-              <span className="text-gray-800 dark:text-gray-200">
-                {formatDate(selectedOwner.dateOfBirth || selectedOwner.dateOfBIrth)}
-              </span>
-            </div>
-            
-            <div className="flex justify-between border-b border-gray-200 dark:border-gray-700 pb-2">
-              <span className="font-medium text-gray-600 dark:text-gray-400">Pets</span>
-              <span className="text-gray-800 dark:text-gray-200 text-right max-w-[60%]">
-                {selectedOwner?.pets?.length
-                  ? selectedOwner.pets.map(p => p.petName || p.name).join(", ")
-                  : "No pets registered"}
-              </span>
-            </div>
-            
-            <div className="flex justify-between pt-2">
-              <span className="font-medium text-gray-600 dark:text-gray-400">Account Created</span>
-              <span className="text-gray-800 dark:text-gray-200">
-                {formatDate(selectedOwner.createdAt)}
-              </span>
-            </div>
-          </div>
+          )}
         </div>
       )}
 
       {/* Pets Details */}
-      {activeTab === "Pets" && selectedPet && (
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center gap-4">
-            <img
-              src={selectedPet.imageName || selectedPet.image || "/images/sad-dog.png"}
-              alt={selectedPet.petName || selectedPet.name}
-              className="w-20 h-20 rounded-full object-cover border border-gray-200 dark:border-gray-700 shadow-sm"
-              onError={(e) => {
-                e.target.src = "/images/sad-dog.png";
-              }}
-            />
-            <div className="flex flex-col">
-              <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
-                {selectedPet.petName || selectedPet.name}
-              </h3>
-              <span className="text-sm text-gray-500 dark:text-gray-400">
-                ID: {selectedPet.petID || selectedPet.id}
-              </span>
-            </div>
-          </div>
+      {activeTab === "Pets" && (
+        <div className="flex-1 flex flex-col min-h-0">
+          {selectedPet ? (
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center gap-4">
+                <img
+                  src={selectedPet.imageName || selectedPet.image || "/images/sad-dog.png"}
+                  alt={selectedPet.petName || selectedPet.name}
+                  className="w-20 h-20 rounded-full object-cover border border-gray-200 dark:border-gray-700 shadow-sm"
+                  onError={(e) => {
+                    e.target.src = "/images/sad-dog.png";
+                  }}
+                />
+                <div className="flex flex-col">
+                  <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
+                    {selectedPet.petName || selectedPet.name}
+                  </h3>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">
+                    ID: {selectedPet.petID || selectedPet.id}
+                  </span>
+                </div>
+              </div>
 
-          <div className="flex flex-col gap-2">
-            <div className="flex justify-between border-b border-gray-200 dark:border-gray-700 pb-2">
-              <span className="font-medium text-gray-600 dark:text-gray-400">Owner</span>
-              <span className="text-gray-800 dark:text-gray-200 text-right max-w-[60%]">
-                {selectedPet.owner || 'N/A'}
-              </span>
+              <div className="flex flex-col gap-2">
+                <div className="flex justify-between border-b border-gray-200 dark:border-gray-700 pb-2">
+                  <span className="font-medium text-gray-600 dark:text-gray-400">Owner</span>
+                  <span className="text-gray-800 dark:text-gray-200 text-right max-w-[60%]">
+                    {selectedPet.owner || 'N/A'}
+                  </span>
+                </div>
+                
+                <div className="flex justify-between border-b border-gray-200 dark:border-gray-700 pb-2">
+                  <span className="font-medium text-gray-600 dark:text-gray-400">Breed</span>
+                  <span className="text-gray-800 dark:text-gray-200 capitalize">
+                    {selectedPet.breed || 'N/A'}
+                  </span>
+                </div>
+                
+                <div className="flex justify-between border-b border-gray-200 dark:border-gray-700 pb-2">
+                  <span className="font-medium text-gray-600 dark:text-gray-400">Species</span>
+                  <span className="text-gray-800 dark:text-gray-200 capitalize">
+                    {selectedPet.species || 'N/A'}
+                  </span>
+                </div>
+                
+                <div className="flex justify-between border-b border-gray-200 dark:border-gray-700 pb-2">
+                  <span className="font-medium text-gray-600 dark:text-gray-400">Age</span>
+                  <span className="text-gray-800 dark:text-gray-200">
+                    {selectedPet.age || calculateAge(selectedPet.dateOfBirth) || 'N/A'}
+                  </span>
+                </div>
+                
+                <div className="flex justify-between border-b border-gray-200 dark:border-gray-700 pb-2">
+                  <span className="font-medium text-gray-600 dark:text-gray-400">Gender</span>
+                  <span className="text-gray-800 dark:text-gray-200 capitalize">
+                    {selectedPet.petGender || selectedPet.gender || 'N/A'}
+                  </span>
+                </div>
+                
+                <div className="flex justify-between border-b border-gray-200 dark:border-gray-700 pb-2">
+                  <span className="font-medium text-gray-600 dark:text-gray-400">Weight</span>
+                  <span className="text-gray-800 dark:text-gray-200">
+                    {selectedPet.weight_kg || selectedPet.weight 
+                      ? `${selectedPet.weight_kg || selectedPet.weight} kg`
+                      : 'N/A'
+                    }
+                  </span>
+                </div>
+                
+                <div className="flex justify-between border-b border-gray-200 dark:border-gray-700 pb-2">
+                  <span className="font-medium text-gray-600 dark:text-gray-400">Color</span>
+                  <span className="text-gray-800 dark:text-gray-200 capitalize">
+                    {selectedPet.color || 'N/A'}
+                  </span>
+                </div>
+                
+                <div className="flex justify-between border-b border-gray-200 dark:border-gray-700 pb-2">
+                  <span className="font-medium text-gray-600 dark:text-gray-400">Date of Birth</span>
+                  <span className="text-gray-800 dark:text-gray-200">
+                    {formatDate(selectedPet.dateOfBirth || selectedPet.petDateOfBirth)}
+                  </span>
+                </div>
+                
+                <div className="flex justify-between pt-2">
+                  <span className="font-medium text-gray-600 dark:text-gray-400">Notes</span>
+                  <span className="text-gray-800 dark:text-gray-200 text-right max-w-[60%]">
+                    {selectedPet.note || 'No notes provided'}
+                  </span>
+                </div>
+              </div>
             </div>
-            
-            <div className="flex justify-between border-b border-gray-200 dark:border-gray-700 pb-2">
-              <span className="font-medium text-gray-600 dark:text-gray-400">Breed</span>
-              <span className="text-gray-800 dark:text-gray-200 capitalize">
-                {selectedPet.breed || 'N/A'}
-              </span>
+          ) : (
+            <div className="flex flex-col justify-center items-center h-full text-gray-400 dark:text-gray-500 p-4 text-center">
+              <i className="fas fa-paw text-4xl mb-3 text-gray-300"></i>
+              <p className="text-lg font-medium mb-2">No Pet Selected</p>
+              <p className="text-sm">Select a pet from the list to view details</p>
             </div>
-            
-            <div className="flex justify-between border-b border-gray-200 dark:border-gray-700 pb-2">
-              <span className="font-medium text-gray-600 dark:text-gray-400">Species</span>
-              <span className="text-gray-800 dark:text-gray-200 capitalize">
-                {selectedPet.species || 'N/A'}
-              </span>
-            </div>
-            
-            <div className="flex justify-between border-b border-gray-200 dark:border-gray-700 pb-2">
-              <span className="font-medium text-gray-600 dark:text-gray-400">Age</span>
-              <span className="text-gray-800 dark:text-gray-200">
-                {selectedPet.age || calculateAge(selectedPet.dateOfBirth) || 'N/A'}
-              </span>
-            </div>
-            
-            <div className="flex justify-between border-b border-gray-200 dark:border-gray-700 pb-2">
-              <span className="font-medium text-gray-600 dark:text-gray-400">Gender</span>
-              <span className="text-gray-800 dark:text-gray-200 capitalize">
-                {selectedPet.petGender || selectedPet.gender || 'N/A'}
-              </span>
-            </div>
-            
-            <div className="flex justify-between border-b border-gray-200 dark:border-gray-700 pb-2">
-              <span className="font-medium text-gray-600 dark:text-gray-400">Weight</span>
-              <span className="text-gray-800 dark:text-gray-200">
-                {selectedPet.weight_kg || selectedPet.weight 
-                  ? `${selectedPet.weight_kg || selectedPet.weight} kg`
-                  : 'N/A'
-                }
-              </span>
-            </div>
-            
-            <div className="flex justify-between border-b border-gray-200 dark:border-gray-700 pb-2">
-              <span className="font-medium text-gray-600 dark:text-gray-400">Color</span>
-              <span className="text-gray-800 dark:text-gray-200 capitalize">
-                {selectedPet.color || 'N/A'}
-              </span>
-            </div>
-            
-            <div className="flex justify-between border-b border-gray-200 dark:border-gray-700 pb-2">
-              <span className="font-medium text-gray-600 dark:text-gray-400">Date of Birth</span>
-              <span className="text-gray-800 dark:text-gray-200">
-                {formatDate(selectedPet.dateOfBirth || selectedPet.petDateOfBirth)}
-              </span>
-            </div>
-            
-            <div className="flex justify-between pt-2">
-              <span className="font-medium text-gray-600 dark:text-gray-400">Notes</span>
-              <span className="text-gray-800 dark:text-gray-200 text-right max-w-[60%]">
-                {selectedPet.note || 'No notes provided'}
-              </span>
-            </div>
-          </div>
+          )}
         </div>
       )}
 
@@ -402,25 +422,6 @@ const RightPanel = ({
               <p className="text-sm">Select a medical record from the list to view details</p>
             </div>
           )}
-        </div>
-      )}
-
-      {/* Empty States */}
-      {((activeTab === "Pet Owners" && !selectedOwner) || 
-        (activeTab === "Pets" && !selectedPet) ||
-        (activeTab === "Lab/Medical Records" && !selectedRecord)) && (
-        <div className="flex flex-col justify-center items-center h-full text-gray-400 dark:text-gray-500 p-4 text-center">
-          <svg className="w-16 h-16 mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-          </svg>
-          <p className="text-lg font-medium mb-2">
-            {activeTab === "Pet Owners" && "No Owner Selected"}
-            {activeTab === "Pets" && "No Pet Selected"}
-            {activeTab === "Lab/Medical Records" && "No Record Selected"}
-          </p>
-          <p className="text-sm">
-            Select an item from the list to view details
-          </p>
         </div>
       )}
     </div>

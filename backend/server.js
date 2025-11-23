@@ -13,6 +13,7 @@ import videoRoutes from './routes/videoRoute.js';
 import contentManagementRoute from './routes/admin_routes/contentManagementRoute.js';
 import appointmentVisitRoute from "./routes/admin_routes/appointmentVisitRoute.js";
 import labRecordRoute from './routes/admin_routes/labRecordRoute.js';
+import medicalRecordsRoute from './routes/labRecordsRoute.js';
 
 
 const app = express();
@@ -45,6 +46,7 @@ app.use("/api/admin/appointments", appointmentVisitRoute);
 //lab/medical records
 app.use('/api/admin/pet-records', labRecordRoute);
 
+app.use('/api/medical-records', medicalRecordsRoute);
 
 // Serve uploaded pet images
 app.use("/uploads", express.static("uploads"));

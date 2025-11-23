@@ -908,11 +908,11 @@ function App() {
           >
             {/* image layer */}
             <div className="relative z-30 pointer-events-auto">
-              <img
+              {/* <img
                 src="/images/home-dogcat.png"
                 alt="dog and cat"
                 className="relative z-30 w-auto h-auto max-w-full transform translate-x-24 translate-y-6 sm:translate-x-28 sm:translate-y-8 md:translate-x-32 md:translate-y-10 lg:translate-x-36 lg:translate-y-12 transition-transform duration-300"
-              />
+              /> */}
             </div>
 
             {/* circle bg */}
@@ -986,12 +986,12 @@ function App() {
                 >
                  
                   {/* ea na may circle container */}
-                  <img
+                  {/* <img
                     src="/images/home-female.png"
                     alt="Woman holding cat and dog"
                     className="w-full h-full object-cover"
                     style={{ objectPosition: "center 40%" }}
-                  />
+                  /> */}
                   <div className="absolute inset-0 rounded-full ring-8 ring-white/30 pointer-events-none"></div>
                 </div>
               </div>

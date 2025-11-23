@@ -496,23 +496,3 @@ export const softDeletePet = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
-
-export const softDeleteRecord = async (req, res) => {
-  try {
-    const { recordId } = req.params;
-
-    const [result] = await db.execute(
-      'UPDATE records SET isDeleted = 1 WHERE recordId = ?',
-      [recordId]
-    );
-
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: 'Record not found' });
-    }
-
-    res.status(200).json({ message: 'Record soft deleted successfully' });
-  } catch (error) {
-    console.error('Error soft deleting record:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
-  }
-};

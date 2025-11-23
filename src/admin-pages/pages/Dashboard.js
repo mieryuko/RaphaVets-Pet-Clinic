@@ -133,19 +133,22 @@ const Dashboard = () => {
                   color: "from-[#D6F6FF] to-[#E5FBFF]",
                 },
                 {
-                  title: "Diagnostic Tool",
-                  icon: <Cpu size={18} />,
-                  color: "from-[#E0F8D8] to-[#EAFCE3]",
-                },
-                {
                   title: "Appointments",
                   icon: <CalendarPlus size={18} />,
-                  color: "from-[#FFF0D2] to-[#FFF9E5]",
+                  color: "from-[#E0F8D8] to-[#EAFCE3]",
+                  //color: "from-[#FFF0D2] to-[#FFF9E5]",
                 },
                 {
                   title: "Post Tip",
                   icon: <MessageSquarePlus size={18} />,
+                  color: "from-[#FFF0D2] to-[#FFF9E5]",
+                  //color: "from-[#FFDDEE] to-[#FFE6F5]",
+                },
+                {
+                  title: "Reports",
+                  icon: <Cpu size={18} />,
                   color: "from-[#FFDDEE] to-[#FFE6F5]",
+                  //color: "from-[#E0F8D8] to-[#EAFCE3]",
                 },
               ].map((action, i) => (
                 <div

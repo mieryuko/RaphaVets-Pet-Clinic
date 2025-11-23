@@ -36,12 +36,12 @@ function ChangePassword({ onClose }) {
       const res = await api.get(`/auth/verify-reset-token/${token}`);
       if (res.data.success) {
         setIsTokenValid(true);
-        setMessage({ message: "✅ Token verified. You can now reset your password.", type: "success" });
+        // setMessage({ message: "✅ Token verified. You can now reset your password.", type: "success" });
       }
     } catch (err) {
       setMessage({ 
-        message: "Invalid or expired reset link. Please request a new password reset.", 
-        type: "error" 
+        // message: "Invalid or expired reset link. Please request a new password reset.", 
+        // type: "error" 
       });
       setIsTokenValid(false);
     } finally {
