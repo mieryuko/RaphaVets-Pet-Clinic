@@ -75,7 +75,11 @@ const Sidebar = ({
     <aside className="w-64 h-screen bg-white shadow-[4px_0_12px_rgba(0,0,0,0.05)] flex flex-col justify-between py-6 rounded-r-2xl">
       {/* Logo */}
       <div className="flex flex-col items-center mb-6">
-        <img src="/images/rapha-logo.png" alt="Rapha Logo" className="w-24 mb-4 select-none" />
+        <img src="/images/logo.png" alt="Rapha Logo" className="w-24 mb-4 select-none" />
+        <div className="font-baloo text-md sm:text-lg md:text-xl leading-none">
+            <span className="text-[#000000]">RV</span>
+            <span className="text-[#5EE6FE]">Care</span>
+        </div>
       </div>
 
       {/* Navigation */}

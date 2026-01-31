@@ -141,7 +141,7 @@ const Dashboard = () => {
               Welcome back, {stats.adminName} 👋
             </h1>
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              Here's your clinical overview for today at Rapha Vet Clinic.
+              Here's your clinical overview for today at RVCare.
             </p>
           </div>
           <div className="flex items-center gap-2 bg-white dark:bg-[#2A2A2A] px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700">

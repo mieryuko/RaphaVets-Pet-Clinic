@@ -96,7 +96,7 @@ const Dashboard = () => {
               Welcome back, {stats.adminName} 👋
             </h1>
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              Here's what's happening in Rapha Vet Clinic today.
+              Here's what's happening in RVCare today.
             </p>
           </div>
         </div>
