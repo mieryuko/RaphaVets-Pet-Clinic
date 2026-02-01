@@ -411,6 +411,7 @@ function FAQs() {
               </p>
             </div>
             <motion.button
+              onClick={() => window.location.href = "/support"}
               className="mt-4 md:mt-0 bg-[#2FA394] text-white px-6 py-2 rounded-lg font-medium hover:bg-[#24907e] transition-colors"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}

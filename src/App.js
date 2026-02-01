@@ -15,6 +15,7 @@ import Videos from "./user-pages/pages/Videos";
 import PetTips from "./user-pages/pages/PetTips";
 import Forum from "./user-pages/pages/Forum";
 import FAQs from "./user-pages/pages/FAQs";
+import Support from "./user-pages/pages/Support";
 
 /*admin*/
 import AdminLayout from "./admin-pages/AdminLayout";
@@ -49,6 +50,7 @@ function App() {
         <Route path="/pet-tips" element={<PetTips />} />
         <Route path="/forum" element={<Forum />} />
         <Route path="/faqs" element={<FAQs />} />
+        <Route path="/support" element={<Support />} />
 
         {/*admin*/}
         <Route path="/admin-pages" element={<AdminLayout />}>
