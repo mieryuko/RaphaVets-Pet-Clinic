@@ -104,9 +104,9 @@ function SideBar({ isMenuOpen, setIsMenuOpen, refreshTrigger }) {
   ];
 
   const infoItems = [
+    { label: "Feedback", path: "/feedback", icon: "fa-comment" },
     { label: "FAQs", path: "/faqs", icon: "fa-circle-question" },
-    { label: "Support", path: "/support", icon: "fa-headset" },
-    //{ label: "Feedback", path: "/feedback", icon: "fa-comment" },
+    { label: "Support", path: "/support", icon: "fa-headset" }
   ];
 
   return (
