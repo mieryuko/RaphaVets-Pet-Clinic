@@ -14,6 +14,7 @@ import contentManagementRoute from './routes/admin_routes/contentManagementRoute
 import appointmentVisitRoute from "./routes/admin_routes/appointmentVisitRoute.js";
 import labRecordRoute from './routes/admin_routes/labRecordRoute.js';
 import medicalRecordsRoute from './routes/labRecordsRoute.js';
+import chatRoutes from './routes/chatRoute.js';
 
 
 const app = express();
@@ -48,6 +49,10 @@ app.use('/api/admin/pet-records', labRecordRoute);
 
 app.use('/api/medical-records', medicalRecordsRoute);
 
+// Chatbot route
+app.use("/api/chat", chatRoutes);
+
+
 // Serve uploaded pet images
 app.use("/uploads", express.static("uploads"));
 
@@ -55,5 +60,8 @@ app.use("/uploads", express.static("uploads"));
 app.get("/api/test", (req, res) => {
   res.json({ message: "Backend connected!" });
 });
+
+
+
 
 app.listen(5000, () => console.log("✅ Server running on port 5000"));
