@@ -1,6 +1,6 @@
   import db from "../../config/db.js";
   import bcrypt from 'bcryptjs';
-  import nodemailer from 'nodemailer';
+  import nodemailer from 'nodemailer'; 
 
   export const getOwnersWithPets = async (req, res) => {
   try {

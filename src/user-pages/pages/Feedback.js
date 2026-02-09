@@ -1,6 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, use } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import ClientLayout from "../ClientLayout";
+import api from "../../api/axios";
+import { is, se } from "date-fns/locale";
+import { Filter } from "glin-profanity";
+import filipinoBadwords from "filipino-badwords-list";
 
 export default function Feedback() {
   const [feedbacks, setFeedbacks] = useState([]);
@@ -13,7 +17,13 @@ export default function Feedback() {
     isAnonymous: false
   });
   const [showSuccess, setShowSuccess] = useState(false);
-
+  const [averageRating, setAverageRating] = useState("0.0");
+  
+  const filter = new Filter({
+    allLanguages: true,
+    customWords: filipinoBadwords.array,
+    replaceWith: "@!#*"
+  });
   // sample feedback data
   const sampleFeedbacks = [
     {
@@ -67,60 +77,90 @@ export default function Feedback() {
   ];
 
   // initializa with sample data
+  const fetchedOnce = useRef(false);
+
+  const fetchFeedbacks = async () => {
+    try{
+      console.log("Fetching feedbacks from API...");
+      const res = await api.get('/feedback');
+      const data = await res.data.feedbacks;
+      console.log("Fetched feedbacks:", data);
+      setFeedbacks(data);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching feedbacks, loading sample data:", error);
+      setFeedbacks(sampleFeedbacks);
+      setLoading(false);
+    }
+  }
+
+  const fetchAverageRating = async () => {
+    try {
+      const res = await api.get('/feedback/average');
+      const data = res.data.average ?? 0;
+      setAverageRating(data.toFixed(1));
+    } catch (error) {
+      console.error("Error fetching average rating:", error);
+    }
+  }
+
   useEffect(() => {
-    console.log("Initializing feedbacks with sample data...");
-    setFeedbacks(sampleFeedbacks);
-    setLoading(false);
+    if (fetchedOnce.current) return;
+    fetchedOnce.current = true;
+    fetchFeedbacks();
   }, []);
 
+  useEffect(() => {
+    if (feedbacks.length === 0) {
+      setAverageRating("0.0");
+      return;
+    }
+    fetchAverageRating();
+  }, [feedbacks]);
+
+
+
   // form submission
-  const handleSubmitFeedback = (e) => {
+  const handleSubmitFeedback = async (e) => {
     e.preventDefault();
-    
+    const containsProfanity = filter.isProfane(newFeedback.message);
+    if (containsProfanity) {
+      alert("Any inappropriate language from your feedback will be censored.");
+    }
     if (!newFeedback.message.trim()) {
       alert("Please enter your feedback message");
       return;
     }
-
-    setSubmitting(true);
     
-    setTimeout(() => {
-      const tempId = Date.now();
-      const newFeedbackData = {
-        id: tempId,
-        message: newFeedback.message,
-        rating: newFeedback.rating,
-        isAnonymous: newFeedback.isAnonymous,
-        createdAt: new Date().toISOString(),
-        user: newFeedback.isAnonymous ? null : {
-          name: "You"
-        }
-      };
+    setSubmitting(true);
       
-      console.log("Adding new feedback:", newFeedbackData);
-      
-      // add new feedback 
-      setFeedbacks(prevFeedbacks => {
-        const updated = [newFeedbackData, ...prevFeedbacks];
-        console.log("Updated feedbacks:", updated);
-        return updated;
-      });
-      
-      // reset form
+    const formData = {
+      rating: newFeedback.rating,
+      message: newFeedback.message,
+      isAnonymous: newFeedback.isAnonymous
+    };
+    //API call to submit feedback
+    try {
+      const res = await api.post('/feedback', formData);
+      console.log("Feedback submitted:", res.data);
+      fetchFeedbacks(); // refresh feedback list after submission
+      //Reset form
       setNewFeedback({
         message: "",
         rating: 5,
         isAnonymous: false
       });
-      
       // show success message
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 3000);
-      
+    } catch (error) {
+      console.error("Error submitting feedback:", error);
+      alert("Failed to submit feedback. Please try again later.");
+    }finally {
       // close modal
       setShowModal(false);
       setSubmitting(false);
-    }, 500);
+    }
   };
 
   // format date
@@ -165,10 +205,6 @@ export default function Feedback() {
     );
   };
 
-  // calculate average rating
-  const averageRating = feedbacks.length > 0 
-    ? (feedbacks.reduce((acc, f) => acc + f.rating, 0) / feedbacks.length).toFixed(1)
-    : "0.0";
 
   //skeleton
   if (loading) {

@@ -87,7 +87,7 @@ export const getAllPosts = async (req, res) => {
     if(!posts.length){
       return res.status(200).json({ message: "✅ No posts found.", posts: [] });
     }
-    const postIds = posts.map(post => post.forumID).filter(formID => formID != null);
+    const postIds = posts.map(post => post.forumID).filter(forumID => forumID != null);
 
     const placeholder = postIds.map(() => '?').join(',');
 

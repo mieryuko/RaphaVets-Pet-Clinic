@@ -2,7 +2,6 @@ import db from "../../config/db.js";
 import path from 'path';
 import fs from 'fs';
 
-// Upload medical record
 export const uploadMedicalRecord = async (req, res) => {
   let connection;
   
@@ -26,6 +25,17 @@ export const uploadMedicalRecord = async (req, res) => {
       return res.status(400).json({ 
         success: false, 
         message: 'PDF file is required' 
+      });
+    }
+
+    // Check user authentication - use req.user.id instead of req.user.accId
+    if (!req.user || !req.user.id) {
+      if (file) {
+        fs.unlinkSync(file.path);
+      }
+      return res.status(401).json({ 
+        success: false, 
+        message: 'User authentication required' 
       });
     }
 
@@ -71,12 +81,12 @@ export const uploadMedicalRecord = async (req, res) => {
 
     const petMedicalID = medicalResult.insertId;
 
-    // Insert file record
+    // Insert file record - use req.user.id instead of req.user.accId
     await connection.execute(
       `INSERT INTO petmedical_file_tbl 
        (petmedicalID, originalName, storedName, filePath, uploadedOn, uploadedBy, isDeleted) 
        VALUES (?, ?, ?, ?, NOW(), ?, 0)`,
-      [petMedicalID, file.originalname, file.filename, file.path, req.user?.accId || 1] // Use actual user ID from auth
+      [petMedicalID, file.originalname, file.filename, file.path, req.user.id] // CHANGED: req.user.id
     );
 
     await connection.commit();
@@ -364,7 +374,7 @@ export const updateMedicalRecord = async (req, res) => {
           `INSERT INTO petmedical_file_tbl 
            (petmedicalID, originalName, storedName, filePath, uploadedOn, uploadedBy, isDeleted) 
            VALUES (?, ?, ?, ?, NOW(), ?, 0)`,
-          [id, file.originalname, file.filename, file.path, req.user?.accId || 1]
+          [id, file.originalname, file.filename, file.path, req.user?.accId]
         );
       }
     }

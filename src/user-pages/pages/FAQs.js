@@ -6,8 +6,10 @@ function FAQs() {
   const [activeCategory, setActiveCategory] = useState("General");
   const [openFAQ, setOpenFAQ] = useState(null);
   const [search, setSearch] = useState("");
+  const [faqData, setFaqData] = useState([]);
 
   // FAQ Data
+  /*
   const faqData = {
     "General": [
       {
@@ -120,7 +122,7 @@ function FAQs() {
       }
     ]
   };
-
+  */
   // Categories for filtering
   const categories = ["General", "Booking", "Pricing", "Privacy", "Services"];
 

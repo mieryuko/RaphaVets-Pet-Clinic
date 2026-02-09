@@ -2,6 +2,7 @@
 import express from "express";
 import cors from "cors";
 import authRoutes from "./routes/authRoutes.js";
+import feedbackRoutes from "./routes/feedbackRoutes.js";
 import forumRoutes from "./routes/forumRoutes.js";
 import userRoute from "./routes/userRoute.js";
 import appointmentRoute from "./routes/appointmentRoute.js";
@@ -27,6 +28,8 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 //user route
 app.use("/api/users", userRoute);
+//feedback route
+app.use("/api/feedback", feedbackRoutes);
 //forum route
 app.use("/api/forum", forumRoutes);
 //appointment route
