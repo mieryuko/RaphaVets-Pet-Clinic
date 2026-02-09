@@ -21,23 +21,26 @@ const AdminSettings = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Initial sample data - NO STATUS OR SPECIALTY
+  // sample data
   const [admins, setAdmins] = useState([
     {
       id: 1,
-      name: "Fiona Irish Beltran",
+      firstName: "Fiona Irish",
+      lastName: "Beltran",
       email: "beltran.fionahirish@gmail.com",
       phone: "09171234567",
     },
     {
       id: 2,
-      name: "Jordan Frando",
+      firstName: "Jordan",
+      lastName: "Frando",
       email: "jordan.frando@email.com",
       phone: "09172234568",
     },
     {
       id: 3,
-      name: "Mark Angel Mapili",
+      firstName: "Mark Angel",
+      lastName: "Mapili",
       email: "mark.mapili@email.com",
       phone: "09173234569",
     },
@@ -46,19 +49,22 @@ const AdminSettings = () => {
   const [veterinarians, setVeterinarians] = useState([
     {
       id: 1,
-      name: "Dr. Fiona Irish Beltran",
+      firstName: "Fiona Irish",
+      lastName: "Beltran",
       email: "dr.beltran@raphavets.com",
       phone: "09171234567",
     },
     {
       id: 2,
-      name: "Dr. Jordan Frando",
+      firstName: "Jordan",
+      lastName: "Frando",
       email: "dr.frando@raphavets.com",
       phone: "09172234568",
     },
     {
       id: 3,
-      name: "Dr. Mark Angel Mapili",
+      firstName: "Mark Angel",
+      lastName: "Mapili",
       email: "dr.mapili@raphavets.com",
       phone: "09173234569",
     },
@@ -66,28 +72,47 @@ const AdminSettings = () => {
 
   const [newUser, setNewUser] = useState({
     type: "admin",
-    name: "",
+    firstName: "",
+    lastName: "",
     email: "",
     phone: "",
   });
 
-  // Filter users based on search term
+  const generateRandomPassword = () => {
+    const length = 10;
+    const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+    let password = "";
+    for (let i = 0; i < length; i++) {
+      password += charset.charAt(Math.floor(Math.random() * charset.length));
+    }
+    return password;
+  };
+
+  const sendPasswordToEmail = async (email, password) => {
+    console.log(`Sending password to ${email}: ${password}`);
+    alert(`Password sent to ${email}`);
+  };
+
   const filteredAdmins = admins.filter(user =>
-    user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const filteredVeterinarians = veterinarians.filter(user =>
-    user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Add new user
-  const handleAddUser = () => {
+  // add new user
+  const handleAddUser = async () => {
+    const fullName = `${newUser.firstName} ${newUser.lastName}`;
+    const randomPassword = generateRandomPassword();
+    
     if (newUser.type === "admin") {
       const newAdmin = {
         id: admins.length + 1,
-        name: newUser.name,
+        firstName: newUser.firstName,
+        lastName: newUser.lastName,
         email: newUser.email,
         phone: newUser.phone,
       };
@@ -95,24 +120,25 @@ const AdminSettings = () => {
     } else {
       const newVet = {
         id: veterinarians.length + 1,
-        name: newUser.name,
+        firstName: newUser.firstName,
+        lastName: newUser.lastName,
         email: newUser.email,
         phone: newUser.phone,
       };
       setVeterinarians([...veterinarians, newVet]);
     }
-
-    // Reset form
+    await sendPasswordToEmail(newUser.email, randomPassword);
     setNewUser({
       type: "admin",
-      name: "",
+      firstName: "",
+      lastName: "",
       email: "",
       phone: "",
     });
     setShowAddModal(false);
   };
 
-  // Edit user
+  // edit user
   const handleEditUser = () => {
     if (activeTab === "admins") {
       setAdmins(admins.map(admin => 
@@ -127,7 +153,7 @@ const AdminSettings = () => {
     setSelectedUser(null);
   };
 
-  // Delete user
+  // delete user
   const handleDeleteUser = () => {
     if (activeTab === "admins") {
       setAdmins(admins.filter(admin => admin.id !== selectedUser.id));
@@ -138,7 +164,7 @@ const AdminSettings = () => {
     setSelectedUser(null);
   };
 
-  // Render admins table - ONLY 3 COLUMNS
+  // admins table
   const renderAdminsTable = () => (
     <div className="overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800">
       <table className="min-w-full">
@@ -160,12 +186,9 @@ const AdminSettings = () => {
             <tr key={admin.id} className="hover:bg-gray-50 dark:hover:bg-gray-900">
               <td className="px-6 py-4">
                 <div className="flex items-center">
-                  <div className="flex-shrink-0 h-10 w-10 bg-[#5EE6FE] dark:bg-[#2D88A5] rounded-full flex items-center justify-center">
-                    <Shield className="text-white" size={18} />
-                  </div>
-                  <div className="ml-4">
+                  <div>
                     <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                      {admin.name}
+                      {admin.firstName} {admin.lastName}
                     </div>
                     <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                       <Mail size={12} />
@@ -176,7 +199,6 @@ const AdminSettings = () => {
               </td>
               <td className="px-6 py-4">
                 <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-                  <Phone size={14} />
                   {admin.phone}
                 </div>
               </td>
@@ -209,7 +231,7 @@ const AdminSettings = () => {
     </div>
   );
 
-  // Render veterinarians table - ONLY 3 COLUMNS
+  // veterinarians table
   const renderVeterinariansTable = () => (
     <div className="overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800">
       <table className="min-w-full">
@@ -231,12 +253,9 @@ const AdminSettings = () => {
             <tr key={vet.id} className="hover:bg-gray-50 dark:hover:bg-gray-900">
               <td className="px-6 py-4">
                 <div className="flex items-center">
-                  <div className="flex-shrink-0 h-10 w-10 bg-[#5EE6FE] dark:bg-[#2D88A5] rounded-full flex items-center justify-center">
-                    <BriefcaseMedical className="text-white" size={18} />
-                  </div>
-                  <div className="ml-4">
+                  <div>
                     <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                      {vet.name}
+                      {vet.firstName} {vet.lastName}
                     </div>
                     <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                       <Mail size={12} />
@@ -247,7 +266,6 @@ const AdminSettings = () => {
               </td>
               <td className="px-6 py-4">
                 <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-                  <Phone size={14} />
                   {vet.phone}
                 </div>
               </td>
@@ -285,7 +303,6 @@ const AdminSettings = () => {
       <main className="flex-1 p-4 flex flex-col">
         <Header title="User Management" />
         
-        {/* Search and Add Section */}
         <div className="bg-white dark:bg-[#181818] rounded-2xl border border-gray-200 dark:border-gray-800 p-4 mb-4">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="flex-1">
@@ -311,7 +328,7 @@ const AdminSettings = () => {
           </div>
         </div>
 
-        {/* Tabs */}
+        {/* tabs */}
         <div className="bg-white dark:bg-[#181818] rounded-2xl border border-gray-200 dark:border-gray-800 p-4 mb-4">
           <div className="flex space-x-2">
             <button
@@ -339,12 +356,10 @@ const AdminSettings = () => {
           </div>
         </div>
 
-        {/* Content Area */}
         <div className="bg-white dark:bg-[#181818] rounded-2xl border border-gray-200 dark:border-gray-800 p-6 flex-1">
           {activeTab === "admins" ? renderAdminsTable() : renderVeterinariansTable()}
         </div>
 
-        {/* Add User Modal - SIMPLIFIED */}
         {showAddModal && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
             <div className="bg-white dark:bg-gray-900 rounded-2xl max-w-md w-full">
@@ -362,7 +377,6 @@ const AdminSettings = () => {
                 </div>
 
                 <div className="space-y-4">
-                  {/* User Type Selection */}
                   <div className="grid grid-cols-2 gap-3 mb-4">
                     <button
                       onClick={() => setNewUser({...newUser, type: 'admin'})}
@@ -392,18 +406,32 @@ const AdminSettings = () => {
                     </button>
                   </div>
 
-                  {/* Form Fields - ONLY NAME, EMAIL, PHONE */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Full Name
-                    </label>
-                    <input
-                      type="text"
-                      value={newUser.name}
-                      onChange={(e) => setNewUser({...newUser, name: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300"
-                      placeholder="Enter full name"
-                    />
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        First Name
+                      </label>
+                      <input
+                        type="text"
+                        value={newUser.firstName}
+                        onChange={(e) => setNewUser({...newUser, firstName: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300"
+                        placeholder="First name"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Last Name
+                      </label>
+                      <input
+                        type="text"
+                        value={newUser.lastName}
+                        onChange={(e) => setNewUser({...newUser, lastName: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300"
+                        placeholder="Last name"
+                      />
+                    </div>
                   </div>
 
                   <div>
@@ -417,6 +445,9 @@ const AdminSettings = () => {
                       className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300"
                       placeholder="Enter email address"
                     />
+                    <p className="text-xs text-gray-500 mt-1">
+                      A random password will be sent to this email
+                    </p>
                   </div>
 
                   <div>
@@ -442,10 +473,10 @@ const AdminSettings = () => {
                   </button>
                   <button
                     onClick={handleAddUser}
-                    disabled={!newUser.name || !newUser.email}
+                    disabled={!newUser.firstName || !newUser.lastName || !newUser.email}
                     className="px-4 py-2 bg-[#5EE6FE] text-white rounded-lg hover:bg-[#4CD5ED] disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Add User
+                    Add User & Send Password
                   </button>
                 </div>
               </div>
@@ -453,7 +484,6 @@ const AdminSettings = () => {
           </div>
         )}
 
-        {/* Edit User Modal - SIMPLIFIED */}
         {showEditModal && selectedUser && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
             <div className="bg-white dark:bg-gray-900 rounded-2xl max-w-md w-full">
@@ -474,16 +504,30 @@ const AdminSettings = () => {
                 </div>
 
                 <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Full Name
-                    </label>
-                    <input
-                      type="text"
-                      value={selectedUser.name}
-                      onChange={(e) => setSelectedUser({...selectedUser, name: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300"
-                    />
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        First Name
+                      </label>
+                      <input
+                        type="text"
+                        value={selectedUser.firstName}
+                        onChange={(e) => setSelectedUser({...selectedUser, firstName: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Last Name
+                      </label>
+                      <input
+                        type="text"
+                        value={selectedUser.lastName}
+                        onChange={(e) => setSelectedUser({...selectedUser, lastName: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300"
+                      />
+                    </div>
                   </div>
 
                   <div>
@@ -533,7 +577,6 @@ const AdminSettings = () => {
           </div>
         )}
 
-        {/* Delete Confirmation Modal - SIMPLIFIED */}
         {showDeleteModal && selectedUser && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
             <div className="bg-white dark:bg-gray-900 rounded-2xl max-w-md w-full">
@@ -550,7 +593,7 @@ const AdminSettings = () => {
                 </div>
 
                 <p className="text-gray-600 dark:text-gray-300 mb-6">
-                  Delete <span className="font-semibold">{selectedUser.name}</span>?
+                  Delete <span className="font-semibold">{selectedUser.firstName} {selectedUser.lastName}</span>?
                 </p>
 
                 <div className="flex justify-end gap-3">
