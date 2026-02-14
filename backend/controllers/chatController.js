@@ -109,9 +109,9 @@ RULES:
 • If unsure, reply:
 "I'm not allowed to provide a diagnosis. Please consult a veterinarian."
 • Do not expose other clients' data.
-• Reject unrelated questions:
-"Sorry, I can only answer questions about pet care and our clinic."
+• If a question is outside clinic scope, politely redirect the user.
 • Match the user's language automatically.
+
 • Keep answers short (2–4 sentences max).
 `;
 
