@@ -26,7 +26,7 @@ Set-Location -Path ".\$projectFolder"
 Write-Host "Changed directory to '$projectFolder'" -ForegroundColor Cyan
 
 # Step 2: Create virtual environment if missing
-Write-Host "1️⃣ Creating virtual environment..." -ForegroundColor Cyan
+Write-Host "1️: Creating virtual environment..." -ForegroundColor Cyan
 if (-Not (Test-Path ".\venv")) {
     python -m venv venv
     Write-Host "Virtual environment created in ./venv" -ForegroundColor Green
@@ -35,21 +35,21 @@ if (-Not (Test-Path ".\venv")) {
 }
 
 # Step 3: Activate virtual environment
-Write-Host "2️⃣ Activating virtual environment..." -ForegroundColor Cyan
+Write-Host "2️: Activating virtual environment..." -ForegroundColor Cyan
 & .\venv\Scripts\Activate.ps1
 
 # Step 4: Upgrade pip, setuptools, and wheel
-Write-Host "3️⃣ Upgrading pip, setuptools, and wheel..." -ForegroundColor Cyan
+Write-Host "3️: Upgrading pip, setuptools, and wheel..." -ForegroundColor Cyan
 python -m pip install --upgrade pip setuptools wheel
 
 # Step 5: Install dependencies
-Write-Host "4️⃣ Installing dependencies from requirements.txt..." -ForegroundColor Cyan
+Write-Host "4️: Installing dependencies from requirements.txt..." -ForegroundColor Cyan
 if (Test-Path ".\requirements.txt") {
     pip install -r requirements.txt
     Write-Host "Dependencies installed successfully." -ForegroundColor Green
 } else {
-    Write-Host "⚠️  requirements.txt not found! Please create it before running this script." -ForegroundColor Red
+    Write-Host "!!!  requirements.txt not found! Please create it before running this script." -ForegroundColor Red
 }
 
-Write-Host "✅ Setup complete! Virtual environment is ready." -ForegroundColor Green
+Write-Host " Setup complete! Virtual environment is ready." -ForegroundColor Green
 Write-Host "To activate in the future, run: .\venv\Scripts\Activate.ps1"
