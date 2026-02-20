@@ -1,14 +1,10 @@
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI
+from routes import breed_router as breed
 
-app = FastAPI()
+app = FastAPI(title="ML Service")
 
+# Include routers
+app.include_router(breed.router, prefix="/breed", tags=["Breed Detection"])
 @app.get("/")
-def root():
-    return {"message": "ML service is running"}
-
-@app.post("/predict")
-async def predict(file: UploadFile = File(...)):
-    return {
-        "prediction": "golden_retriever",
-        "confidence": 0.92
-    }
+def read_root():
+    return {"message": "Welcome to the ML Service API!"}

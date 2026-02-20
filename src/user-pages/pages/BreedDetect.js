@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Link, useLocation } from "react-router-dom";
 import ClientLayout from "../ClientLayout";
 import BreedDetectCard from "../components/breed-detect/BreedDetectCard";
+import api from "../../api/axios";
 
 function BreedDetect() {
   const [isMenuOpen, setIsMenuOpen] = useState(true);
@@ -65,16 +66,14 @@ function BreedDetect() {
     setLoading(true);
     setResult(null);
 
+    const formData = new FormData();
+    formData.append("file", imageFile);
+
     try {
-      // Simulate API call
-      await new Promise((r) => setTimeout(r, 1100));
-      const mock = {
-        breed: "Labrador Retriever",
-        confidence: 0.87,
-        notes:
-          "Most likely Labrador Retriever. For mixed or low-quality images, results may be uncertain.",
-      };
-      setResult(mock);
+      const res = await api.post("/ml/predict/breed", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      setResult(res.data);
     } catch (err) {
       console.error(err);
       setError("An error occurred while detecting breed. Try again later.");

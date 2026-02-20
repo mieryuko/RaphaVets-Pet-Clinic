@@ -1,36 +1,30 @@
+// Node (ESM) - multer + forward
 import express from "express";
+import multer from "multer";
 import axios from "axios";
 import FormData from "form-data";
-import fs from "fs";
-import { createMulter } from "../../middleware/multer.js";
 
 const router = express.Router();
+const upload = multer(); // memory storage
 
-const upload = createMulter(
-  "ml-temp",
-  ["image/jpeg", "image/png", "image/jpg"],
-  10
-);
-
-router.post("/predict", upload.single("file"), async (req, res) => {
+router.post("/predict/breed", upload.single("file"), async (req, res) => {
   try {
+    console.log("Incoming file:", req.file); // debug
+
     const formData = new FormData();
-    formData.append("file", fs.createReadStream(req.file.path));
+    formData.append("file", req.file.buffer, req.file.originalname);
 
-    const mlUrl = process.env.ML_URL || "http://localhost:8000";
-    const response = await axios.post(
-      `${mlUrl}/predict`,
-      formData,
-      { headers: formData.getHeaders() }
-    );
-    fs.unlinkSync(req.file.path);
+    const mlUrl = process.env.ML_URL || "http://localhost:5001";
+    const response = await axios.post(`${mlUrl}/breed/predict`, formData, {
+      headers: formData.getHeaders(),
+      maxBodyLength: Infinity,
+    });
+
     res.json(response.data);
-
   } catch (error) {
-    // Clean up uploaded file in case of error
-    if (req.file?.path) fs.unlinkSync(req.file.path);
-    
-    console.error("ML error:", error);
+    console.error("ML error status:", error.response?.status); 
+    console.error("ML error data:", error.response?.data); 
+    console.error("ML error message:", error.message); 
     res.status(500).json({ error: "Prediction failed" });
   }
 });
