@@ -249,13 +249,18 @@ export const loginUser = async (req, res) => {
 
 export const logoutUser = async (req, res) => {
   try {
-    const userId = req.userId; // optional, may be undefined
+    // Try to get userId from multiple sources
+    const userId = req.userId || req.body.userId; // Check both token and request body
 
     if (userId) {
-      // Update logout timestamp if possible
-      await pool.query("UPDATE account_tbl SET logOutAt = NOW() WHERE accId = ?", [userId]);
+      // Update logout timestamp
+      await pool.query(
+        "UPDATE account_tbl SET logOutAt = NOW(), lastUpdatedAt = NOW() WHERE accId = ?", 
+        [userId]
+      );
+      console.log(`✅ Logout timestamp updated for user ID: ${userId}`);
     } else {
-      console.log("⚠️ No userId found (token may be expired). Proceeding with logout.");
+      console.log("⚠️ No userId found. Proceeding with logout without timestamp update.");
     }
 
     return res.json({ message: "Logged out successfully" });
