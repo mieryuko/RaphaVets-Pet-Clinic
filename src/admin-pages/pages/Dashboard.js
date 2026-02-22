@@ -23,43 +23,34 @@ const Dashboard = () => {
     adminName: "Admin",
     totalOwners: 0,
     totalPets: 0,
+    totalUpComingAppointments: 0,
+    totalMissingPets: 0,
   });
+  const [appointmentsData, setAppointmentsData] = useState([]);
+  const [recentActivity, setRecentActivity] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchDashboardStats = async () => {
+    const fetchDashboardData = async () => {
       try {
-        const response = await api.get('/admin/dashboard/stats');
-        setStats(response.data);
+        const [statsRes, graphRes, activityRes] = await Promise.all([
+          api.get('/admin/dashboard/stats'),
+          api.get('/admin/dashboard/appointments-graph'),
+          api.get('/admin/dashboard/recent-activities')
+        ]);
+        
+        setStats(statsRes.data);
+        setAppointmentsData(graphRes.data);
+        setRecentActivity(activityRes.data);
       } catch (err) {
-        console.error("❌ Failed to fetch dashboard stats:", err);
+        console.error("❌ Failed to fetch dashboard data:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchDashboardStats();
+    fetchDashboardData();
   }, []);
-
-  const appointmentsData = [
-    { month: "Jan", appointments: 30 },
-    { month: "Feb", appointments: 45 },
-    { month: "Mar", appointments: 28 },
-    { month: "Apr", appointments: 60 },
-    { month: "May", appointments: 50 },
-    { month: "Jun", appointments: 80 },
-    { month: "July", appointments: 80 },
-    { month: "Aug", appointments: 80 },
-    { month: "Sep", appointments: 80 },
-    { month: "Oct", appointments: 80 },
-  ];
-
-  const recentActivity = [
-    { action: "Added new pet", time: "2 hours ago" },
-    { action: "Approved appointment", time: "5 hours ago" },
-    { action: "Updated pet owner info", time: "1 day ago" },
-    { action: "Posted a tip", time: "2 days ago" },
-  ];
 
   const statCards = [
     { 
@@ -74,18 +65,18 @@ const Dashboard = () => {
     },
     { 
       title: "Upcoming Appointments", 
-      value: 8, 
+      value: loading ? "..." : stats.totalUpComingAppointments, 
       color: "from-[#FFF8E1] to-[#FFFBEA]" 
     },
     { 
       title: "Missing Pets", 
-      value: 4, 
+      value: loading ? "..." : stats.totalMissingPets, 
       color: "from-[#FCE4EC] to-[#FFF0F5]" 
     },
   ];
 
   return (
-    <div className="flex bg-[#FBFBFB] dark:bg-[#101010] h-screen overflow-hidden">
+    <div className="flex bg-[#FBFBFB] dark:bg-[#101010] h-screen overflow-hidden"> 
       <main className="flex-1 p-4 flex flex-col justify-between">
         <Header title="Dashboard" />
 
@@ -136,19 +127,16 @@ const Dashboard = () => {
                   title: "Appointments",
                   icon: <CalendarPlus size={18} />,
                   color: "from-[#E0F8D8] to-[#EAFCE3]",
-                  //color: "from-[#FFF0D2] to-[#FFF9E5]",
                 },
                 {
                   title: "Post Tip",
                   icon: <MessageSquarePlus size={18} />,
                   color: "from-[#FFF0D2] to-[#FFF9E5]",
-                  //color: "from-[#FFDDEE] to-[#FFE6F5]",
                 },
                 {
                   title: "Reports",
                   icon: <Cpu size={18} />,
                   color: "from-[#FFDDEE] to-[#FFE6F5]",
-                  //color: "from-[#E0F8D8] to-[#EAFCE3]",
                 },
               ].map((action, i) => (
                 <div
@@ -215,22 +203,28 @@ const Dashboard = () => {
                 {/* Scrollable vertical area */}
                 <div className="flex-1 overflow-y-auto min-h-0 scrollbar-thin scrollbar-thumb-[#5EE6FE]/40 scrollbar-track-transparent">
                   <ul className="space-y-2">
-                    {recentActivity.map((activity, i) => (
-                      <li
-                        key={i}
-                        className="p-3 rounded-xl bg-gradient-to-r from-[#F0F9FF] to-[#E5FBFF] dark:from-[#1B1B1B] dark:to-[#222] 
-                                  flex items-center justify-between gap-2 text-gray-800 dark:text-gray-200 
-                                  border border-gray-100 dark:border-gray-800 hover:translate-x-0.5 hover:brightness-105 transition-all duration-200"
-                      >
-                        <div className="flex items-center gap-3">
-                          <span className="w-2 h-2 rounded-full bg-[#5EE6FE] dark:bg-[#3BAFDA]" />
-                          <div className="flex flex-col">
-                            <p className="font-medium text-sm">{activity.action}</p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{activity.time}</p>
+                    {recentActivity.length > 0 ? (
+                      recentActivity.map((activity, i) => (
+                        <li
+                          key={i}
+                          className="p-3 rounded-xl bg-gradient-to-r from-[#F0F9FF] to-[#E5FBFF] dark:from-[#1B1B1B] dark:to-[#222] 
+                                    flex items-center justify-between gap-2 text-gray-800 dark:text-gray-200 
+                                    border border-gray-100 dark:border-gray-800 hover:translate-x-0.5 hover:brightness-105 transition-all duration-200"
+                        >
+                          <div className="flex items-center gap-3">
+                            <span className="w-2 h-2 rounded-full bg-[#5EE6FE] dark:bg-[#3BAFDA]" />
+                            <div className="flex flex-col">
+                              <p className="font-medium text-sm">{activity.action}</p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{activity.time}</p>
+                            </div>
                           </div>
-                        </div>
+                        </li>
+                      ))
+                    ) : (
+                      <li className="text-center text-gray-500 text-sm py-4">
+                        No recent activities
                       </li>
-                    ))}
+                    )}
                   </ul>
                 </div>
               </div>

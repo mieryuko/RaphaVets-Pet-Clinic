@@ -68,13 +68,17 @@ function SideBar({ isMenuOpen, setIsMenuOpen, refreshTrigger }) {
     setShowLogoutModal(false);
 
     const token = localStorage.getItem("token");
+    const userId = localStorage.getItem("userId"); // Get userId from localStorage
+    
     if (token) {
       try {
+        // Send userId in the request body or as a query parameter
         await api.post(
           "/auth/logout",
-          {},
+          { userId }, // Send userId in the request body
           { headers: { Authorization: `Bearer ${token}` } }
         );
+        console.log("✅ Logout API called successfully");
       } catch (err) {
         console.error("❌ Logout error:", err);
       }

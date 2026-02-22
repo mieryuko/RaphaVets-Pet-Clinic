@@ -11,16 +11,26 @@ function ClientLayout({ children }) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const saved = localStorage.getItem("darkMode");
-    if (saved) setDarkMode(saved === "true");
+    const savedTheme = localStorage.getItem("theme");
+
+    if (savedTheme === "dark") {
+      setDarkMode(true);
+      document.documentElement.classList.add("dark");
+    }
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("darkMode", darkMode);
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    }
   }, [darkMode]);
 
   return (
-    <div className={`font-sansation min-h-screen relative ${darkMode ? "bg-[#1E1E1E] text-white" : "bg-[#FBFBFB]"}`}>
+    <div className={`font-sansation min-h-screen relative bg-[#FBFBFB] text-gray-800 dark:bg-[#0B0F15] dark:text-gray-100`}>
       <Header darkMode={darkMode} setDarkMode={setDarkMode} setIsMenuOpen={setIsMenuOpen} />
       
       <div className="flex flex-row gap-5 px-5 sm:px-12">

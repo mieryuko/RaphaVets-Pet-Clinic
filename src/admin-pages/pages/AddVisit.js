@@ -1,4 +1,3 @@
-// AddVisit.js
 import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Plus, Search, Calendar, Layers, User, PawPrint, CheckCircle, Clock } from "lucide-react";
@@ -30,7 +29,6 @@ const sampleAppointments = [
   { id: 3, userId: 1, petId: 3, petName: "Max", serviceType: "Dental Prophylaxis", date: new Date(Date.now() + 86400000).toISOString().split('T')[0], time: "11:00 AM", status: "Upcoming" },
 ];
 
-// Service types matching your requirements
 const SERVICE_TYPES = [
   { id: "consult", label: "Consultation", note: "General check-up" },
   { id: "surgery", label: "Basic Soft Tissue Surgery", note: "Scheduled procedure" },
@@ -111,27 +109,37 @@ const AddVisit = () => {
     fetchServices();
   }, [currentStep]);
 
-  const handleUserSelect = (user) => {
-    setVisitData(prev => ({ ...prev, user, appointment: null, pet: null }));
-    setSelectedClientId(user.id);
-    
-    // Check if user has appointments for today
+  const goToAppointmentOrService = (user) => {
     const userAppointments = appointments.filter(
       app => app.userId === user.id && app.status === "Upcoming"
     );
-    
+
     if (userAppointments.length > 0) {
-      setCurrentStep(1); // Go to appointment selection
+      setCurrentStep(2);
     } else {
-      setCurrentStep(2); // Skip to service selection
+      setCurrentStep(3);
     }
   };
 
+  const handleUserSelect = (user) => {
+    setVisitData(prev => ({ ...prev, user, appointment: null, pet: null }));
+    setSelectedClientId(user.id);
+
+    const petsOfUser = pets.filter(p => p.userId === user.id);
+
+    if (petsOfUser.length === 1) {
+      const singlePet = petsOfUser[0];
+
+      setVisitData(prev => ({ ...prev, pet: singlePet }));
+
+      setCurrentStep(2);
+    } else {
+      setCurrentStep(1);
+    }
+  };
   const handleNewClientSave = (ownerData) => {
-    // Generate random password
     const generatedPassword = Math.random().toString(36).slice(-8);
     
-    // Create new user from the modal data
     const newUser = {
       id: sampleUsers.length + 1,
       firstName: ownerData.firstName,
@@ -142,7 +150,6 @@ const AddVisit = () => {
       password: generatedPassword,
     };
 
-    // Create new pet from the modal data (if provided)
     let newPetData = null;
     if (ownerData.pets && ownerData.pets.length > 0) {
       const pet = ownerData.pets[0];
@@ -161,7 +168,6 @@ const AddVisit = () => {
       };
     }
 
-    // In real app, you would send this to backend
     console.log("New client created:", newUser);
     if (newPetData) {
       console.log("New pet created:", newPetData);
@@ -175,7 +181,6 @@ const AddVisit = () => {
     setSelectedClientId(newUser.id);
     setShowNewClientForm(false);
     
-    // Go directly to service selection
     setCurrentStep(2);
     
     setToast({ 
@@ -184,7 +189,6 @@ const AddVisit = () => {
     });
   };
 
-  // Helper function to calculate age from birth date
   const calculateAge = (birthDate) => {
     const today = new Date();
     const birth = new Date(birthDate);
@@ -207,11 +211,10 @@ const AddVisit = () => {
       pet: selectedPet,
       serviceType: appointment.serviceType
     }));
-    setCurrentStep(3); // Go to mark as complete step
+    setCurrentStep(4); // Go to mark as complete step
   };
 
   const handleMarkAppointmentComplete = async () => {
-    // Update appointment status to completed
     const updatedAppointments = appointments.map(app =>
       app.id === visitData.appointment.id ? { ...app, status: "Completed" } : app
     );
@@ -227,7 +230,6 @@ const AddVisit = () => {
     }));  
     console.log("Appointment marked as completed:", visitData.appointment.id);
     
-    // Show success page
     
     setCurrentStep(5); // Go to success page
     setToast({ type: "success", message: "Appointment marked as completed and visit recorded!" });
@@ -239,10 +241,8 @@ const AddVisit = () => {
   };
 
   const handleFinalSubmit = () => {
-    // In real app, you would send this to backend
     console.log("Final visit data:", visitData);
     
-    // Show success page
     setCurrentStep(5); // Go to success page
   };
 
@@ -252,7 +252,6 @@ const AddVisit = () => {
 
   const userPets = pets.filter(pet => pet.userId === visitData.user?.id);
 
-  // Filter users based on search
   const filteredUsers = useMemo(() => {
     if (!searchQuery) return owners;
     const query = searchQuery.toLowerCase();
@@ -263,18 +262,17 @@ const AddVisit = () => {
     );
   }, [searchQuery, owners]);
 
-  // Updated steps - removed "Select Pet" step
   const steps = [
     { title: "Select Client", number: 0, icon: User },
-    { title: "Select Appointment", number: 1, icon: Calendar },
-    { title: "Service Type", number: 2, icon: Layers },
-    { title: "Complete Appointment", number: 3, icon: CheckCircle },
-    { title: "Confirmation", number: 4, icon: CheckCircle }
+    { title: "Select Pet", number: 1, icon: PawPrint },
+    { title: "Select Appointment", number: 2, icon: Calendar },
+    { title: "Service Type", number: 3, icon: Layers },
+    { title: "Complete Appointment", number: 4, icon: CheckCircle },
+    { title: "Confirmation", number: 5, icon: CheckCircle }
   ];
 
   return (
     <div className="flex flex-col h-full bg-[#FBFBFB] p-6 gap-2 font-sans">
-      {/* Back Button - Hide on success page */}
       {currentStep !== 5 && (
         <button
           onClick={() => navigate("/admin-pages/appointments")}
@@ -285,7 +283,6 @@ const AddVisit = () => {
         </button>
       )}
 
-      {/* Progress Steps - Hide on success page */}
       {currentStep !== 5 && (
         <div className="flex justify-center mb-4">
           <div className="flex items-center">
@@ -319,7 +316,6 @@ const AddVisit = () => {
         </div>
       )}
 
-      {/* Step Content */}
       <div className="flex-1 bg-white rounded-2xl shadow-sm border border-[#E8F7FA] p-6 overflow-y-auto">
         {/* Step 0: Select Client */}
         {currentStep === 0 && (
@@ -338,7 +334,6 @@ const AddVisit = () => {
               </button>
             </div>
 
-            {/* Search Bar */}
             <div className="relative mb-6 max-w-md">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <Search className="h-4 w-4 text-gray-400" />
@@ -352,7 +347,6 @@ const AddVisit = () => {
               />
             </div>
 
-            {/* Clients Table */}
             <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full">
@@ -430,70 +424,41 @@ const AddVisit = () => {
               )}
             </div>
 
-            {/* Reuse AddOwnerModal Component */}
             <AddOwnerModal
               isOpen={showNewClientForm}
               onClose={() => setShowNewClientForm(false)}
               onSave={handleNewClientSave}
-              initialData={null} // No initial data for new client
+              initialData={null} 
             />
           </div>
         )}
 
-        {/* Step 1: Select Appointment */}
         {currentStep === 1 && (
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Select Appointment</h2>
+            <h2 className="text-2xl font-bold mb-2">Select Pet</h2>
             <p className="text-gray-600 mb-6">
-              Choose an upcoming appointment for {visitData.user?.firstName} {visitData.user?.lastName}
+              Choose a pet for {visitData.user?.firstName}
             </p>
 
-            {userAppointments.length === 0 ? (
-              <div className="text-center py-12">
-                <Calendar className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">No Upcoming Appointments</h3>
-                <p className="text-gray-500 mb-6">This client has no scheduled appointments for today.</p>
-                <button
-                  onClick={() => setCurrentStep(2)}
-                  className="px-6 py-3 bg-[#5EE6FE] text-white rounded-xl hover:bg-[#4AD4EC] transition font-semibold"
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {userPets.map(pet => (
+                <div
+                  key={pet.id}
+                  onClick={() => {
+                    setVisitData(prev => ({ ...prev, pet }));
+                    goToAppointmentOrService(visitData.user);
+                  }}
+                  className="p-4 border-2 rounded-xl cursor-pointer hover:border-[#5EE6FE]"
                 >
-                  Continue with Walk-in Visit
-                </button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {userAppointments.map(appointment => (
-                  <div
-                    key={appointment.id}
-                    onClick={() => handleAppointmentSelect(appointment)}
-                    className="p-6 border-2 border-gray-200 rounded-xl hover:border-[#5EE6FE] hover:shadow-md transition cursor-pointer bg-white"
-                  >
-                    <div className="flex justify-between items-start mb-3">
-                      <h4 className="font-semibold text-gray-800 text-lg">{appointment.petName}</h4>
-                      <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-semibold">
-                        {appointment.serviceType}
-                      </span>
-                    </div>
-                    <div className="space-y-2 text-sm text-gray-600">
-                      <p><span className="font-medium">Date:</span> {appointment.date}</p>
-                      <p><span className="font-medium">Time:</span> {appointment.time}</p>
-                      <p><span className="font-medium">Status:</span> 
-                        <span className="ml-1 px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs">
-                          {appointment.status}
-                        </span>
-                      </p>
-                    </div>
-                    <button className="w-full mt-4 py-2 bg-[#5EE6FE] text-white rounded-lg hover:bg-[#4AD4EC] transition font-medium">
-                      Select Appointment
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
+                  <h4 className="font-semibold">{pet.name}</h4>
+                  <p className="text-sm text-gray-500">{pet.breed}</p>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
-        {/* Step 2: Service Type - Matching AddAppointment design */}
+        {/* Step 2: Service Type */}
         {currentStep === 2 && (
           <div className="max-w-4xl mx-auto">
             <h2 className="text-2xl font-bold text-gray-800 mb-2">Select Service Type</h2>

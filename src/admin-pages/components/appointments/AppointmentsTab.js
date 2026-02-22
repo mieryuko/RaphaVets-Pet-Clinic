@@ -120,117 +120,119 @@ const AppointmentsTab = ({
         </div>
       </div>
 
-      <table className="w-full text-left border-collapse">
-        <thead className="bg-gray-100 dark:bg-[#1B1B1B] sticky top-0">
-          <tr>
-            {isSelectMode && (
-              <th className="p-2 text-sm text-gray-600 dark:text-gray-300 w-12">
-                <input
-                  type="checkbox"
-                  checked={getSelectedCount() === getFilteredData().length && getFilteredData().length > 0}
-                  onChange={toggleSelectAll}
-                  className="rounded border-gray-300"
-                />
-              </th>
-            )}
-            <th className="p-2 text-sm text-gray-600 dark:text-gray-300">ID</th>
-            <th className="p-2 text-sm text-gray-600 dark:text-gray-300">Pet</th>
-            <th className="p-2 text-sm text-gray-600 dark:text-gray-300">Owner</th>
-            <th className="p-2 text-sm text-gray-600 dark:text-gray-300">Date</th>
-            <th className="p-2 text-sm text-gray-600 dark:text-gray-300">Scheduled Time</th>
-            <th className="p-2 text-sm text-gray-600 dark:text-gray-300">Status</th>
-            <th className="p-2 text-sm text-gray-600 dark:text-gray-300">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {appointments.length === 0 ? (
+      <div className="max-h-[500px] overflow-y-auto rounded-xl border border-gray-200 dark:border-gray-700">
+        <table className="w-full text-left border-collapse">
+          <thead className="bg-gray-100 dark:bg-[#1B1B1B] sticky top-0">
             <tr>
-              <td colSpan={isSelectMode ? 8 : 7} className="text-center p-4 text-gray-400">
-                No appointments found.
-              </td>
+              {isSelectMode && (
+                <th className="p-2 text-sm text-gray-600 dark:text-gray-300 w-12">
+                  <input
+                    type="checkbox"
+                    checked={getSelectedCount() === getFilteredData().length && getFilteredData().length > 0}
+                    onChange={toggleSelectAll}
+                    className="rounded border-gray-300"
+                  />
+                </th>
+              )}
+              <th className="p-2 text-sm text-gray-600 dark:text-gray-300">ID</th>
+              <th className="p-2 text-sm text-gray-600 dark:text-gray-300">Pet</th>
+              <th className="p-2 text-sm text-gray-600 dark:text-gray-300">Owner</th>
+              <th className="p-2 text-sm text-gray-600 dark:text-gray-300">Date</th>
+              <th className="p-2 text-sm text-gray-600 dark:text-gray-300">Scheduled Time</th>
+              <th className="p-2 text-sm text-gray-600 dark:text-gray-300">Status</th>
+              <th className="p-2 text-sm text-gray-600 dark:text-gray-300">Actions</th>
             </tr>
-          ) : (
-            appointments.map((item) => {
-              const isEditable = item.status === "Upcoming" || item.status === "Pending";
-              
-              return (
-                <tr
-                  key={item.id}
-                  className="cursor-pointer hover:bg-[#E5FBFF] dark:hover:bg-[#222] transition"
-                >
-                  {isSelectMode && (
-                    <td className="p-2">
-                      <input
-                        type="checkbox"
-                        checked={selectedAppointments.includes(item.id)}
-                        onChange={() => toggleAppointmentSelection(item.id)}
-                        className="rounded border-gray-300"
+          </thead>
+          <tbody>
+            {appointments.length === 0 ? (
+              <tr>
+                <td colSpan={isSelectMode ? 8 : 7} className="text-center p-4 text-gray-400">
+                  No appointments found.
+                </td>
+              </tr>
+            ) : (
+              appointments.map((item) => {
+                const isEditable = item.status === "Upcoming" || item.status === "Pending";
+                
+                return (
+                  <tr
+                    key={item.id}
+                    className="cursor-pointer hover:bg-[#E5FBFF] dark:hover:bg-[#222] transition"
+                  >
+                    {isSelectMode && (
+                      <td className="p-2">
+                        <input
+                          type="checkbox"
+                          checked={selectedAppointments.includes(item.id)}
+                          onChange={() => toggleAppointmentSelection(item.id)}
+                          className="rounded border-gray-300"
+                        />
+                      </td>
+                    )}
+                    <td className="p-2 text-sm">{item.id}</td>
+                    <td className="p-2 text-sm">{item.petName}</td>
+                    <td className="p-2 text-sm">{item.owner}</td>
+                    <td className="p-2 text-sm">{item.date}</td>
+                    <td className="p-2 text-sm">{item.time}</td>
+                    <td className="p-2 text-sm">
+                      {isEditable ? (
+                        <select
+                          value={item.status}
+                          onChange={(e) => {
+                            if (e.target.value === "Cancelled") {
+                              handleCancelAppointment(item);
+                            } else {
+                              // This would typically update the appointment status
+                              console.log("Update status to:", e.target.value);
+                              handleUpdateStatus(item.id, e.target.value);
+                            }
+                          }}
+                          className={`p-1 rounded-xl text-xs font-semibold border border-gray-200 dark:border-gray-700 ${
+                            item.status === "Pending"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : item.status === "Upcoming"
+                              ? "bg-pink-100 text-pink-800"
+                              : "bg-green-100 text-green-800"
+                          }`}
+                        >
+                          <option value="Upcoming">Upcoming</option>
+                          <option value="Completed">Completed</option>
+                          <option value="Cancelled">Cancelled</option>
+                        </select>
+                      ) : (
+                        <span
+                          className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
+                            item.status === "Completed"
+                              ? "bg-green-100 text-green-800 border border-green-200"
+                              : "bg-red-100 text-red-800 border border-red-200"
+                          }`}
+                        >
+                          {item.status}
+                        </span>
+                      )}
+                    </td>
+                    <td className="p-2 text-sm flex gap-2">
+                      <Eye
+                        size={18}
+                        className="text-blue-500 cursor-pointer hover:text-blue-600"
+                        onClick={() => {
+                          setSelectedAppointment(item);
+                          setIsDetailsModalOpen(true);
+                        }}
+                      />
+                      <Trash2
+                        size={18}
+                        className="text-red-500 cursor-pointer hover:text-red-600"
+                        onClick={() => handleSingleDelete(item)}
                       />
                     </td>
-                  )}
-                  <td className="p-2 text-sm">{item.id}</td>
-                  <td className="p-2 text-sm">{item.petName}</td>
-                  <td className="p-2 text-sm">{item.owner}</td>
-                  <td className="p-2 text-sm">{item.date}</td>
-                  <td className="p-2 text-sm">{item.time}</td>
-                  <td className="p-2 text-sm">
-                    {isEditable ? (
-                      <select
-                        value={item.status}
-                        onChange={(e) => {
-                          if (e.target.value === "Cancelled") {
-                            handleCancelAppointment(item);
-                          } else {
-                            // This would typically update the appointment status
-                            console.log("Update status to:", e.target.value);
-                            handleUpdateStatus(item.id, e.target.value);
-                          }
-                        }}
-                        className={`p-1 rounded-xl text-xs font-semibold border border-gray-200 dark:border-gray-700 ${
-                          item.status === "Pending"
-                            ? "bg-yellow-100 text-yellow-800"
-                            : item.status === "Upcoming"
-                            ? "bg-pink-100 text-pink-800"
-                            : "bg-green-100 text-green-800"
-                        }`}
-                      >
-                        <option value="Upcoming">Upcoming</option>
-                        <option value="Completed">Completed</option>
-                        <option value="Cancelled">Cancelled</option>
-                      </select>
-                    ) : (
-                      <span
-                        className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
-                          item.status === "Completed"
-                            ? "bg-green-100 text-green-800 border border-green-200"
-                            : "bg-red-100 text-red-800 border border-red-200"
-                        }`}
-                      >
-                        {item.status}
-                      </span>
-                    )}
-                  </td>
-                  <td className="p-2 text-sm flex gap-2">
-                    <Eye
-                      size={18}
-                      className="text-blue-500 cursor-pointer hover:text-blue-600"
-                      onClick={() => {
-                        setSelectedAppointment(item);
-                        setIsDetailsModalOpen(true);
-                      }}
-                    />
-                    <Trash2
-                      size={18}
-                      className="text-red-500 cursor-pointer hover:text-red-600"
-                      onClick={() => handleSingleDelete(item)}
-                    />
-                  </td>
-                </tr>
-              );
-            })
-          )}
-        </tbody>
-      </table>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

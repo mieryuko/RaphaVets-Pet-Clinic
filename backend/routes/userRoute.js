@@ -7,7 +7,7 @@ import {
   changeUserPassword,
   getUserPreference,
   updateUserPreference,
-  deleteUserAccount,
+  getUserActivityLog,
 } from "../controllers/userController.js";
 
 const router = express.Router();
@@ -30,7 +30,7 @@ router.put("/:id/change-password", verifyToken, changeUserPassword);
 router.get("/:id/preferences", verifyToken, getUserPreference);
 router.put("/:id/preferences", verifyToken, updateUserPreference);
 
-// DELETE user account
-router.delete("/:id/delete-account", verifyToken, deleteUserAccount);
+//Get Activity log
+router.get("/activity-log/:id", verifyToken, getUserActivityLog);
 
 export default router;

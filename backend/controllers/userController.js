@@ -1,36 +1,6 @@
 import db from "../config/db.js";
 import bcrypt from "bcryptjs";
 
-export const deleteUserAccount = async (req, res) => {
-  const { id } = req.params; // user ID
-  const { password } = req.body;
-
-  try {
-    // 1. Get the user's current hashed password
-    const [userRows] = await db.query("SELECT password FROM account_tbl WHERE accId = ? AND isDeleted = 0", [id]);
-
-    if (userRows.length === 0) {
-      return res.status(404).json({ message: "User not found or already deleted" });
-    }
-
-    const storedHashedPassword = userRows[0].password;
-    const isMatch = await bcrypt.compare(password, storedHashedPassword);
-
-    if (!isMatch) {
-      return res.status(401).json({ message: "Incorrect password" });
-    }
-
-    // 2. Soft delete the account (set isDeleted = 1)
-    await db.query("UPDATE account_tbl SET isDeleted = 1, lastUpdatedAt = NOW() WHERE accId = ?", [id]);
-
-    res.status(200).json({ message: "Account deleted successfully" });
-  } catch (error) {
-    console.error("❌ Error deleting account:", error);
-    res.status(500).json({ message: "Server error" });
-  }
-};
-
-
 export const getUserPreference = async (req, res) => {
   const { id } = req.params;
 
@@ -186,8 +156,10 @@ export const changeUserPassword = async (req, res) => {
     }
     const salt = await bcrypt.genSalt(10);
     const hashedNewPassword = await bcrypt.hash(newPassword, salt);
+    
+    // Update both password and passwordChangeAt timestamp
     await db.query(
-      "UPDATE account_tbl SET password = ?, lastUpdatedAt = NOW() WHERE accId = ?",
+      "UPDATE account_tbl SET password = ?, passwordChangeAt = NOW(), lastUpdatedAt = NOW() WHERE accId = ?",
       [hashedNewPassword, id]
     );
 
@@ -244,4 +216,127 @@ export const updateUserProfile = async (req, res) => {
     console.error("❌ Error updating profile:", error);
     res.status(500).json({ message: "Server error" });
   }
+};
+
+// Get user activity log (login, logout, password changes, latest pet addition)
+export const getUserActivityLog = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Get the most recent login activity
+    const [loginActivity] = await db.query(
+      `
+      SELECT 
+        'Login' as type,
+        'Logged in successfully' as description,
+        logInAt as date,
+        'fa-right-to-bracket' as icon,
+        '#5EE6FE' as color
+      FROM account_tbl 
+      WHERE accId = ? AND logInAt IS NOT NULL AND logInAt != '0000-00-00 00:00:00'
+      ORDER BY logInAt DESC
+      LIMIT 1
+      `,
+      [id]
+    );
+
+    // Get the most recent logout activity
+    const [logoutActivity] = await db.query(
+      `
+      SELECT 
+        'Logout' as type,
+        'Logged out from web app' as description,
+        logOutAt as date,
+        'fa-right-from-bracket' as icon,
+        '#E85D5D' as color
+      FROM account_tbl 
+      WHERE accId = ? AND logOutAt IS NOT NULL AND logOutAt != '0000-00-00 00:00:00'
+      ORDER BY logOutAt DESC
+      LIMIT 1
+      `,
+      [id]
+    );
+
+    // Get the most recent password change activity
+    const [passwordActivity] = await db.query(
+      `
+      SELECT 
+        'Password Change' as type,
+        'Updated account password' as description,
+        passwordChangeAt as date,
+        'fa-lock' as icon,
+        '#16C47F' as color
+      FROM account_tbl 
+      WHERE accId = ? AND passwordChangeAt IS NOT NULL AND passwordChangeAt != '0000-00-00 00:00:00'
+      ORDER BY passwordChangeAt DESC
+      LIMIT 1
+      `,
+      [id]
+    );
+
+    // Get ONLY the most recent pet addition
+    const [latestPet] = await db.query(
+      `
+      SELECT 
+        'Pet Added' as type,
+        CONCAT('Added a new pet named ', petName) as description,
+        createdAt as date,
+        'fa-paw' as icon,
+        '#F9AE16' as color
+      FROM pet_tbl 
+      WHERE accID = ? AND isDeleted = 0 AND createdAt IS NOT NULL
+      ORDER BY createdAt DESC
+      LIMIT 1
+      `,
+      [id]
+    );
+
+    // Create activities array in FIXED ORDER: Login, Pet Added, Password Change, Logout
+    const activities = [];
+    
+    // 1. Add Login (if exists)
+    if (loginActivity.length > 0) {
+      activities.push(loginActivity[0]);
+    }
+    
+    // 2. Add Pet Added (if exists)
+    if (latestPet.length > 0) {
+      activities.push(latestPet[0]);
+    }
+    
+    // 3. Add Password Change (if exists)
+    if (passwordActivity.length > 0) {
+      activities.push(passwordActivity[0]);
+    }
+    
+    // 4. Add Logout (if exists)
+    if (logoutActivity.length > 0) {
+      activities.push(logoutActivity[0]);
+    }
+
+    // Format dates for display
+    const formattedActivities = activities.map(activity => ({
+      ...activity,
+      date: formatDate(activity.date)
+    }));
+
+    res.status(200).json(formattedActivities);
+  } catch (error) {
+    console.error("❌ Error fetching user activity log:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Helper function to format date
+const formatDate = (dateString) => {
+  const date = new Date(dateString);
+  const options = { 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  };
+  return date.toLocaleDateString('en-US', options);
 };

@@ -1,56 +1,64 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import api from "../../../api/axios";
 
 function ActivityLog() {
-  // In the future, you can fetch logs dynamically from your backend
-  const logs = [
-    {
-      id: 1,
-      type: "Login",
-      description: "Logged in successfully",
-      date: "October 25, 2025, 10:23 AM",
-      icon: "fa-right-to-bracket",
-      color: "#5EE6FE",
-    },
-    {
-      id: 2,
-      type: "Pet Added",
-      description: "Added a new pet named Bella",
-      date: "October 23, 2025, 2:10 PM",
-      icon: "fa-paw",
-      color: "#F9AE16",
-    },
-    {
-      id: 3,
-      type: "Password Change",
-      description: "Updated account password",
-      date: "October 20, 2025, 8:45 PM",
-      icon: "fa-lock",
-      color: "#16C47F",
-    },
-    {
-      id: 4,
-      type: "Logout",
-      description: "Logged out from web app",
-      date: "October 18, 2025, 6:02 PM",
-      icon: "fa-right-from-bracket",
-      color: "#E85D5D",
-    },
-  ];
+  const [logs, setLogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const userId = localStorage.getItem("userId");
+
+  useEffect(() => {
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
+
+    const fetchActivityLog = async () => {
+      try {
+        setLoading(true);
+        const res = await api.get(`/users/activity-log/${userId}`);
+        setLogs(res.data);
+        setError(null);
+      } catch (err) {
+        console.error("❌ Error fetching activity log:", err.response?.data || err.message);
+        setError("Failed to load activity log");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchActivityLog();
+  }, [userId]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center py-10">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#5EE6FE]"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-10 text-red-500 text-sm bg-red-50 rounded-xl">
+        {error}
+      </div>
+    );
+  }
 
   return (
-    <div className="flex flex-col gap-4">
-      <h2 className="text-xl font-bold text-gray-800 mb-2">
-        Activity Log
-      </h2>
+    <div className="space-y-5">
+      <h2 className="text-lg font-semibold text-[#5EE6FE] mb-2">Activity Log</h2>
       <p className="text-gray-600 text-sm mb-4">
         Track your recent activities and account actions here.
       </p>
 
       {/* Logs list */}
       <div className="flex flex-col gap-3">
-        {logs.map((log) => (
+        {logs.map((log, index) => (
           <div
-            key={log.id}
+            key={index}
             className="flex items-center justify-between bg-[#F9FBFB] border border-[#E6F5F7] rounded-xl shadow-sm hover:shadow-md p-4 transition-all duration-300"
           >
             <div className="flex items-center gap-3">
