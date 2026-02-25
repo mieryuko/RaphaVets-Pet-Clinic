@@ -52,29 +52,17 @@ function Home() {
   const fetchMedicalRecords = async () => {
     try {
       const token = localStorage.getItem("token");
-      
-      // Get user ID from localStorage - using the correct key
       const userId = localStorage.getItem("userId");
-      const userData = JSON.parse(localStorage.getItem("user"));
       
-      console.log("🔍 Fetching medical records...");
-      console.log("📱 User ID from localStorage:", userId);
-      console.log("📱 User data from localStorage:", userData);
-      
-      // Use userId (17) from localStorage
       if (userId) {
         const res = await api.get(`/medical-records/user/${userId}?recordType=medical`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        console.log("✅ Medical records API response:", res.data);
         setMedicalRecords(res.data.data || []);
-      } else {
-        console.log("❌ No user ID found in localStorage");
       }
       setLoading(prev => ({ ...prev, medical: false }));
     } catch (err) {
       console.error("❌ Error fetching medical records:", err);
-      console.error("Error details:", err.response?.data);
       setMedicalRecords([]);
       setLoading(prev => ({ ...prev, medical: false }));
     }
@@ -83,25 +71,17 @@ function Home() {
   const fetchLabRecords = async () => {
     try {
       const token = localStorage.getItem("token");
-      
-      // Get user ID from localStorage - using the correct key
       const userId = localStorage.getItem("userId");
       
-      console.log("🔍 Fetching lab records...");
-      console.log("📱 User ID from localStorage:", userId);
-      
-      // Use userId (17) from localStorage
       if (userId) {
         const res = await api.get(`/medical-records/user/${userId}?recordType=lab`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        console.log("✅ Lab records API response:", res.data);
         setLabRecords(res.data.data || []);
       }
       setLoading(prev => ({ ...prev, lab: false }));
     } catch (err) {
       console.error("❌ Error fetching lab records:", err);
-      console.error("Error details:", err.response?.data);
       setLabRecords([]);
       setLoading(prev => ({ ...prev, lab: false }));
     }
@@ -110,7 +90,6 @@ function Home() {
   const fetchPetCareTips = async () => {
     try {
       const res = await api.get("/pet-care-tips/random?count=2");
-      console.log("✅ Pet care tips response:", res.data);
       setPetCareTips(res.data.data || []);
       setLoading(prev => ({ ...prev, tips: false }));
     } catch (err) {
@@ -155,16 +134,6 @@ function Home() {
     setShowDetailsModal(false);
     setSelectedAppointment(null);
   };
-
-  // Debug logs
-  console.log("📊 Current state:", {
-    activeTab,
-    medicalRecordsCount: medicalRecords.length,
-    labRecordsCount: labRecords.length,
-    medicalRecords,
-    labRecords,
-    loading
-  });
 
   // Animation variants
   const containerVariants = {
@@ -220,20 +189,20 @@ function Home() {
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="space-y-6"
+        className="space-y-4 sm:space-y-6"
       >
-        {/* Dashboard Cards */}
+        {/* Dashboard Cards - Responsive Grid */}
         <motion.div 
           variants={containerVariants}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-6"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-5"
         >
           {/* Card 1: Pet Care Tip or Loading */}
-          <motion.div variants={cardVariants}>
+          <motion.div variants={cardVariants} className="w-full">
             {loading.tips ? (
               <DashboardCard 
                 title="Loading Tip..." 
                 description="Fetching pet care tips for you."
-                icon="fa-spinner" 
+                icon="fa-spinner fa-spin" 
                 bg="#FCE7F3" 
                 text="#045D56" 
               />
@@ -241,7 +210,7 @@ function Home() {
               <DashboardCard 
                 title={petCareTips[0].title} 
                 description={petCareTips[0].short}
-                icon={petCareTips[0].icon}
+                icon={petCareTips[0].icon || "fa-paw"}
                 bg="#FCE7F3" 
                 text="#045D56"
                 url={petCareTips[0].url}
@@ -258,12 +227,12 @@ function Home() {
           </motion.div>
 
           {/* Card 2: Pet Care Tip or Loading */}
-          <motion.div variants={cardVariants}>
+          <motion.div variants={cardVariants} className="w-full">
             {loading.tips ? (
               <DashboardCard 
                 title="Loading Tip..." 
                 description="Fetching pet care tips for you."
-                icon="fa-spinner" 
+                icon="fa-spinner fa-spin" 
                 bg="#E3FAF7" 
                 text="#7C2E38" 
               />
@@ -271,7 +240,7 @@ function Home() {
               <DashboardCard 
                 title={petCareTips[1].title} 
                 description={petCareTips[1].short}
-                icon={petCareTips[1].icon}
+                icon={petCareTips[1].icon || "fa-paw"}
                 bg="#E3FAF7" 
                 text="#7C2E38"
                 url={petCareTips[1].url}
@@ -288,7 +257,7 @@ function Home() {
           </motion.div>
 
           {/* Card 3: Book Appointment */}
-          <motion.div variants={cardVariants}>
+          <motion.div variants={cardVariants} className="w-full">
             <DashboardCard 
               title="Book Appointment" 
               description="Schedule a visit with your vet in just a few clicks." 
@@ -300,18 +269,18 @@ function Home() {
           </motion.div>
         </motion.div>
 
-        {/* Tabs Section */}
+        {/* Tabs Section - Responsive height */}
         <motion.div 
           variants={itemVariants}
-          className="px-6 py-4 rounded-2xl bg-white shadow-lg flex flex-col h-[350px]"
+          className="px-4 sm:px-6 py-3 sm:py-4 rounded-xl sm:rounded-2xl bg-white shadow-lg flex flex-col min-h-[300px] sm:h-[350px] lg:h-[400px]"
         >
-          {/* Tab Headers */}
-          <div className="font-semibold flex gap-6 border-b pb-3 mb-4">
+          {/* Tab Headers - Responsive */}
+          <div className="font-semibold flex gap-4 sm:gap-6 border-b pb-2 sm:pb-3 mb-3 sm:mb-4 overflow-x-auto scrollbar-hide">
             {["Appointment", "Medical Reports", "Lab Records"].map((tab) => (
               <motion.span
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`cursor-pointer relative ${
+                className={`cursor-pointer relative whitespace-nowrap text-sm sm:text-base ${
                   activeTab === tab ? "text-[#5EE6FE]" : "text-gray-400"
                 }`}
                 whileHover={{ scale: 1.05 }}
@@ -329,8 +298,8 @@ function Home() {
             ))}
           </div>
 
-          {/* Tab Content */}
-          <div className="flex-1 overflow-y-auto flex flex-col gap-4">
+          {/* Tab Content - Responsive */}
+          <div className="flex-1 overflow-y-auto overflow-x-hidden">
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeTab}
@@ -378,12 +347,15 @@ function Home() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+            onClick={closeModal}
           >
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-sm sm:max-w-md"
             >
               <ViewDetailsModal appointment={selectedAppointment} closeModal={closeModal} />
             </motion.div>

@@ -8,7 +8,6 @@ function Header({ darkMode, setDarkMode, setIsMenuOpen }) {
   const [notifications, setNotifications] = useState([]);
   const notificationRef = useRef(null);
 
-  // Professional notifications data
   useEffect(() => {
     const mockNotifications = [
       {
@@ -75,7 +74,6 @@ function Header({ darkMode, setDarkMode, setIsMenuOpen }) {
     setNotifications(mockNotifications);
   }, []);
 
-  // Close notifications when clicking outside
   useEffect(() => {
     function handleClickOutside(event) {
       if (notificationRef.current && !notificationRef.current.contains(event.target)) {
@@ -110,7 +108,6 @@ function Header({ darkMode, setDarkMode, setIsMenuOpen }) {
       )
     );
 
-    // Navigate based on notification type
     switch (notification.type) {
       case "medical":
         navigate("/medical-records");
@@ -188,7 +185,7 @@ function Header({ darkMode, setDarkMode, setIsMenuOpen }) {
             )}
           </div>
 
-          {/* Notification Dropdown - Fixed Positioning */}
+          {/* Notification Dropdown*/}
           {showNotifications && (
             <div className="fixed right-2 sm:right-4 top-16 sm:top-20 w-[calc(100vw-1rem)] sm:w-80 md:w-96 bg-white rounded-xl shadow-2xl border border-gray-200 z-50">
               {/* Header */}
@@ -259,7 +256,7 @@ function Header({ darkMode, setDarkMode, setIsMenuOpen }) {
           )}
         </div>
 
-        {/* Forum Button - Hide text only on small screens */}
+        {/* Forum Button */}
         <div
           onClick={() => navigate("/forum")}
           className="flex items-center gap-1 sm:gap-2 cursor-pointer"
@@ -268,7 +265,7 @@ function Header({ darkMode, setDarkMode, setIsMenuOpen }) {
           <span className="font-semibold text-sm sm:text-base hidden sm:inline">Lost Pets</span>
         </div>
 
-        {/* Mode Toggle - Hide text only on small screens */}
+        {/* Mode Toggle - Hide text only on small screens 
         <div className="flex items-center gap-1 sm:gap-2">
           <span className="text-xs sm:text-sm font-semibold hidden sm:inline">Mode</span>
           <div
@@ -283,7 +280,7 @@ function Header({ darkMode, setDarkMode, setIsMenuOpen }) {
               }`}
             ></div>
           </div>
-        </div>
+        </div>*/}
       </div>
     </div>
   );

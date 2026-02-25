@@ -10,29 +10,24 @@ function SideBar({ isMenuOpen, setIsMenuOpen, refreshTrigger }) {
 
   // Fetch pets function
   const fetchPets = async () => {
-    // Check if we have cached pets
     const cachedPets = localStorage.getItem('cachedPets');
     const cacheTimestamp = localStorage.getItem('petsCacheTimestamp');
     const now = Date.now();
     
-    // Use cache if it's less than 5 minutes old
     if (cachedPets && cacheTimestamp && (now - parseInt(cacheTimestamp)) < 5 * 60 * 1000) {
       setPets(JSON.parse(cachedPets));
       return;
     }
 
     const token = localStorage.getItem("token");
-    console.log("Token being sent:", token);
     if (!token) return;
 
     try {
       const res = await api.get("/pets", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log("Pets response:", res.data);
       setPets(res.data);
       
-      // Cache the result
       localStorage.setItem('cachedPets', JSON.stringify(res.data));
       localStorage.setItem('petsCacheTimestamp', now.toString());
     } catch (err) {
@@ -40,25 +35,19 @@ function SideBar({ isMenuOpen, setIsMenuOpen, refreshTrigger }) {
     }
   };
 
-  // Fetch pets on component mount AND when refreshTrigger changes
   useEffect(() => {
     fetchPets();
   }, [refreshTrigger]);
 
-  // Listen for custom event when pet image is updated
   useEffect(() => {
     const handlePetImageUpdate = () => {
-      console.log("🔄 Pet image update detected, refreshing sidebar...");
-      // Clear cache and refetch
       localStorage.removeItem('cachedPets');
       localStorage.removeItem('petsCacheTimestamp');
       fetchPets();
     };
 
-    // Add event listener
     window.addEventListener('petImageUpdated', handlePetImageUpdate);
     
-    // Cleanup
     return () => {
       window.removeEventListener('petImageUpdated', handlePetImageUpdate);
     };
@@ -68,23 +57,20 @@ function SideBar({ isMenuOpen, setIsMenuOpen, refreshTrigger }) {
     setShowLogoutModal(false);
 
     const token = localStorage.getItem("token");
-    const userId = localStorage.getItem("userId"); // Get userId from localStorage
+    const userId = localStorage.getItem("userId");
     
     if (token) {
       try {
-        // Send userId in the request body or as a query parameter
         await api.post(
           "/auth/logout",
-          { userId }, // Send userId in the request body
+          { userId },
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        console.log("✅ Logout API called successfully");
       } catch (err) {
         console.error("❌ Logout error:", err);
       }
     }
 
-    // REMOVE ALL THESE ITEMS:
     localStorage.removeItem("token");
     localStorage.removeItem("userId");
     localStorage.removeItem("userRole");
@@ -116,125 +102,139 @@ function SideBar({ isMenuOpen, setIsMenuOpen, refreshTrigger }) {
   return (
     <>
       {/* Sidebar */}
-      <div
-        className={`${
-          isMenuOpen
-            ? "translate-x-0"
-            : "-translate-x-full md:translate-x-0 md:w-0 md:p-0"
-        } fixed md:static top-0 left-0 z-20 md:z-auto bg-white md:bg-transparent w-[250px] h-full md:h-auto flex-shrink-0 flex flex-col p-5 overflow-hidden fixed left-0 top-[84px] h-[calc(100vh-84px)]`}
-      >
-        {isMenuOpen && (
-          <>
-            {/* Your Pets Section */}
-            <div className="pb-4 flex flex-col border-b-[1px] border-[#A6E3E9]">
-              <span className="font-[700] text-[20px] text-gray-700">Your Pets</span>
+      <div className={`
+        w-[250px] h-screen md:h-full shadow-xl md:shadow-none flex-shrink-0 flex flex-col p-5 overflow-y-auto
+        ${isMenuOpen ? 'fixed md:relative top-0 left-0 z-50 md:z-auto md:top-auto md:left-auto' : 'hidden md:block'}
+        pointer-events-auto
+      `}>
+        {/* Your Pets Section */}
+        <div className="pb-4 flex flex-col border-b-[1px] border-[#A6E3E9]">
+          <span className="font-[700] text-[20px] text-gray-700">Your Pets</span>
 
-              <div className="flex overflow-x-auto px-2 gap-4 mt-3 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-                {pets.length > 0 ? (
-                  pets.map((pet) => (
-                    <div
-                      key={pet.id}
-                      onClick={() => navigate(`/pet/${pet.id}`)}
-                      className="flex flex-col items-center flex-shrink-0 cursor-pointer"
-                    >
-                      <div className="w-16 h-16 rounded-full p-[3px] bg-gradient-to-br from-[#A7E9E3] via-[#FDE2E4] to-[#FFF5E4] shadow-sm">
-                        <div className="w-full h-full rounded-full overflow-hidden bg-[#FDFEFF] flex items-center justify-center border border-[#C9EAF2]">
-                          <img
-                            src={`http://localhost:5000${pet.image}`}
-                            alt={pet.name}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              e.target.src = "/images/dog-profile.png";
-                            }}
-                          />
-                        </div>
-                      </div>
-                      <span className="text-[12px] mt-1 text-gray-700 truncate w-14 text-center font-medium">
-                        {pet.name}
-                      </span>
+          <div className="flex overflow-x-auto px-2 gap-4 mt-3 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+            {pets.length > 0 ? (
+              pets.map((pet) => (
+                <div
+                  key={pet.id}
+                  onClick={() => {
+                    navigate(`/pet/${pet.id}`);
+                    if (window.innerWidth < 768) {
+                      setIsMenuOpen(false);
+                    }
+                  }}
+                  className="flex flex-col items-center flex-shrink-0 cursor-pointer"
+                >
+                  <div className="w-16 h-16 rounded-full p-[3px] bg-gradient-to-br from-[#A7E9E3] via-[#FDE2E4] to-[#FFF5E4] shadow-sm">
+                    <div className="w-full h-full rounded-full overflow-hidden bg-[#FDFEFF] flex items-center justify-center border border-[#C9EAF2]">
+                      <img
+                        src={`http://localhost:5000${pet.image}`}
+                        alt={pet.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.src = "/images/dog-profile.png";
+                        }}
+                      />
                     </div>
-                  ))
-                ) : (
-                  <p className="text-sm text-gray-400 mt-2 px-2">No pets found</p>
-                )}
-              </div>
-
-              {/* Menu Links */}
-              <div className="flex flex-col gap-2 mt-3">
-                {menuItems.map((item) => (
-                  <div
-                    key={item.path}
-                    onClick={() => navigate(item.path)}
-                    className={`text-[15px] flex items-center gap-2 cursor-pointer ${
-                      location.pathname === item.path
-                        ? "text-[#5EE6FE] font-semibold"
-                        : "text-gray-700"
-                    }`}
-                  >
-                    <i className={`fa-solid ${item.icon}`}></i>
-                    <span>{item.label}</span>
                   </div>
-                ))}
-              </div>
-            </div>
+                  <span className="text-[12px] mt-1 text-gray-700 truncate w-14 text-center font-medium">
+                    {pet.name}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-gray-400 mt-2 px-2">No pets found</p>
+            )}
+          </div>
 
-            {/* Resources */}
-            <div className="pb-4 flex flex-col border-b-[1px] border-[#A6E3E9] mt-2">
-              <span className="font-[700] text-[20px] text-gray-700">Resources</span>
-              <div className="px-3 flex flex-col gap-2 mt-2">
-                {resourceItems.map((item) => (
-                  <div
-                    key={item.path}
-                    onClick={() => navigate(item.path)}
-                    className={`text-[15px] flex items-center gap-2 cursor-pointer ${
-                      location.pathname === item.path
-                        ? "text-[#5EE6FE] font-semibold"
-                        : "text-gray-700"
-                    }`}
-                  >
-                    <i className={`fa-solid ${item.icon}`}></i>
-                    <span>{item.label}</span>
-                  </div>
-                ))}
+          {/* Menu Links */}
+          <div className="flex flex-col gap-2 mt-3">
+            {menuItems.map((item) => (
+              <div
+                key={item.path}
+                onClick={() => {
+                  navigate(item.path);
+                  if (window.innerWidth < 768) {
+                    setIsMenuOpen(false);
+                  }
+                }}
+                className={`text-[15px] flex items-center gap-2 cursor-pointer ${
+                  location.pathname === item.path
+                    ? "text-[#5EE6FE] font-semibold"
+                    : "text-gray-700"
+                }`}
+              >
+                <i className={`fa-solid ${item.icon}`}></i>
+                <span>{item.label}</span>
               </div>
-            </div>
+            ))}
+          </div>
+        </div>
 
-            {/* Information */}
-            <div className="pb-4 flex flex-col border-b-[1px] border-[#A6E3E9] mt-2">
-              <span className="font-[700] text-[20px] text-gray-700">Information</span>
-              <div className="px-3 flex flex-col gap-2 mt-2">
-                {infoItems.map((item) => (
-                  <div
-                    key={item.label}
-                    onClick={() => navigate(item.path)}
-                    className={`text-[15px] flex items-center gap-2 cursor-pointer ${
-                      location.pathname === item.path
-                        ? "text-[#5EE6FE] font-semibold"
-                        : "text-gray-700"
-                    }`}
-                  >
-                    <i className={`fa-solid ${item.icon}`}></i>
-                    <span>{item.label}</span>
-                  </div>
-                ))}
+        {/* Resources */}
+        <div className="pb-4 flex flex-col border-b-[1px] border-[#A6E3E9] mt-2">
+          <span className="font-[700] text-[20px] text-gray-700">Resources</span>
+          <div className="px-3 flex flex-col gap-2 mt-2">
+            {resourceItems.map((item) => (
+              <div
+                key={item.path}
+                onClick={() => {
+                  navigate(item.path);
+                  if (window.innerWidth < 768) {
+                    setIsMenuOpen(false);
+                  }
+                }}
+                className={`text-[15px] flex items-center gap-2 cursor-pointer ${
+                  location.pathname === item.path
+                    ? "text-[#5EE6FE] font-semibold"
+                    : "text-gray-700"
+                }`}
+              >
+                <i className={`fa-solid ${item.icon}`}></i>
+                <span>{item.label}</span>
               </div>
-            </div>
+            ))}
+          </div>
+        </div>
 
-            {/* Logout */}
-            <div
-              className="px-3 mt-3 text-[15px] flex items-center gap-2 text-gray-700 cursor-pointer"
-              onClick={() => setShowLogoutModal(true)}
-            >
-              <i className="fa-solid fa-right-from-bracket"></i>
-              <span>Logout</span>
-            </div>
-          </>
-        )}
+        {/* Information */}
+        <div className="pb-4 flex flex-col border-b-[1px] border-[#A6E3E9] mt-2">
+          <span className="font-[700] text-[20px] text-gray-700">Information</span>
+          <div className="px-3 flex flex-col gap-2 mt-2">
+            {infoItems.map((item) => (
+              <div
+                key={item.label}
+                onClick={() => {
+                  navigate(item.path);
+                  if (window.innerWidth < 768) {
+                    setIsMenuOpen(false);
+                  }
+                }}
+                className={`text-[15px] flex items-center gap-2 cursor-pointer ${
+                  location.pathname === item.path
+                    ? "text-[#5EE6FE] font-semibold"
+                    : "text-gray-700"
+                }`}
+              >
+                <i className={`fa-solid ${item.icon}`}></i>
+                <span>{item.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Logout */}
+        <div
+          className="px-3 mt-3 text-[15px] flex items-center gap-2 text-gray-700 cursor-pointer"
+          onClick={() => setShowLogoutModal(true)}
+        >
+          <i className="fa-solid fa-right-from-bracket"></i>
+          <span>Logout</span>
+        </div>
       </div>
 
       {/* Logout Modal */}
       {showLogoutModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[70]">
           <div className="bg-white rounded-2xl p-6 w-[320px] shadow-lg text-center">
             <h2 className="text-lg font-semibold text-gray-800 mb-2">Confirm Logout</h2>
             <p className="text-gray-600 text-sm mb-5">
@@ -258,14 +258,6 @@ function SideBar({ isMenuOpen, setIsMenuOpen, refreshTrigger }) {
             </div>
           </div>
         </div>
-      )}
-
-      {/* Mobile overlay */}
-      {isMenuOpen && (
-        <div
-          className="fixed inset-0 bg-black/40 md:hidden z-10"
-          onClick={() => setIsMenuOpen(false)}
-        ></div>
       )}
     </>
   );
