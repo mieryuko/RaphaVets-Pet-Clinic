@@ -1,20 +1,11 @@
-import React from "react";
-
-const StatsCard = ({ title, value, subText, icon, color }) => {
+const StatsCard = ({ title, value, change }) => {
   return (
-    <div
-      className={`flex items-center justify-between p-4 rounded-2xl shadow bg-gradient-to-r ${color}`}
-    >
-      <div>
-        <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
-          {title}
-        </p>
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
-          {value}
-        </h2>
-        <p className="text-xs text-gray-500 dark:text-gray-400">{subText}</p>
-      </div>
-      <div className="text-gray-400 dark:text-gray-500">{icon}</div>
+    <div className="bg-white dark:bg-[#111] p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">
+      <p className="text-sm text-gray-500">{title}</p>
+      <h2 className="text-2xl font-semibold mt-1 text-gray-800 dark:text-gray-200">
+        {value}
+      </h2>
+      <span className="text-xs text-green-500">{change}</span>
     </div>
   );
 };

@@ -1,60 +1,51 @@
-import React from "react";
-import { Line } from "react-chartjs-2";
+import { Line, Bar } from "react-chartjs-2";
+import StatsCard from "./StatsCard";
 
-const VisitsReport = ({ data }) => {
-  const grouped = data.reduce((acc, v) => {
-    const date = new Date(v.date).toISOString().split("T")[0];
-    acc[date] = (acc[date] || 0) + 1;
-    return acc;
-  }, {});
-
-  const chartData = {
-    labels: Object.keys(grouped),
-    datasets: [
-      {
-        label: "Visits",
-        data: Object.values(grouped),
-        fill: false,
-        borderColor: "#81C784",
-        tension: 0.3,
-      },
-    ],
-  };
-
+const VisitsReport = () => {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div className="overflow-x-auto rounded-lg">
-        <table className="w-full text-left border-collapse">
-          <thead className="bg-gray-100 dark:bg-gray-800">
-            <tr>
-              <th className="px-4 py-2">ID</th>
-              <th className="px-4 py-2">Pet</th>
-              <th className="px-4 py-2">Owner</th>
-              <th className="px-4 py-2">Date</th>
-              <th className="px-4 py-2">Reason</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.map((v) => (
-              <tr
-                key={v.id}
-                className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900"
-              >
-                <td className="px-4 py-2">{v.id}</td>
-                <td className="px-4 py-2">{v.petName}</td>
-                <td className="px-4 py-2">{v.ownerName}</td>
-                <td className="px-4 py-2">{new Date(v.date).toLocaleDateString()}</td>
-                <td className="px-4 py-2">{v.reason}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+    <section className="space-y-4">
+
+      <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200">
+        Clinic Visits
+      </h2>
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatsCard title="Total Visits" value="5,421" change="+14%" />
+        <StatsCard title="Today" value="86" change="Active" />
+        <StatsCard title="Peak Day" value="Saturday" change="↗" />
+        <StatsCard title="Avg / Day" value="124" change="+6%" />
       </div>
 
-      <div className="flex items-center justify-center p-6 bg-white dark:bg-[#181818] rounded-xl shadow">
-        <Line data={chartData} />
+      <div className="grid lg:grid-cols-2 gap-6">
+
+        <div className="bg-white dark:bg-[#111] p-5 rounded-xl">
+          <h3 className="font-semibold mb-4">Daily Visits Trend</h3>
+          <div className="h-[260px]">
+            <Line
+              data={{
+                labels:["Mon","Tue","Wed","Thu","Fri","Sat","Sun"],
+                datasets:[{ data:[90,110,130,125,140,180,160] }]
+              }}
+              options={{ maintainAspectRatio:false }}
+            />
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-[#111] p-5 rounded-xl">
+          <h3 className="font-semibold mb-4">Visits per Service</h3>
+          <div className="h-[260px]">
+            <Bar
+              data={{
+                labels:["Consultation","Vaccination","Grooming","Surgery"],
+                datasets:[{ data:[220,300,180,90] }]
+              }}
+              options={{ maintainAspectRatio:false }}
+            />
+          </div>
+        </div>
+
       </div>
-    </div>
+    </section>
   );
 };
 

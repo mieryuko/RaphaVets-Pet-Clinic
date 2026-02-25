@@ -1,56 +1,48 @@
-import React from "react";
-import { Pie } from "react-chartjs-2";
+import { Line, Doughnut } from "react-chartjs-2";
+import StatsCard from "./StatsCard";
 
-const LostPetsReport = ({ data }) => {
-  const statusCount = data.reduce((acc, pet) => {
-    acc[pet.status] = (acc[pet.status] || 0) + 1;
-    return acc;
-  }, {});
-
-  const chartData = {
-    labels: Object.keys(statusCount),
-    datasets: [
-      {
-        data: Object.values(statusCount),
-        backgroundColor: ["#FF6B6B", "#F9AE16", "#5EE6FE", "#81C784"],
-      },
-    ],
-  };
-
+const LostPetsReport = () => {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div className="overflow-x-auto rounded-lg">
-        <table className="w-full text-left border-collapse">
-          <thead className="bg-gray-100 dark:bg-gray-800">
-            <tr>
-              <th className="px-4 py-2">ID</th>
-              <th className="px-4 py-2">Name</th>
-              <th className="px-4 py-2">Owner</th>
-              <th className="px-4 py-2">Status</th>
-              <th className="px-4 py-2">Date Reported</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.map((pet) => (
-              <tr
-                key={pet.id}
-                className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900"
-              >
-                <td className="px-4 py-2">{pet.id}</td>
-                <td className="px-4 py-2">{pet.name}</td>
-                <td className="px-4 py-2">{pet.ownerName}</td>
-                <td className="px-4 py-2">{pet.status}</td>
-                <td className="px-4 py-2">{new Date(pet.reportedAt).toLocaleDateString()}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+    <section className="space-y-4">
+
+      <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200">
+        Lost Pets Tracking
+      </h2>
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatsCard title="Total Reports" value="312" change="+6%" />
+        <StatsCard title="Recovered" value="198" change="+9%" />
+        <StatsCard title="Active Cases" value="114" change="-2%" />
+        <StatsCard title="Recovery Rate" value="63%" change="Good" />
       </div>
 
-      <div className="flex items-center justify-center p-6 bg-white dark:bg-[#181818] rounded-xl shadow">
-        <Pie data={chartData} />
+      <div className="grid lg:grid-cols-3 gap-6">
+
+        <div className="lg:col-span-2 bg-white dark:bg-[#111] p-5 rounded-xl">
+          <h3 className="font-semibold mb-4">Reports per Month</h3>
+          <div className="h-[260px]">
+            <Line
+              data={{
+                labels:["Jan","Feb","Mar","Apr","May","Jun"],
+                datasets:[{ data:[30,45,38,50,60,72] }]
+              }}
+              options={{ maintainAspectRatio:false }}
+            />
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-[#111] p-5 rounded-xl">
+          <h3 className="font-semibold mb-4">Recovery Status</h3>
+          <Doughnut
+            data={{
+              labels:["Recovered","Not Yet Found"],
+              datasets:[{ data:[63,37] }]
+            }}
+          />
+        </div>
+
       </div>
-    </div>
+    </section>
   );
 };
 

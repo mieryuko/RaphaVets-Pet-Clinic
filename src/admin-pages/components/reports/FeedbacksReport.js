@@ -1,45 +1,48 @@
-import React from "react";
-import { Bar } from "react-chartjs-2";
+import { Doughnut, Bar } from "react-chartjs-2";
+import StatsCard from "./StatsCard";
 
-const FeedbacksReport = ({ data }) => {
-  const ratingsCount = [1, 2, 3, 4, 5].map(
-    (rating) => data.filter((f) => f.rating === rating).length
-  );
-
-  const chartData = {
-    labels: ["1⭐", "2⭐", "3⭐", "4⭐", "5⭐"],
-    datasets: [
-      {
-        label: "Ratings",
-        data: ratingsCount,
-        backgroundColor: "#5EE6FE",
-      },
-    ],
-  };
-
+const FeedbacksReport = () => {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div className="grid grid-cols-1 gap-4">
-        {data.map((f) => (
-          <div
-            key={f.id}
-            className="p-4 bg-gray-50 dark:bg-gray-900 rounded-xl shadow"
-          >
-            <h3 className="font-semibold text-gray-800 dark:text-gray-100">
-              {f.clientName}
-            </h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Rating: {f.rating} ⭐
-            </p>
-            <p className="text-sm text-gray-600 dark:text-gray-300">{f.comment}</p>
-          </div>
-        ))}
+    <section className="space-y-4">
+
+      <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200">
+        Customer Feedback
+      </h2>
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatsCard title="Total Reviews" value="1,024" change="+10%" />
+        <StatsCard title="Avg Rating" value="4.6" change="Excellent" />
+        <StatsCard title="5★ Reviews" value="780" change="+12%" />
+        <StatsCard title="Low Ratings" value="42" change="-3%" />
       </div>
 
-      <div className="flex items-center justify-center p-6 bg-white dark:bg-[#181818] rounded-xl shadow">
-        <Bar data={chartData} />
+      <div className="grid lg:grid-cols-3 gap-6">
+
+        <div className="bg-white dark:bg-[#111] p-5 rounded-xl">
+          <h3 className="font-semibold mb-4">Ratings Breakdown</h3>
+          <Doughnut
+            data={{
+              labels:["5★","4★","3★","2★","1★"],
+              datasets:[{ data:[60,25,8,4,3] }]
+            }}
+          />
+        </div>
+
+        <div className="lg:col-span-2 bg-white dark:bg-[#111] p-5 rounded-xl">
+          <h3 className="font-semibold mb-4">Most Reviewed Services</h3>
+          <div className="h-[260px]">
+            <Bar
+              data={{
+                labels:["Consultation","Vaccination","Grooming"],
+                datasets:[{ data:[420,350,254] }]
+              }}
+              options={{ maintainAspectRatio:false }}
+            />
+          </div>
+        </div>
+
       </div>
-    </div>
+    </section>
   );
 };
 

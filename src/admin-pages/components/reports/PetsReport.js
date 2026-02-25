@@ -1,60 +1,48 @@
-import React from "react";
-import { Line } from "react-chartjs-2";
+import { Doughnut, Bar } from "react-chartjs-2";
+import StatsCard from "./StatsCard";
 
-const PetsReport = ({ data }) => {
-  const grouped = data.reduce((acc, p) => {
-    const date = new Date(p.createdAt).toISOString().split("T")[0];
-    acc[date] = (acc[date] || 0) + 1;
-    return acc;
-  }, {});
-
-  const chartData = {
-    labels: Object.keys(grouped),
-    datasets: [
-      {
-        label: "New Pets",
-        data: Object.values(grouped),
-        fill: false,
-        borderColor: "#F9AE16",
-        tension: 0.3,
-      },
-    ],
-  };
-
+const PetsReport = () => {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div className="overflow-x-auto rounded-lg">
-        <table className="w-full text-left border-collapse">
-          <thead className="bg-gray-100 dark:bg-gray-800">
-            <tr>
-              <th className="px-4 py-2">ID</th>
-              <th className="px-4 py-2">Name</th>
-              <th className="px-4 py-2">Species</th>
-              <th className="px-4 py-2">Owner</th>
-              <th className="px-4 py-2">Registered</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.map((p) => (
-              <tr
-                key={p.id}
-                className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900"
-              >
-                <td className="px-4 py-2">{p.id}</td>
-                <td className="px-4 py-2">{p.name}</td>
-                <td className="px-4 py-2">{p.species}</td>
-                <td className="px-4 py-2">{p.ownerName}</td>
-                <td className="px-4 py-2">{new Date(p.createdAt).toLocaleDateString()}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+    <section className="space-y-4">
+
+      <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200">
+        Pets Analytics
+      </h2>
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatsCard title="Total Pets" value="2,190" change="+11%" />
+        <StatsCard title="Dogs" value="1,340" change="+8%" />
+        <StatsCard title="Cats" value="720" change="+6%" />
+        <StatsCard title="Others" value="130" change="+2%" />
       </div>
 
-      <div className="flex items-center justify-center p-6 bg-white dark:bg-[#181818] rounded-xl shadow">
-        <Line data={chartData} />
+      <div className="grid lg:grid-cols-3 gap-6">
+
+        <div className="bg-white dark:bg-[#111] p-5 rounded-xl">
+          <h3 className="font-semibold mb-4">Pet Types</h3>
+          <Doughnut
+            data={{
+              labels:["Dogs","Cats","Others"],
+              datasets:[{ data:[61,33,6] }]
+            }}
+          />
+        </div>
+
+        <div className="lg:col-span-2 bg-white dark:bg-[#111] p-5 rounded-xl">
+          <h3 className="font-semibold mb-4">Monthly Registrations</h3>
+          <div className="h-[260px]">
+            <Bar
+              data={{
+                labels:["Jan","Feb","Mar","Apr","May","Jun"],
+                datasets:[{ data:[120,140,160,180,210,230] }]
+              }}
+              options={{ maintainAspectRatio:false }}
+            />
+          </div>
+        </div>
+
       </div>
-    </div>
+    </section>
   );
 };
 
