@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight } from "lucide-react";
 import api from "../../api/axios";
 import ClientLayout from "../ClientLayout";
 
@@ -12,6 +12,11 @@ export default function Videos() {
   const [filters, setFilters] = useState(["All"]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // For horizontal scroll
+  const scrollContainerRef = useRef(null);
+  const [showLeftArrow, setShowLeftArrow] = useState(false);
+  const [showRightArrow, setShowRightArrow] = useState(true);
 
   // Fetch videos and categories
   const fetchData = async () => {
@@ -47,6 +52,36 @@ export default function Videos() {
     fetchData();
   }, []);
 
+  // Check scroll position for arrows
+  const checkScroll = () => {
+    if (scrollContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+      setShowLeftArrow(scrollLeft > 0);
+      setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 10);
+    }
+  };
+
+  useEffect(() => {
+    checkScroll();
+    window.addEventListener('resize', checkScroll);
+    return () => window.removeEventListener('resize', checkScroll);
+  }, [filters]);
+
+  const scroll = (direction) => {
+    if (scrollContainerRef.current) {
+      const scrollAmount = 200;
+      const newScrollLeft = scrollContainerRef.current.scrollLeft + 
+        (direction === 'left' ? -scrollAmount : scrollAmount);
+      
+      scrollContainerRef.current.scrollTo({
+        left: newScrollLeft,
+        behavior: 'smooth'
+      });
+      
+      setTimeout(checkScroll, 300);
+    }
+  };
+
   // Filter + search
   const filtered = videos.filter(
     (v) =>
@@ -62,49 +97,53 @@ export default function Videos() {
   if (loading) {
     return (
       <ClientLayout>
-        <div className="max-w-6xl mx-auto w-full bg-white rounded-3xl p-6 mt-6 shadow-lg border border-gray-100">
-          {/* Header + search skeleton */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-            <div>
-              <div className="h-8 w-64 bg-gray-200 rounded-lg animate-pulse mb-2"></div>
-              <div className="h-4 w-80 bg-gray-200 rounded animate-pulse"></div>
+        <div className="max-w-6xl mx-auto w-full px-3 sm:px-4 md:px-0">
+          <div className="bg-white rounded-xl sm:rounded-2xl md:rounded-3xl p-4 sm:p-5 md:p-6 mt-4 sm:mt-5 md:mt-6 shadow-lg border border-gray-100">
+            {/* Header + search skeleton */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-5 md:mb-6">
+              <div className="w-full sm:w-auto">
+                <div className="h-6 sm:h-7 md:h-8 w-40 sm:w-48 md:w-64 bg-gray-200 rounded-lg animate-pulse mb-1 sm:mb-2"></div>
+                <div className="h-3 sm:h-4 w-48 sm:w-64 md:w-80 bg-gray-200 rounded animate-pulse"></div>
+              </div>
+              <div className="h-8 sm:h-9 md:h-10 w-full sm:w-48 md:w-64 bg-gray-200 rounded-full animate-pulse mt-2 sm:mt-0"></div>
             </div>
-            <div className="h-10 w-64 bg-gray-200 rounded-full animate-pulse mt-3 sm:mt-0"></div>
-          </div>
 
-          {/* Filters skeleton */}
-          <div className="flex flex-wrap gap-2 mb-6">
-            {[1, 2, 3, 4, 5, 6].map((item) => (
-              <div
-                key={item}
-                className="h-8 w-20 bg-gray-200 rounded-full animate-pulse"
-                style={{ animationDelay: `${item * 0.1}s` }}
-              ></div>
-            ))}
-          </div>
+            {/* Filters skeleton */}
+            <div className="relative mb-4 sm:mb-5 md:mb-6">
+              <div className="flex gap-1.5 sm:gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                {[1, 2, 3, 4, 5, 6, 7, 8].map((item) => (
+                  <div
+                    key={item}
+                    className="h-6 sm:h-7 md:h-8 w-14 sm:w-16 md:w-20 bg-gray-200 rounded-full animate-pulse flex-shrink-0"
+                    style={{ animationDelay: `${item * 0.1}s` }}
+                  ></div>
+                ))}
+              </div>
+            </div>
 
-          {/* Video grid skeleton */}
-          <div className="rounded-2xl border border-gray-100 bg-white p-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {[1, 2, 3, 4, 5, 6].map((item) => (
-                <div
-                  key={item}
-                  className="rounded-lg overflow-hidden border border-gray-100 shadow-sm bg-white animate-pulse"
-                  style={{ animationDelay: `${item * 0.1}s` }}
-                >
-                  {/* Thumbnail skeleton */}
-                  <div className="w-full aspect-video bg-gray-300"></div>
-                  
-                  <div className="p-3">
-                    <div className="h-4 w-3/4 bg-gray-200 rounded mb-2"></div>
-                    <div className="h-3 w-16 bg-gray-200 rounded mb-3"></div>
-                    <div className="flex items-center justify-between">
-                      <div className="h-3 w-24 bg-gray-200 rounded"></div>
-                      <div className="h-6 w-12 bg-gray-200 rounded-full"></div>
+            {/* Video grid skeleton */}
+            <div className="rounded-lg sm:rounded-xl md:rounded-2xl border border-gray-100 bg-white p-3 sm:p-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-5">
+                {[1, 2, 3, 4, 5, 6].map((item) => (
+                  <div
+                    key={item}
+                    className="rounded-lg overflow-hidden border border-gray-100 shadow-sm bg-white animate-pulse"
+                    style={{ animationDelay: `${item * 0.1}s` }}
+                  >
+                    {/* Thumbnail skeleton */}
+                    <div className="w-full aspect-video bg-gray-300"></div>
+                    
+                    <div className="p-2 sm:p-3">
+                      <div className="h-3 sm:h-4 w-3/4 bg-gray-200 rounded mb-1 sm:mb-2"></div>
+                      <div className="h-2 sm:h-3 w-12 sm:w-16 bg-gray-200 rounded mb-2 sm:mb-3"></div>
+                      <div className="flex items-center justify-between">
+                        <div className="h-2 sm:h-3 w-16 sm:w-20 md:w-24 bg-gray-200 rounded"></div>
+                        <div className="h-4 sm:h-5 md:h-6 w-8 sm:w-10 md:w-12 bg-gray-200 rounded-full"></div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -115,8 +154,10 @@ export default function Videos() {
   if (error) {
     return (
       <ClientLayout>
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="text-xl text-red-500">Error loading videos: {error}</div>
+        <div className="min-h-screen flex items-center justify-center p-4">
+          <div className="text-base sm:text-lg md:text-xl text-red-500 text-center">
+            Error loading videos: {error}
+          </div>
         </div>
       </ClientLayout>
     );
@@ -170,26 +211,31 @@ export default function Videos() {
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="max-w-6xl mx-auto w-full overflow-y-auto max-h-[calc(120vh-250px)]"
+        className="max-w-6xl mx-auto w-full px-3 sm:px-4 md:px-0 overflow-y-auto max-h-[calc(100vh-100px)] sm:max-h-[calc(100vh-120px)]"
       >
         <motion.div 
           variants={itemVariants}
-          className="bg-white rounded-3xl p-6 mt-6 shadow-lg border border-gray-100"
+          className="bg-white rounded-xl sm:rounded-2xl md:rounded-3xl p-4 sm:p-5 md:p-6 mt-4 sm:mt-5 md:mt-6 shadow-lg border border-gray-100"
         >
-          {/* Header + search */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+          {/* Header + search - Responsive */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-5 md:mb-6">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-[#2FA394]">Pet Video Library</h1>
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#2FA394]">
+                Pet Video Library
+              </h1>
+              <p className="text-xs sm:text-sm text-gray-500 mt-1">
+                Watch educational videos about pet care
+              </p>
             </div>
 
-            <div className="flex items-center gap-3 w-full sm:w-auto">
-              <div className="relative w-full sm:w-[320px]">
-                <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
+              <div className="relative w-full sm:w-[280px] md:w-[320px]">
+                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 sm:w-[18px] sm:h-[18px]" />
                 <motion.input
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search videos..."
-                  className="w-full pl-10 pr-4 py-2.5 rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#2FA394]"
+                  className="w-full pl-8 sm:pl-10 pr-3 sm:pr-4 py-1.5 sm:py-2 md:py-2.5 text-xs sm:text-sm rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#2FA394]"
                   whileFocus={{ scale: 1.02 }}
                   transition={{ duration: 0.2 }}
                 />
@@ -198,29 +244,57 @@ export default function Videos() {
           </div>
 
           {/* Filters */}
-          <motion.div 
-            variants={containerVariants}
-            className="flex flex-wrap gap-2 mb-6"
-          >
-            {filters.map((f, index) => (
-              <motion.button
-                key={f}
-                variants={itemVariants}
-                onClick={() => setActiveFilter(f)}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium ${
-                  activeFilter === f ? "bg-[#2FA394] text-white shadow-md" : "bg-gray-100 text-gray-700 hover:bg-[#E3FAF7]"
-                }`}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                transition={{ delay: index * 0.1 }}
+          <div className="relative mb-4 sm:mb-5 md:mb-6 group">
+            {/* Left Arrow */}
+            {showLeftArrow && (
+              <button
+                onClick={() => scroll('left')}
+                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-1 shadow-md hover:shadow-lg transition-all opacity-0 group-hover:opacity-100 md:opacity-100"
+                style={{ transform: 'translateY(-50%)' }}
               >
-                {f}
-              </motion.button>
-            ))}
-          </motion.div>
+                <ChevronLeft size={20} className="text-gray-600" />
+              </button>
+            )}
+
+            {/* Right Arrow */}
+            {showRightArrow && (
+              <button
+                onClick={() => scroll('right')}
+                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-1 shadow-md hover:shadow-lg transition-all opacity-0 group-hover:opacity-100 md:opacity-100"
+                style={{ transform: 'translateY(-50%)' }}
+              >
+                <ChevronRight size={20} className="text-gray-600" />
+              </button>
+            )}
+
+            <div
+              ref={scrollContainerRef}
+              onScroll={checkScroll}
+              className="flex gap-1.5 sm:gap-2 overflow-x-auto pb-2 scrollbar-hide scroll-smooth"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              {filters.map((f, index) => (
+                <motion.button
+                  key={f}
+                  variants={itemVariants}
+                  onClick={() => setActiveFilter(f)}
+                  className={`px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium transition-all whitespace-nowrap flex-shrink-0 ${
+                    activeFilter === f 
+                      ? "bg-[#2FA394] text-white shadow-md" 
+                      : "bg-gray-100 text-gray-700 hover:bg-[#E3FAF7]"
+                  }`}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  {f}
+                </motion.button>
+              ))}
+            </div>
+          </div>
 
           {/* Video grid */}
-          <div className="rounded-2xl border border-gray-100 bg-white p-4">
+          <div className="rounded-lg sm:rounded-xl md:rounded-2xl border border-gray-100 bg-white p-3 sm:p-4">
             <AnimatePresence mode="wait">
               {filtered.length ? (
                 <motion.div
@@ -229,7 +303,7 @@ export default function Videos() {
                   initial="hidden"
                   animate="visible"
                   exit="hidden"
-                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
+                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-5"
                 >
                   {filtered.map((v, index) => (
                     <motion.div 
@@ -244,25 +318,43 @@ export default function Videos() {
                         className="relative block w-full aspect-video overflow-hidden"
                         whileHover={{ scale: 1.02 }}
                       >
-                        <img src={thumbUrl(v.id)} alt={v.title} className="object-cover w-full h-full transition-transform duration-500" />
+                        <img 
+                          src={thumbUrl(v.id)} 
+                          alt={v.title} 
+                          className="object-cover w-full h-full transition-transform duration-500"
+                          onError={(e) => {
+                            e.target.src = "/images/video-placeholder.jpg";
+                          }}
+                        />
                         <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                          <div className="bg-white/90 rounded-full p-3 shadow">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-[#2FA394]" viewBox="0 0 20 20" fill="currentColor">
+                          <div className="bg-white/90 rounded-full p-1.5 sm:p-2 md:p-3 shadow">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-[#2FA394]" viewBox="0 0 20 20" fill="currentColor">
                               <path d="M6.21 5.23a.75.75 0 00-.96 1.16L9.5 10l-4.25 3.61a.75.75 0 10.96 1.16l5-4.25a.75.75 0 000-1.16l-5-4.25z" />
                             </svg>
                           </div>
                         </div>
                       </motion.button>
 
-                      <div className="p-3 text-left">
-                        <h3 className="text-sm font-semibold text-[#2FA394] mb-1">{v.title}</h3>
-                        <p className="text-xs text-gray-500 mb-2">{v.category}</p>
+                      <div className="p-2 sm:p-3 text-left">
+                        <h3 className="text-xs sm:text-sm font-semibold text-[#2FA394] mb-0.5 sm:mb-1 line-clamp-2">
+                          {v.title}
+                        </h3>
+                        <p className="text-[10px] sm:text-xs text-gray-500 mb-1 sm:mb-2">
+                          {v.category}
+                        </p>
 
-                        <div className="flex items-center justify-between">
-                          <a href={watchUrl(v.id)} target="_blank" rel="noreferrer" className="text-xs text-[#2FA394] hover:underline">Open on YouTube</a>
+                        <div className="flex items-center justify-between gap-1">
+                          <a 
+                            href={watchUrl(v.id)} 
+                            target="_blank" 
+                            rel="noreferrer" 
+                            className="text-[10px] sm:text-xs text-[#2FA394] hover:underline truncate"
+                          >
+                            Open on YouTube
+                          </a>
                           <motion.button 
                             onClick={() => setOpenVideoId(v.id)} 
-                            className="text-xs bg-[#5EE6FE] text-white px-3 py-1 rounded-full"
+                            className="text-[10px] sm:text-xs bg-[#5EE6FE] text-white px-2 sm:px-3 py-0.5 sm:py-1 rounded-full whitespace-nowrap"
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                           >
@@ -279,14 +371,24 @@ export default function Videos() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
-                  className="py-12 text-center text-gray-500"
+                  className="py-8 sm:py-10 md:py-12 text-center text-gray-500"
                 >
-                  No videos found.
+                  <Search size={32} className="mx-auto text-gray-300 mb-2 sm:w-8 sm:h-8 md:w-10 md:h-10" />
+                  <p className="text-xs sm:text-sm">No videos found matching your search.</p>
+                  <button 
+                    onClick={() => {
+                      setSearchQuery("");
+                      setActiveFilter("All");
+                    }}
+                    className="mt-2 text-xs sm:text-sm text-[#2FA394] hover:underline"
+                  >
+                    Clear filters
+                  </button>
                 </motion.div>
               )}
             </AnimatePresence>
             
-            <p className="text-xs text-gray-400 mt-3 text-center">
+            <p className="text-[10px] sm:text-xs text-gray-400 mt-3 sm:mt-4 text-center px-2">
               © Videos embedded from YouTube. All rights belong to their respective creators.
             </p>
           </div>
@@ -300,14 +402,16 @@ export default function Videos() {
             initial={{ opacity: 0 }} 
             animate={{ opacity: 1 }} 
             exit={{ opacity: 0 }} 
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-2 sm:p-3 md:p-4"
+            onClick={() => setOpenVideoId(null)}
           >
             <motion.div 
-              initial={{ y: 20 }} 
-              animate={{ y: 0 }} 
-              exit={{ y: 20 }} 
+              initial={{ y: 20, scale: 0.95 }} 
+              animate={{ y: 0, scale: 1 }} 
+              exit={{ y: 20, scale: 0.95 }} 
               transition={{ duration: 0.2 }} 
-              className="w-full max-w-4xl bg-black rounded-xl overflow-hidden"
+              className="w-full max-w-4xl bg-black rounded-lg sm:rounded-xl overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
             >
               <div className="relative pb-[56.25%]"> 
                 <iframe
@@ -320,13 +424,25 @@ export default function Videos() {
                 />
               </div>
 
-              <div className="flex items-center justify-between p-3 bg-white">
-                <div className="text-sm text-gray-700">Playing video</div>
-                <div className="flex items-center gap-2">
-                  <a href={watchUrl(openVideoId)} target="_blank" rel="noreferrer" className="text-sm text-[#2FA394]">Open on YouTube</a>
+              <div className="flex flex-col xs:flex-row items-start xs:items-center justify-between gap-2 p-2 sm:p-3 bg-white">
+                <div className="text-xs sm:text-sm text-gray-700 truncate max-w-full">
+                  <span className="font-medium">Now Playing:</span>{" "}
+                  <span className="text-gray-500">
+                    {videos.find(v => v.id === openVideoId)?.title || "Video"}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 w-full xs:w-auto">
+                  <a 
+                    href={watchUrl(openVideoId)} 
+                    target="_blank" 
+                    rel="noreferrer" 
+                    className="text-xs sm:text-sm text-[#2FA394] hover:underline whitespace-nowrap"
+                  >
+                    Open on YouTube
+                  </a>
                   <motion.button 
                     onClick={() => setOpenVideoId(null)} 
-                    className="px-3 py-1 bg-gray-100 rounded-md"
+                    className="px-2 sm:px-3 py-1 bg-gray-100 rounded-md text-xs sm:text-sm hover:bg-gray-200 transition-all"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >

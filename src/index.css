@@ -122,3 +122,12 @@ body {
 .animate-progress {
   animation: progressBar 3s linear forwards;
 }
+
+.scrollbar-hide {
+  -ms-overflow-style: none; 
+  scrollbar-width: none;   
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
