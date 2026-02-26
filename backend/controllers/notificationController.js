@@ -118,13 +118,21 @@ export const createForumPostNotification = async (req, res) => {
             );
         }
 
-        // 4. Send to online users via WebSocket
+        // 4. Send to online users via WebSocket - WITH FULL DETAILS
         await sendToOnlineUsers(users.map(u => u.accId), {
             notificationId,
             type: 'forum_update',
-            title: `New ${postType} Pet`,
-            message: `${creatorName} reported a ${postType.toLowerCase()} pet`,
-            data: { forumId: forumID, postType },
+            title: `New ${postType} Pet ${postType === 'Lost' ? '🐕' : '🐈'}`,  // ✅ Added emoji
+            message: `${creatorName} reported a ${postType.toLowerCase()} pet: ${description.substring(0, 50)}...`,  // ✅ Added description
+            fullDescription: description,  // ✅ Send full description
+            creatorName: creatorName,
+            postType: postType,
+            emoji: postType === 'Lost' ? '🐕' : '🐈',
+            data: { 
+                forumId: forumID, 
+                postType,
+                description: description  // ✅ Store full description in data
+            },
             createdAt: new Date()
         });
 
@@ -203,14 +211,13 @@ export const createPetTipsNotification = async (req, res) => {
             console.log('✅ [createPetTipsNotification] Notifications linked');
         }
 
-        // 4. Send to online users via WebSocket
-        console.log('🔍 [createPetTipsNotification] Sending to online users...');
         await sendToOnlineUsers(users.map(u => u.accId), {
             notificationId,
             type: 'pet_tips_update',
-            title: 'New Pet Care Tip 📝',
+            title: `New Pet Care Tip 📝`,  // ✅ Already has emoji
             message: title,
-            data: { petCareId: petCareID },
+            fullDescription: shortDescription,  // ✅ Add full description
+            data: { petCareId: petCareID, shortDescription },
             createdAt: new Date()
         });
 
@@ -287,9 +294,9 @@ export const createVideoNotification = async (req, res) => {
         await sendToOnlineUsers(users.map(u => u.accId), {
             notificationId,
             type: 'video_update',
-            title: `New Video: ${category[0]?.videoCategory || 'Educational'} 🎥`,
+            title: `New Video: ${category[0]?.videoCategory || 'Educational'} 🎥`,  // ✅ Already has emoji
             message: videoTitle,
-            data: { videoId: videoID },
+            data: { videoId: videoID, category: category[0]?.videoCategory },
             createdAt: new Date()
         });
 
@@ -838,32 +845,41 @@ export const deleteNotification = async (req, res) => {
 /**
  * Register WebSocket session (called when user connects)
  */
+/**
+ * Register WebSocket session (called when user connects)
+ */
 export const registerSocketSession = async (userId, socketId, userAgent, ipAddress) => {
     console.log('🔍 [registerSocketSession] Registering session:', { userId, socketId, userAgent, ipAddress });
     
     try {
-        // Deactivate old sessions
-        console.log('🔍 [registerSocketSession] Deactivating old sessions...');
+        // First, deactivate other sessions for this user (excluding current socket)
+        console.log('🔍 [registerSocketSession] Deactivating old sessions for user:', userId);
         await db.query(
             `UPDATE user_websocket_sessions_tbl 
              SET isActive = 0 
-             WHERE accID = ? AND isActive = 1`,
-            [userId]
+             WHERE accID = ? AND isActive = 1 AND socketID != ?`,
+            [userId, socketId]
         );
 
-        // Insert new session
-        console.log('🔍 [registerSocketSession] Inserting new session...');
-        await db.query(
+        // Insert with ON DUPLICATE KEY UPDATE - THIS FIXES THE ERROR!
+        console.log('🔍 [registerSocketSession] Inserting/Updating session...');
+        const [result] = await db.query(
             `INSERT INTO user_websocket_sessions_tbl 
-             (accID, socketID, userAgent, ipAddress, lastPingAt) 
-             VALUES (?, ?, ?, ?, NOW())`,
-            [userId, socketId, userAgent, ipAddress]
+             (accID, socketID, userAgent, ipAddress, lastPingAt, isActive) 
+             VALUES (?, ?, ?, ?, NOW(), 1)
+             ON DUPLICATE KEY UPDATE
+             lastPingAt = NOW(),
+             isActive = 1,
+             userAgent = VALUES(userAgent),
+             ipAddress = VALUES(ipAddress)`,
+            [userId, socketId, userAgent || 'unknown', ipAddress || 'unknown']
         );
 
-        console.log('✅ [registerSocketSession] Session registered successfully');
-
+        console.log('✅ [registerSocketSession] Session registered successfully', result);
+        return true;
     } catch (error) {
         console.error('❌ [registerSocketSession] Error:', error);
+        return false;
     }
 };
 
@@ -902,6 +918,20 @@ export const removeSocketSession = async (socketId) => {
         console.log('✅ [removeSocketSession] Session removed');
     } catch (error) {
         console.error('❌ [removeSocketSession] Error:', error);
+    }
+};
+
+export const getActiveSessions = async (userId) => {
+    try {
+        const [sessions] = await db.query(
+            `SELECT * FROM user_websocket_sessions_tbl 
+             WHERE accID = ? AND isActive = 1`,
+            [userId]
+        );
+        return sessions;
+    } catch (error) {
+        console.error('❌ [getActiveSessions] Error:', error);
+        return [];
     }
 };
 

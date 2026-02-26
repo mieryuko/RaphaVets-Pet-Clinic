@@ -57,6 +57,71 @@ export const createPost = async (req, res) => {
 
       await dbConn.commit();
 
+      // ===========================================
+      // 🔌 EMIT REAL-TIME POST TO ALL CONNECTED CLIENTS
+      // ===========================================
+      try {
+        // Get the complete post data with user info
+        const [newPostData] = await db.query(
+          `SELECT 
+            p.forumID, 
+            p.postType, 
+            p.description, 
+            p.contact, 
+            p.email, 
+            IF(p.isAnonymous, 'Anonymous', CONCAT(a.firstName, ' ', a.lastName)) AS userName,
+            p.createdAt,
+            p.accID,
+            p.isAnonymous
+          FROM forum_posts_tbl p
+          JOIN account_tbl a ON p.accID = a.accID
+          WHERE p.forumID = ?`,
+          [forumID]
+        );
+
+        // Get images for this post
+        const [postImages] = await db.query(
+          `SELECT forumImageID as id, imageName 
+           FROM forum_images_tbl 
+           WHERE forumID = ? AND isDeleted = FALSE`,
+          [forumID]
+        );
+
+        // Format the post exactly like your frontend expects
+        const formattedPost = {
+          id: newPostData[0].forumID,
+          type: newPostData[0].postType,
+          user: newPostData[0].userName,
+          desc: newPostData[0].description,
+          contact: newPostData[0].contact,
+          email: newPostData[0].email,
+          date: new Date(newPostData[0].createdAt).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+          }),
+          accID: newPostData[0].accID,
+          anonymous: Boolean(newPostData[0].isAnonymous),
+          images: postImages.map(img => ({
+            id: img.id,
+            url: `${req.protocol}://${req.get('host')}/api/forum/images/${img.imageName}`,
+            imageName: img.imageName,
+          }))
+        };
+
+        // Get socket instance and emit to ALL connected clients
+        const io = req.app.get('io');
+        io.emit('new_forum_post', formattedPost);
+        console.log('📢 [createPost] Real-time post emitted to all clients');
+
+      } catch (socketError) {
+        console.error('⚠️ [createPost] Failed to emit real-time post:', socketError);
+        // Don't fail the request if socket emission fails
+      }
+
+      // ===========================================
+      // 🔔 TRIGGER NOTIFICATION
+      // ===========================================
       try {
           console.log('🔔 [createPost] Triggering notification for new forum post...');
           
@@ -198,8 +263,9 @@ export const getAllPosts = async (req, res) => {
 
 export const updatePost = async (req, res) => { 
     const { postType, description, contact, email, isAnonymous, deletedImages } = req.body;
+    const forumID = req.params.id;
 
-     {/* Validate required fields */}
+    // Validate required fields
     const updates = {};
     if (postType !== undefined) updates.postType = postType;
     if (description !== undefined) updates.description = description;
@@ -207,7 +273,7 @@ export const updatePost = async (req, res) => {
     if (email !== undefined) updates.email = email;
     if (isAnonymous !== undefined) updates.isAnonymous = isAnonymous;
 
-    {/* Validate required fields */}
+    // Validate required fields
     if (postType !== undefined && !['Lost', 'Found'].includes(postType)) {
       return res.status(400).json({ message: "❌ Invalid post type." });
     }
@@ -241,7 +307,7 @@ export const updatePost = async (req, res) => {
 
     let setClause = Object.keys(updates).map(key => `${key} = ?`).join(', ');
     const values = Object.values(updates);
-    values.push(req.params.id); // forumID for WHERE clause
+    values.push(forumID); // forumID for WHERE clause
     
     try {
       await dbConn.beginTransaction();
@@ -263,7 +329,7 @@ export const updatePost = async (req, res) => {
         "SELECT COUNT(DISTINCT forumImageID) as imageCount " + 
         "FROM forum_images_tbl " +
         "WHERE forumID = ? AND isDeleted = FALSE",
-        req.params.id
+        forumID
       );
       const existingCount = forumImageCount[0].imageCount;
       console.log("Existing images: ", existingCount);
@@ -279,11 +345,11 @@ export const updatePost = async (req, res) => {
       for (const imgId of deletedArray) {
           const [imgRows] = await dbConn.query(
               "SELECT imageName FROM forum_images_tbl WHERE forumImageID = ? AND forumID = ? AND isDeleted = FALSE",
-              [imgId, req.params.id]
+              [imgId, forumID]
           );
           await dbConn.query(
               "UPDATE forum_images_tbl SET isDeleted = TRUE WHERE forumImageID = ? AND forumID = ?",
-              [imgId, req.params.id]
+              [imgId, forumID]
           );
           if (imgRows.length) {
               const imagePath = path.join(process.cwd(), '..', 'uploads/forum', imgRows[0].imageName);
@@ -300,7 +366,7 @@ export const updatePost = async (req, res) => {
       }  
       //Handle new images
       if (newImages.length > 0) {
-          const imageData = newImages.map(file => [req.params.id, file.filename]);
+          const imageData = newImages.map(file => [forumID, file.filename]);
           await dbConn.query(
               "INSERT INTO forum_images_tbl (forumID, imageName) VALUES ?",
               [imageData]
@@ -308,12 +374,83 @@ export const updatePost = async (req, res) => {
       }
 
       await dbConn.commit();
+
+      // ===========================================
+      // 🔌 EMIT REAL-TIME POST UPDATE TO ALL CLIENTS
+      // ===========================================
+      try {
+        // Get the updated post data with user info
+        const [updatedPostData] = await db.query(
+          `SELECT 
+            p.forumID, 
+            p.postType, 
+            p.description, 
+            p.contact, 
+            p.email, 
+            IF(p.isAnonymous, 'Anonymous', CONCAT(a.firstName, ' ', a.lastName)) AS userName,
+            p.createdAt,
+            p.lastUpdatedAt,
+            p.accID,
+            p.isAnonymous
+          FROM forum_posts_tbl p
+          JOIN account_tbl a ON p.accID = a.accID
+          WHERE p.forumID = ?`,
+          [forumID]
+        );
+
+        // Get images for this post
+        const [postImages] = await db.query(
+          `SELECT forumImageID as id, imageName 
+           FROM forum_images_tbl 
+           WHERE forumID = ? AND isDeleted = FALSE`,
+          [forumID]
+        );
+
+        // Format the post exactly like your frontend expects
+        const formattedPost = {
+          id: updatedPostData[0].forumID,
+          type: updatedPostData[0].postType,
+          user: updatedPostData[0].userName,
+          desc: updatedPostData[0].description,
+          contact: updatedPostData[0].contact,
+          email: updatedPostData[0].email,
+          date: new Date(updatedPostData[0].createdAt).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+          }),
+          lastUpdated: new Date(updatedPostData[0].lastUpdatedAt).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+          }),
+          accID: updatedPostData[0].accID,
+          anonymous: Boolean(updatedPostData[0].isAnonymous),
+          images: postImages.map(img => ({
+            id: img.id,
+            url: `${req.protocol}://${req.get('host')}/api/forum/images/${img.imageName}`,
+            imageName: img.imageName,
+          }))
+        };
+
+        // Get socket instance and emit to ALL connected clients
+        const io = req.app.get('io');
+        io.emit('update_forum_post', formattedPost);
+        console.log(`📢 [updatePost] Real-time update emitted for post ID: ${forumID}`);
+
+      } catch (socketError) {
+        console.error('⚠️ [updatePost] Failed to emit real-time update:', socketError);
+        // Don't fail the request if socket emission fails
+      }
+
       res.status(200).json({ message: "✅ Post updated successfully." });
     } catch (error) {
       await dbConn.rollback();
       console.error("❌ Error updating post:", error);
       res.status(500).json({ message: "Server error" });
-    }finally {
+    } finally {
       dbConn.release();
     } 
 };
@@ -353,12 +490,24 @@ export const deletePost = async (req, res) => {
             });
         }
         await dbConn.commit();
+
+        // ===========================================
+        // 🔌 EMIT REAL-TIME POST DELETION TO ALL CLIENTS
+        // ===========================================
+        try {
+            const io = req.app.get('io');
+            io.emit('delete_forum_post', { postId: parseInt(forumID) });
+            console.log(`📢 [deletePost] Real-time deletion emitted for post ID: ${forumID}`);
+        } catch (socketError) {
+            console.error('⚠️ [deletePost] Failed to emit real-time deletion:', socketError);
+        }
+
         res.status(200).json({ message: "✅ Post deleted successfully." });
     } catch (error) {
         await dbConn.rollback();
         console.error("❌ Error deleting post:", error);
         res.status(500).json({ message: "Error deleting post: " + error.message });
-    }finally {
+    } finally {
         dbConn.release();
     }
 };

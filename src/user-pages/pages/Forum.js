@@ -4,6 +4,7 @@ import Sidebar from "../template/SideBar";
 import api from "../../api/axios";
 import { se } from "date-fns/locale";
 import { pre } from "framer-motion/client";
+import socket from "../../socket"; // Import socket
 
 function Forum() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -59,6 +60,56 @@ function Forum() {
       console.error(message);
     }
   };
+
+  // ===========================================
+  // 🔌 REAL-TIME SOCKET LISTENER FOR NEW POSTS
+  // ===========================================
+  useEffect(() => {
+    console.log('🔌 Setting up real-time forum post listener...');
+    
+    // Listen for new forum posts
+    socket.on('new_forum_post', (newPost) => {
+      console.log('📢 [Socket] New real-time post received:', newPost);
+      
+      // Add the new post to the beginning of the posts array
+      setPosts(prevPosts => [newPost, ...prevPosts]);
+      
+      // Show a small notification
+      setSuccessMessage("New post arrived!");
+      setShowSuccess(true);
+      setTimeout(() => {
+        setShowSuccess(false);
+        setSuccessMessage("");
+      }, 2000);
+    });
+
+    // Listen for post deletions
+  socket.on('delete_forum_post', ({ postId }) => {
+    console.log('🗑️ [Socket] Post deleted:', postId);
+    
+    setPosts(prevPosts => prevPosts.filter(post => post.id !== postId));
+    
+    // Also close modal if the deleted post is currently being viewed
+    if (selectedPost?.id === postId) {
+      setShowViewModal(false);
+      setSelectedPost(null);
+    }
+    
+    // Show a notification
+    setSuccessMessage("A post was deleted");
+    setShowSuccess(true);
+    setTimeout(() => {
+      setShowSuccess(false);
+      setSuccessMessage("");
+    }, 2000);
+  });
+
+    // Cleanup listener on component unmount
+    return () => {
+      console.log('🔌 Cleaning up real-time forum post listener');
+      socket.off('new_forum_post');
+    };
+  }, []);
 
   useEffect(() => {
     if (fetchedOnce.current) return;
@@ -173,7 +224,8 @@ function Forum() {
           const createdPost = res.data;
           console.log("Post created:", createdPost);
 
-          fetchPosts();
+          // ❌ REMOVED fetchPosts() - now using real-time updates
+          
           setShowCreateModal(false);
           setNewPost({ ...emptyPostTemplate, user: newPost.user });
           setInputKey(Date.now());
@@ -230,7 +282,6 @@ function Forum() {
       const updatedPost = res.data;
       console.log("Post updated:", updatedPost);
 
-      fetchPosts();
       setShowCreateModal(false);
       setNewPost({ ...emptyPostTemplate, user: newPost.user });
       setOriginalPost(null);
@@ -270,7 +321,6 @@ function Forum() {
   const handleMarkAsFound = async (postId) => {
     try {
       await api.put(`/forum/${postId}`, { postType: "Found" });
-      await fetchPosts();
       setShowViewModal(false);
 
       setSuccessMessage("Post marked as Found!");
@@ -290,7 +340,6 @@ function Forum() {
   const handleDeletePost = async () => {
     try {
       await api.delete(`/forum/${postToDelete}`);
-      await fetchPosts();
 
       setSuccessMessage("Post deleted successfully!");
       setShowSuccess(true);

@@ -1,5 +1,6 @@
 // backend/socket.js
 import { Server } from 'socket.io';
+import { registerSocketSession, removeSocketSession } from './controllers/notificationController.js';
 
 let io;
 
@@ -14,11 +15,26 @@ export const initializeSocket = (server) => {
     io.on('connection', (socket) => {
         console.log('New client connected:', socket.id);
 
+        // Get client info for database
+        const userAgent = socket.handshake.headers['user-agent'];
+        const ipAddress = socket.handshake.address;
+
         // Handle user joining their room
-        socket.on('join', (userId) => {
+        socket.on('join', async (userId) => {
             if (userId) {
                 socket.join(`user_${userId}`);
                 console.log(`User ${userId} joined room user_${userId}`);
+                
+                // 🔴 ADD THIS - Register in database
+                try {
+                    await registerSocketSession(userId, socket.id, userAgent, ipAddress);
+                    console.log(`✅ Session saved to database for user ${userId}`);
+                    
+                    // Send confirmation back to client
+                    socket.emit('joined_room', { success: true, userId });
+                } catch (error) {
+                    console.error(`❌ Failed to save session:`, error);
+                }
             }
         });
 
@@ -35,8 +51,16 @@ export const initializeSocket = (server) => {
         });
 
         // Handle disconnection
-        socket.on('disconnect', () => {
+        socket.on('disconnect', async () => {
             console.log('Client disconnected:', socket.id);
+            
+            // 🔴 ADD THIS - Remove from database
+            try {
+                await removeSocketSession(socket.id);
+                console.log(`✅ Session removed from database for socket ${socket.id}`);
+            } catch (error) {
+                console.error(`❌ Failed to remove session:`, error);
+            }
         });
     });
 
