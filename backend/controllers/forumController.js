@@ -5,12 +5,14 @@ import e from "express";
 import { em } from "framer-motion/client";
 import { log } from "console";
 
+import { createForumPostNotification } from "./notificationController.js";
+
 
 export const createPost = async (req, res) => {
     const {postType, description, contact, email, isAnonymous} = req.body;
     const accID = req.user.id;
 
-    {/* Validate required fields */}
+    // Validate required fields
     if(!postType || !['Lost', 'Found'].includes(postType)){
         return res.status(400).json({ message: "❌ Invalid post type." });
     }
@@ -27,7 +29,7 @@ export const createPost = async (req, res) => {
         return res.status(400).json({ message: "❌ Invalid email format." });
     }
 
-    {/* Validate images */}
+    // Validate images
     if(req.files?.length < 1){
         return res.status(400).json({ message: "❌ Please provide at least 1 image" });
     }
@@ -43,7 +45,7 @@ export const createPost = async (req, res) => {
           [accID, postType, description, contact, email, isAnonymous]
       );
 
-      const forumID = result.insertId
+      const forumID = result.insertId;
 
       if (req.files?.length > 0) {
           const imageData = req.files.map(file => [forumID, file.filename]);
@@ -51,10 +53,53 @@ export const createPost = async (req, res) => {
               "INSERT INTO forum_images_tbl (forumID, imageName) VALUES ?",
               [imageData]
           );
-    }
+      }
 
-    await dbConn.commit();
-    res.status(201).json({ id: result.insertId, accID, postType, description, contact, email, isAnonymous });
+      await dbConn.commit();
+
+      try {
+          console.log('🔔 [createPost] Triggering notification for new forum post...');
+          
+          // Create a mock request for the notification controller
+          const notifReq = {
+              body: {
+                  forumID: forumID,
+                  accID: accID,
+                  postType: postType,
+                  description: description,
+                  isAnonymous: isAnonymous === 1 || isAnonymous === true
+              },
+              user: req.user
+          };
+          
+          // Create a mock response
+          const notifRes = {
+              status: (code) => ({
+                  json: (data) => {
+                      console.log(`🔔 [createPost] Notification response (${code}):`, data);
+                  }
+              })
+          };
+
+          // Call the notification controller
+          await createForumPostNotification(notifReq, notifRes);
+          console.log('✅ [createPost] Notification triggered successfully');
+          
+      } catch (notifError) {
+          // Log but don't fail the main request if notification fails
+          console.error('⚠️ [createPost] Failed to send notification:', notifError);
+      }
+
+      res.status(201).json({ 
+          id: forumID, 
+          accID, 
+          postType, 
+          description, 
+          contact, 
+          email, 
+          isAnonymous 
+      });
+
   } catch (error) {
     await dbConn.rollback();
     console.error("❌ Error creating post:", error);

@@ -5,7 +5,7 @@ import pool from "../config/db.js";
 import nodemailer from "nodemailer";
 import crypto from "crypto";
 
-// ✅ FIX: Use createTransport (singular), not createTransporter
+// Email transporter setup
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
@@ -14,7 +14,7 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// Test the email configuration (optional)
+// Test email configuration
 transporter.verify(function (error, success) {
   if (error) {
     console.log("❌ Email transporter error:", error);
@@ -192,7 +192,6 @@ export const resetPassword = async (req, res) => {
   }
 };
 
-// Your existing loginUser and other functions remain the same...
 export const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
@@ -208,7 +207,7 @@ export const loginUser = async (req, res) => {
 
     const user = rows[0];
 
-    // ✅ Check if account is deleted
+    // Check if account is deleted
     if (user.isDeleted) {
       return res.status(403).json({ message: "This account has been deleted" });
     }
@@ -218,7 +217,7 @@ export const loginUser = async (req, res) => {
       return res.status(400).json({ message: "Invalid email or password" });
     }
 
-    // ✅ Update login timestamp
+    // Update login timestamp
     await pool.query(
       "UPDATE account_tbl SET logInAt = NOW() WHERE accId = ?",
       [user.accId]
@@ -250,7 +249,7 @@ export const loginUser = async (req, res) => {
 export const logoutUser = async (req, res) => {
   try {
     // Try to get userId from multiple sources
-    const userId = req.userId || req.body.userId; // Check both token and request body
+    const userId = req.userId || req.body.userId || req.user?.id;
 
     if (userId) {
       // Update logout timestamp
@@ -258,7 +257,16 @@ export const logoutUser = async (req, res) => {
         "UPDATE account_tbl SET logOutAt = NOW(), lastUpdatedAt = NOW() WHERE accId = ?", 
         [userId]
       );
-      console.log(`✅ Logout timestamp updated for user ID: ${userId}`);
+      
+      // Deactivate any active socket sessions for this user
+      await pool.query(
+        `UPDATE user_websocket_sessions_tbl 
+         SET isActive = 0 
+         WHERE accID = ? AND isActive = 1`,
+        [userId]
+      );
+      
+      console.log(`✅ Logout processed for user ID: ${userId}`);
     } else {
       console.log("⚠️ No userId found. Proceeding with logout without timestamp update.");
     }

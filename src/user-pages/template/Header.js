@@ -1,79 +1,248 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import socket from "../../socket";
+import api from "../../api/axios";
 
 function Header({ darkMode, setDarkMode, setIsMenuOpen }) {
   const navigate = useNavigate();
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [loading, setLoading] = useState(false);
   const notificationRef = useRef(null);
 
-  useEffect(() => {
-    const mockNotifications = [
-      {
-        id: 1,
-        type: "laboratory",
-        title: "Lab Results Available",
-        message: "Dr. Ano name has uploaded lab records for Bogart's blood test",
-        time: "5 min ago",
-        read: false,
-        icon: "fa-file-medical",
-        color: "text-red-500"
-      },
-      {
-        id: 2,
-        type: "lost_pet",
-        title: "Lost Pet Alert",
-        message: "Mark Mapili posted a lost Golden Retriever near Central Park",
-        time: "15 min ago",
-        read: false,
-        icon: "fa-paw",
-        color: "text-amber-500"
-      },
-      {
-        id: 3,
-        type: "care_tip",
-        title: "New Pet Care Tip",
-        message: "Learn about seasonal allergies in dogs and how to manage them",
-        time: "1 hour ago",
-        read: true,
-        icon: "fa-lightbulb",
-        color: "text-emerald-500"
-      },
-      {
-        id: 4,
-        type: "video",
-        title: "New Educational Video",
-        message: "Watch our latest video on dental care for senior pets",
-        time: "2 hours ago",
-        read: true,
-        icon: "fa-film",
-        color: "text-blue-500"
-      },
-      {
-        id: 5,
-        type: "appointment",
-        title: "Appointment Reminder",
-        message: "Bogart's consultation is scheduled for tomorrow at 3:00 PM",
-        time: "3 hours ago",
-        read: true,
-        icon: "fa-calendar-check",
-        color: "text-purple-500"
-      },
-      {
-        id: 6,
-        type: "medical",
-        title: "Medical History Update",
-        message: "Dr. jhd updated Bogart's vaccination records",
-        time: "5 hours ago",
-        read: true,
-        icon: "fa-file-medical",
-        color: "text-cyan-500"
+  // Format time based on how recent
+  const formatNotificationTime = (timestamp) => {
+    if (!timestamp) return 'Just now';
+    
+    const now = new Date();
+    const notifDate = new Date(timestamp);
+    const diffMs = now - notifDate;
+    const diffMins = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins} min ago`;
+    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+    
+    return notifDate.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric',
+      year: notifDate.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
+    });
+  };
+
+  // Map notification type to icon and color
+  const getNotificationStyle = (type) => {
+    const styles = {
+      forum_update: { icon: 'fa-paw', color: 'text-orange-500' },
+      pet_tips_update: { icon: 'fa-lightbulb', color: 'text-yellow-500' },
+      video_update: { icon: 'fa-video', color: 'text-purple-500' },
+      appointment_update: { icon: 'fa-calendar-check', color: 'text-green-500' },
+      medical_record_update: { icon: 'fa-notes-medical', color: 'text-red-500' },
+      lab_record_update: { icon: 'fa-flask', color: 'text-blue-500' }
+    };
+    return styles[type] || { icon: 'fa-bell', color: 'text-gray-500' };
+  };
+
+  // Get navigation link based on notification type
+  const getNotificationLink = (type) => {
+    switch (type) {
+      case 'forum_update':
+        return '/forum';
+      case 'pet_tips_update':
+        return '/pet-tips';
+      case 'video_update':
+        return '/videos';
+      case 'appointment_update':
+        return '/appointments';
+      case 'medical_record_update':
+      case 'lab_record_update':
+        return '/medical-records';
+      default:
+        return '#';
+    }
+  };
+
+  // Fetch notifications from API
+  const fetchNotifications = async () => {
+    setLoading(true);
+    try {
+      const response = await api.get('/notifications');
+      console.log('📥 [fetchNotifications] Response:', response.data);
+      
+      if (response.data.success) {
+        // Transform the notifications to match component format
+        const formattedNotifications = response.data.notifications.map(notif => {
+          const style = getNotificationStyle(notif.typeName);
+          return {
+            id: notif.notificationID,
+            notificationId: notif.notificationID,
+            title: notif.title,
+            message: notif.message,
+            timestamp: notif.createdAt,
+            read: notif.isRead === 1,
+            type: notif.typeName,
+            icon: style.icon,
+            color: style.color,
+            link: getNotificationLink(notif.typeName)
+          };
+        });
+        setNotifications(formattedNotifications);
+        
+        // Update unread count
+        const unreadResponse = await api.get('/notifications/unread-count');
+        if (unreadResponse.data.success) {
+          setUnreadCount(unreadResponse.data.unread);
+        }
       }
-    ];
-    setNotifications(mockNotifications);
+    } catch (error) {
+      console.error('Failed to fetch notifications:', error);
+      setNotifications([]);
+      setUnreadCount(0);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch unread count only
+  const fetchUnreadCount = async () => {
+    try {
+      const response = await api.get('/notifications/unread-count');
+      if (response.data.success) {
+        setUnreadCount(response.data.unread);
+      }
+    } catch (error) {
+      console.error('Failed to fetch unread count:', error);
+    }
+  };
+
+  // Socket.IO setup for real-time notifications
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const userId = user?.id;
+    console.log('👤 [Socket] Current user:', userId);
+
+    if (userId) {
+      if (!socket.connected) {
+        console.log('🔌 [Socket] Connecting...');
+        socket.connect();
+      }
+      
+      console.log('🎯 [Socket] Joining room for user:', userId);
+      socket.emit('join', userId);
+
+      // Listen for new notifications
+      socket.on('new_notification', (notification) => {
+        console.log('📨 [Socket] RAW notification received:', notification);
+        
+        // Transform the backend notification to frontend format
+        const style = getNotificationStyle(notification.type);
+        
+        const formattedNotification = {
+          id: notification.notificationId || Date.now(),
+          notificationId: notification.notificationId,
+          title: notification.title || 'New Notification',
+          message: notification.message || '',
+          timestamp: notification.createdAt || new Date().toISOString(),
+          read: false,
+          type: notification.type || 'forum_update',
+          icon: style.icon,
+          color: style.color,
+          link: getNotificationLink(notification.type)
+        };
+        
+        console.log('📨 [Socket] FORMATTED notification:', formattedNotification);
+        
+        // Update state with the new notification
+        setNotifications(prev => {
+          // Check if notification already exists to avoid duplicates
+          const exists = prev.some(n => n.notificationId === formattedNotification.notificationId);
+          if (exists) {
+            console.log('⚠️ [Socket] Notification already exists, skipping');
+            return prev;
+          }
+          return [formattedNotification, ...prev];
+        });
+        
+        // Update unread count
+        setUnreadCount(prev => {
+          console.log('📨 [Socket] Previous unread:', prev);
+          const newCount = prev + 1;
+          console.log('📨 [Socket] New unread:', newCount);
+          return newCount;
+        });
+      });
+
+      // Listen for notification read updates
+      socket.on('notification_read', ({ notificationId }) => {
+        console.log('📖 [Socket] Notification marked read:', notificationId);
+        setNotifications(prev =>
+          prev.map(notif =>
+            notif.notificationId === notificationId ? { ...notif, read: true } : notif
+          )
+        );
+        // Update unread count
+        setUnreadCount(prev => Math.max(0, prev - 1));
+      });
+
+      // Listen for all read event
+      socket.on('all_read', () => {
+        console.log('📚 [Socket] All notifications marked read');
+        setNotifications(prev =>
+          prev.map(notif => ({ ...notif, read: true }))
+        );
+        setUnreadCount(0);
+      });
+
+      // Listen for notification deleted
+      socket.on('notification_deleted', ({ notificationId }) => {
+        console.log('🗑️ [Socket] Notification deleted:', notificationId);
+        setNotifications(prev => 
+          prev.filter(notif => notif.notificationId !== notificationId)
+        );
+      });
+
+      socket.on('connect', () => {
+        console.log('✅ [Socket] Connected:', socket.id);
+      });
+
+      socket.on('disconnect', () => {
+        console.log('❌ [Socket] Disconnected');
+      });
+
+      socket.on('connect_error', (error) => {
+        console.error('❌ [Socket] Connection error:', error);
+      });
+    }
+
+    return () => {
+      if (userId) {
+        console.log('🧹 [Socket] Cleaning up listeners');
+        socket.off('new_notification');
+        socket.off('notification_read');
+        socket.off('all_read');
+        socket.off('notification_deleted');
+        socket.off('connect');
+        socket.off('disconnect');
+        socket.off('connect_error');
+      }
+    };
   }, []);
 
+  // Fetch notifications on component mount
+  useEffect(() => {
+    fetchNotifications();
+    
+    const interval = setInterval(fetchUnreadCount, 30000);
+    
+    return () => clearInterval(interval);
+  }, []);
+
+  // Close notifications when clicking outside
   useEffect(() => {
     function handleClickOutside(event) {
       if (notificationRef.current && !notificationRef.current.contains(event.target)) {
@@ -101,46 +270,70 @@ function Header({ darkMode, setDarkMode, setIsMenuOpen }) {
     setShowNotifications(!showNotifications);
   };
 
-  const handleNotificationItemClick = (notification) => {
+  const handleNotificationItemClick = async (notification) => {
+    console.log('👆 Clicked notification:', notification);
+    
+    // Update local state optimistically
     setNotifications(prev =>
       prev.map(notif =>
-        notif.id === notification.id ? { ...notif, read: true } : notif
+        notif.notificationId === notification.notificationId ? { ...notif, read: true } : notif
       )
     );
+    
+    if (!notification.read) {
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    }
 
-    switch (notification.type) {
-      case "medical":
-        navigate("/medical-records");
-        break;
-      case "lost_pet":
-        navigate("/lost-pets");
-        break;
-      case "care_tip":
-        navigate("/pet-tips");
-        break;
-      case "video":
-        navigate("/videos");
-        break;
-      case "appointment":
-        navigate("/appointments");
-        break;
-      case "forum":
-        navigate("/forum");
-        break;
-      default:
-        break;
+    // Mark as read on server
+    try {
+      await api.post(`/notifications/${notification.notificationId}/read`);
+      console.log('✅ Marked as read on server');
+      
+      // Emit read event through socket
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      if (user?.id) {
+        socket.emit('notificationRead', {
+          userId: user.id,
+          notificationId: notification.notificationId
+        });
+      }
+    } catch (error) {
+      console.error('Failed to mark notification as read:', error);
+      // Revert on error
+      fetchNotifications();
+    }
+
+    // Navigate based on notification link
+    if (notification.link && notification.link !== '#') {
+      navigate(notification.link);
     }
     
     setShowNotifications(false);
   };
 
-  const markAllAsRead = () => {
+  const markAllAsRead = async () => {
+    const previousNotifications = [...notifications];
+    const previousCount = unreadCount;
+    
     setNotifications(prev =>
       prev.map(notif => ({ ...notif, read: true }))
     );
-  };
+    setUnreadCount(0);
 
-  const unreadCount = notifications.filter(notif => !notif.read).length;
+    try {
+      await api.post('/notifications/mark-all-read');
+      console.log('✅ All marked as read on server');
+      
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      if (user?.id) {
+        socket.emit('allNotificationsRead', { userId: user.id });
+      }
+    } catch (error) {
+      console.error('Failed to mark all as read:', error);
+      setNotifications(previousNotifications);
+      setUnreadCount(previousCount);
+    }
+  };
 
   return (
     <div className="pt-5 pb-2 px-4 sm:px-6 md:px-10 flex flex-row justify-between items-center relative z-40 fixed top-0 left-0 right-0 bg-transparent">
@@ -165,12 +358,11 @@ function Header({ darkMode, setDarkMode, setIsMenuOpen }) {
             <span className="text-[#000000]">RV</span>
             <span className="text-[#5EE6FE]">Care</span>
           </div>
-          {/*<span className="font-sansation text-xs sm:text-sm">Pet Clinic</span>*/}
         </div>
       </div>
 
-      {/* RIGHT SIDE - NOTIF + FORUM + MODE TOGGLE */}
-      <div className="flex flex-row justify-end items-center gap-3 sm:gap-5 md:gap-8 text-g y-700 flex-shrink-0">
+      {/* RIGHT SIDE - NOTIF + FORUM */}
+      <div className="flex flex-row justify-end items-center gap-3 sm:gap-5 md:gap-8 text-gray-700 flex-shrink-0">
         {/* Notification */}
         <div className="relative" ref={notificationRef}>
           <div
@@ -179,13 +371,13 @@ function Header({ darkMode, setDarkMode, setIsMenuOpen }) {
           >
             <i className="fa-solid fa-bell"></i>
             {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 bg-red-500 text-white text-[10px] sm:text-xs rounded-full h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center">
-                {unreadCount}
+              <span className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 bg-red-500 text-white text-[10px] sm:text-xs rounded-full h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center animate-pulse">
+                {unreadCount > 9 ? '9+' : unreadCount}
               </span>
             )}
           </div>
 
-          {/* Notification Dropdown*/}
+          {/* Notification Dropdown */}
           {showNotifications && (
             <div className="fixed right-2 sm:right-4 top-16 sm:top-20 w-[calc(100vw-1rem)] sm:w-80 md:w-96 bg-white rounded-xl shadow-2xl border border-gray-200 z-50">
               {/* Header */}
@@ -203,7 +395,12 @@ function Header({ darkMode, setDarkMode, setIsMenuOpen }) {
 
               {/* Notifications List */}
               <div className="max-h-64 sm:max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-                {notifications.length > 0 ? (
+                {loading ? (
+                  <div className="p-8 text-center">
+                    <div className="inline-block animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-[#5EE6FE]"></div>
+                    <p className="text-gray-500 text-xs sm:text-sm mt-2">Loading...</p>
+                  </div>
+                ) : notifications.length > 0 ? (
                   notifications.map((notification) => (
                     <div
                       key={notification.id}
@@ -229,7 +426,7 @@ function Header({ darkMode, setDarkMode, setIsMenuOpen }) {
                               {notification.title}
                             </h4>
                             <span className="text-[10px] sm:text-xs text-gray-400 ml-2 flex-shrink-0">
-                              {notification.time}
+                              {formatNotificationTime(notification.timestamp)}
                             </span>
                           </div>
                           <p className="text-xs sm:text-sm text-gray-600 leading-relaxed line-clamp-2">
@@ -239,7 +436,7 @@ function Header({ darkMode, setDarkMode, setIsMenuOpen }) {
                         
                         {/* Unread Indicator */}
                         {!notification.read && (
-                          <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-[#5EE6FE] rounded-full flex-shrink-0 mt-1 sm:mt-2"></div>
+                          <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-[#5EE6FE] rounded-full flex-shrink-0 mt-1 sm:mt-2 animate-pulse"></div>
                         )}
                       </div>
                     </div>
@@ -264,23 +461,6 @@ function Header({ darkMode, setDarkMode, setIsMenuOpen }) {
           <i className="fa-solid fa-paw text-lg sm:text-xl"></i>
           <span className="font-semibold text-sm sm:text-base hidden sm:inline">Lost Pets</span>
         </div>
-
-        {/* Mode Toggle - Hide text only on small screens 
-        <div className="flex items-center gap-1 sm:gap-2">
-          <span className="text-xs sm:text-sm font-semibold hidden sm:inline">Mode</span>
-          <div
-            onClick={() => setDarkMode(!darkMode)}
-            className={`w-10 h-5 sm:w-12 sm:h-6 flex items-center rounded-full p-[2px] cursor-pointer ${
-              darkMode ? "bg-[#5EE6FE]" : "bg-gray-300"
-            }`}
-          >
-            <div
-              className={`bg-white w-4 h-4 sm:w-5 sm:h-5 rounded-full shadow-md ${
-                darkMode ? "translate-x-5 sm:translate-x-6" : ""
-              }`}
-            ></div>
-          </div>
-        </div>*/}
       </div>
     </div>
   );

@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import api from "./api/axios";
 import FormMessage from "./user-pages/components/FormMessage";
 import LandingAnimation from "./LandingAnimation";
+import socket from "./socket"; // Import socket
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -20,6 +21,14 @@ function LoginPage() {
   const [emailMessage, setEmailMessage] = useState({ message: "", type: "" });
   const [showCreateAccountModal, setShowCreateAccountModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+  // Clean up socket on component unmount
+  useEffect(() => {
+    return () => {
+      // Don't disconnect socket on component unmount, just remove listeners
+      socket.off('joined_room');
+    };
+  }, []);
 
   const openForgot = () => {
     setFpEmail("");
@@ -90,6 +99,35 @@ function LoginPage() {
 
       // Set auth header for subsequent requests
       api.defaults.headers.common['Authorization'] = `Bearer ${res.data.token}`;
+
+      // 🔌 CONNECT SOCKET AFTER LOGIN
+      const userId = res.data.user.id || res.data.user.accId;
+      console.log('🔌 Connecting socket for user:', userId);
+      
+      if (!socket.connected) {
+        socket.connect();
+      }
+      
+      // Set up one-time listener for join confirmation
+      socket.once('joined_room', (data) => {
+        console.log('✅ Socket room joined:', data);
+      });
+      
+      // Emit join after a short delay to ensure connection
+      setTimeout(() => {
+        if (socket.connected) {
+          socket.emit('join', userId);
+          console.log('🎯 Join emitted for user:', userId);
+        } else {
+          console.log('⚠️ Socket not connected yet, will retry on connect');
+          // Set up listener for connect event
+          const onConnect = () => {
+            socket.emit('join', userId);
+            socket.off('connect', onConnect);
+          };
+          socket.on('connect', onConnect);
+        }
+      }, 500);
 
       setFormMessage({ message: "✅ Login successful!", type: "success" });
 

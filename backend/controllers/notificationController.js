@@ -1,532 +1,925 @@
-// controllers/notificationController.js
-import db from '../config/db.js';
+import db from "../config/db.js";
+import { getIO } from "../socket.js";
 
-// Get notifications for a user
-export const getNotifications = async (req, res) => {
-  try {
-    const userId = req.user?.id;
-    if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
+// ===========================================
+// HELPER FUNCTIONS
+// ===========================================
 
-    // Get user preferences
-    const [preferences] = await db.execute(
-      'SELECT appointmentReminders, petHealthUpd, promoEmail, clinicAnnouncement FROM userpreference_tbl WHERE accId = ?',
-      [userId]
-    );
-
-    const userPrefs = preferences[0] || {
-      appointmentReminders: 1,
-      petHealthUpd: 1,
-      promoEmail: 1,
-      clinicAnnouncement: 1
-    };
-
-    // Get user's pets for personalized notifications
-    const [pets] = await db.execute(
-      'SELECT petID, petName FROM pet_tbl WHERE accID = ? AND isDeleted = 0',
-      [userId]
-    );
-
-    const petIds = pets.map(pet => pet.petID);
-    let allNotifications = [];
-
-    // Get recent appointments (if user has appointment reminders enabled)
-    if (userPrefs.appointmentReminders && petIds.length > 0) {
-      const [appointments] = await db.execute(`
-        SELECT a.appointmentID, a.appointmentDate, a.statusID, a.lastUpdatedAt,
-               s.statusName, p.petName, sv.service, p.petID
-        FROM appointment_tbl a
-        JOIN pet_tbl p ON a.petID = p.petID
-        JOIN appointment_status_tbl s ON a.statusID = s.statusID
-        JOIN service_tbl sv ON a.serviceID = sv.serviceID
-        WHERE a.accID = ? AND a.isDeleted = 0
-        ORDER BY a.lastUpdatedAt DESC LIMIT 5
-      `, [userId]);
-
-      for (const apt of appointments) {
-        const [readStatus] = await db.execute(
-          'SELECT readID FROM notification_reads_tbl WHERE accID = ? AND notificationType = ? AND notificationID = ?',
-          [userId, 'appointment', apt.appointmentID]
-        );
-
-        let message = '';
-        let title = 'Appointment Update';
-        let icon = 'fa-calendar-check';
-        let color = 'text-purple-500';
+/**
+ * Helper to send notifications to online users
+ */
+const sendToOnlineUsers = async (userIds, notification) => {
+    try {
+        console.log('🔍 [sendToOnlineUsers] Starting with userIds:', userIds);
         
-        switch(apt.statusName.toLowerCase()) {
-          case 'pending':
-            message = `${apt.petName}'s ${apt.service} appointment on ${new Date(apt.appointmentDate).toLocaleDateString()} is pending approval`;
-            color = 'text-yellow-500';
-            break;
-          case 'upcoming':
-            message = `${apt.petName}'s ${apt.service} appointment on ${new Date(apt.appointmentDate).toLocaleDateString()} is confirmed and upcoming`;
-            color = 'text-green-500';
-            break;
-          case 'rejected':
-            message = `${apt.petName}'s ${apt.service} appointment on ${new Date(apt.appointmentDate).toLocaleDateString()} was rejected`;
-            color = 'text-red-500';
-            break;
-          case 'cancelled':
-            message = `${apt.petName}'s ${apt.service} appointment on ${new Date(apt.appointmentDate).toLocaleDateString()} was cancelled`;
-            color = 'text-gray-500';
-            break;
-          case 'completed':
-            message = `${apt.petName}'s ${apt.service} appointment on ${new Date(apt.appointmentDate).toLocaleDateString()} has been completed`;
-            color = 'text-blue-500';
-            break;
-          case 'no show':
-            message = `${apt.petName}'s ${apt.service} appointment on ${new Date(apt.appointmentDate).toLocaleDateString()} was marked as no show`;
-            color = 'text-orange-500';
-            break;
-          default:
-            message = `${apt.petName}'s ${apt.service} appointment is ${apt.statusName.toLowerCase()}`;
+        if (!userIds || userIds.length === 0) {
+            console.log('⚠️ [sendToOnlineUsers] No userIds provided');
+            return;
         }
 
-        allNotifications.push({
-          id: `apt_${apt.appointmentID}`,
-          type: 'appointment',
-          title,
-          message,
-          time: new Date(apt.lastUpdatedAt).toLocaleString(),
-          timestamp: new Date(apt.lastUpdatedAt).getTime(),
-          read: readStatus.length > 0,
-          icon,
-          color,
-          // Appointments tab
-          link: `/pet/${apt.petID}?tab=appointments`,
-          notificationId: apt.appointmentID,
-          notificationType: 'appointment'
-        });
-      }
-    }
-
-    // Get recent forum posts
-    if (userPrefs.petHealthUpd) {
-      const [forumPosts] = await db.execute(`
-        SELECT f.forumID, f.postType, f.description, f.lastUpdatedAt, 
-               a.firstName, a.lastName
-        FROM forum_posts_tbl f
-        JOIN account_tbl a ON f.accID = a.accId
-        WHERE f.isDeleted = 0 
-          AND f.createdAt >= DATE_SUB(NOW(), INTERVAL 30 DAY)
-        ORDER BY f.lastUpdatedAt DESC LIMIT 5
-      `);
-
-      for (const post of forumPosts) {
-        const [readStatus] = await db.execute(
-          'SELECT readID FROM notification_reads_tbl WHERE accID = ? AND notificationType = ? AND notificationID = ?',
-          [userId, 'lost_pet', post.forumID]
+        // Get active sessions from database
+        console.log('🔍 [sendToOnlineUsers] Querying active sessions for users:', userIds);
+        const [sessions] = await db.query(
+            `SELECT socketID FROM user_websocket_sessions_tbl
+             WHERE accID IN (?) AND isActive = 1`,
+            [userIds]
         );
 
-        allNotifications.push({
-          id: `forum_${post.forumID}`,
-          type: 'lost_pet',
-          title: post.postType === 'Lost' ? '🐕 Lost Pet Alert' : '🐈 Found Pet Alert',
-          message: `${post.firstName} ${post.lastName} posted: ${post.description.substring(0, 60)}${post.description.length > 60 ? '...' : ''}`,
-          time: new Date(post.lastUpdatedAt).toLocaleString(),
-          timestamp: new Date(post.lastUpdatedAt).getTime(),
-          read: readStatus.length > 0,
-          icon: 'fa-paw',
-          color: post.postType === 'Lost' ? 'text-amber-500' : 'text-green-500',
-          link: '/forum',
-          notificationId: post.forumID,
-          notificationType: 'lost_pet'
+        console.log('🔍 [sendToOnlineUsers] Found active sessions:', sessions.length);
+
+        if (sessions.length === 0) {
+            console.log('⚠️ [sendToOnlineUsers] No active sessions found');
+            return;
+        }
+
+        // Get io instance from getIO()
+        let io;
+        try {
+            io = getIO();
+            console.log('✅ [sendToOnlineUsers] Got IO instance successfully');
+        } catch (error) {
+            console.log('⚠️ [sendToOnlineUsers] Socket not initialized yet:', error.message);
+            return;
+        }
+
+        // Emit to each active session
+        sessions.forEach(session => {
+            console.log(`🔍 [sendToOnlineUsers] Emitting to socket: ${session.socketID}`);
+            io.to(session.socketID).emit("new_notification", notification);
         });
-      }
+
+        console.log('✅ [sendToOnlineUsers] Completed successfully');
+    } catch (error) {
+        console.error("❌ [sendToOnlineUsers] Error:", error);
     }
+};
 
-    // Get recent pet care tips - ONLY PUBLISHED
-    if (userPrefs.petHealthUpd) {
-      const [careTips] = await db.execute(`
-        SELECT p.petCareID, p.title, p.shortDescription, p.lastUpdated, 
-               c.categoryName, i.icon
-        FROM pet_care_tips_content_tbl p
-        JOIN pet_care_category_tbl c ON p.petCareCategoryID = c.petCareCategoryID
-        JOIN icon_tbl i ON p.iconID = i.iconID
-        WHERE p.isDeleted = 0 
-          AND p.pubStatusID = 2
-          AND p.lastUpdated >= DATE_SUB(NOW(), INTERVAL 30 DAY)
-        ORDER BY p.lastUpdated DESC LIMIT 5
-      `);
+// ===========================================
+// CREATE NOTIFICATIONS (Triggered by events)
+// ===========================================
 
-      for (const tip of careTips) {
-        const [readStatus] = await db.execute(
-          'SELECT readID FROM notification_reads_tbl WHERE accID = ? AND notificationType = ? AND notificationID = ?',
-          [userId, 'care_tip', tip.petCareID]
-        );
-
-        allNotifications.push({
-          id: `tip_${tip.petCareID}`,
-          type: 'care_tip',
-          title: '✨ New Pet Care Tip',
-          message: tip.title,
-          time: new Date(tip.lastUpdated).toLocaleString(),
-          timestamp: new Date(tip.lastUpdated).getTime(),
-          read: readStatus.length > 0,
-          icon: `fa-${tip.icon || 'lightbulb'}`,
-          color: 'text-emerald-500',
-          link: '/pet-tips',
-          notificationId: tip.petCareID,
-          notificationType: 'care_tip'
-        });
-      }
-    }
-
-    // Get recent videos - ONLY PUBLISHED
-    if (userPrefs.clinicAnnouncement) {
-      const [videos] = await db.execute(`
-        SELECT v.videoID, v.videoTitle, v.lastUpdated, c.videoCategory
-        FROM video_content_tbl v
-        JOIN video_category_tbl c ON v.videoCategoryID = c.videoCategoryID
-        WHERE v.isDeleted = 0 
-          AND v.pubStatusID = 2
-          AND v.lastUpdated >= DATE_SUB(NOW(), INTERVAL 30 DAY)
-        ORDER BY v.lastUpdated DESC LIMIT 5
-      `);
-
-      for (const video of videos) {
-        const [readStatus] = await db.execute(
-          'SELECT readID FROM notification_reads_tbl WHERE accID = ? AND notificationType = ? AND notificationID = ?',
-          [userId, 'video', video.videoID]
-        );
-
-        allNotifications.push({
-          id: `video_${video.videoID}`,
-          type: 'video',
-          title: '📹 New Educational Video',
-          message: `Watch: ${video.videoTitle}`,
-          time: new Date(video.lastUpdated).toLocaleString(),
-          timestamp: new Date(video.lastUpdated).getTime(),
-          read: readStatus.length > 0,
-          icon: 'fa-film',
-          color: 'text-blue-500',
-          link: '/videos',
-          notificationId: video.videoID,
-          notificationType: 'video'
-        });
-      }
-    }
-
-    // ========== Lab Records & Medical History ==========
-    // Get recent lab records and medical history for user's pets
-    if (petIds.length > 0) {
-      // Create placeholders for IN clause
-      const placeholders = petIds.map(() => '?').join(',');
-      
-      // Get pet medical records with file uploads
-      const [medicalRecords] = await db.execute(`
-        SELECT pm.petMedicalID, pm.recordTitle, pm.labTypeID, pm.uploadedOn, 
-               lt.labType, p.petName, p.petID,
-               (SELECT COUNT(*) FROM petmedical_file_tbl pf WHERE pf.petmedicalID = pm.petMedicalID AND pf.isDeleted = 0) as fileCount
-        FROM petmedical_tbl pm
-        JOIN pet_tbl p ON pm.petID = p.petID
-        JOIN labtype_tbl lt ON pm.labTypeID = lt.labType_ID
-        WHERE pm.petID IN (${placeholders}) 
-          AND pm.isDeleted = 0
-          AND pm.uploadedOn >= DATE_SUB(NOW(), INTERVAL 30 DAY)
-        ORDER BY pm.uploadedOn DESC LIMIT 5
-      `, petIds);
-
-      for (const record of medicalRecords) {
-        const [readStatus] = await db.execute(
-          'SELECT readID FROM notification_reads_tbl WHERE accID = ? AND notificationType = ? AND notificationID = ?',
-          [userId, 'medical', record.petMedicalID]
-        );
-
-        // Get the latest file if any
-        const [files] = await db.execute(`
-          SELECT originalName FROM petmedical_file_tbl 
-          WHERE petmedicalID = ? AND isDeleted = 0 
-          ORDER BY uploadedOn DESC LIMIT 1
-        `, [record.petMedicalID]);
-
-        const fileName = files.length > 0 ? files[0].originalName : '';
+/**
+ * Create notification for new forum post - ONLY when new post is created
+ */
+export const createForumPostNotification = async (req, res) => {
+    console.log('🔍 [createForumPostNotification] Started');
+    
+    try {
+        const { forumID, accID, postType, description, isAnonymous } = req.body;
         
-        allNotifications.push({
-          id: `med_${record.petMedicalID}`,
-          type: 'medical',
-          title: record.labType === 'Lab Record' ? '🔬 New Lab Record' : '📋 Medical History Update',
-          message: `${record.petName}'s ${record.recordTitle}${fileName ? ` - ${fileName}` : ''}`,
-          time: new Date(record.uploadedOn).toLocaleString(),
-          timestamp: new Date(record.uploadedOn).getTime(),
-          read: readStatus.length > 0,
-          icon: record.labTypeID === 1 ? 'fa-flask' : 'fa-notes-medical',
-          color: record.labTypeID === 1 ? 'text-cyan-500' : 'text-indigo-500',
-          // Medical records tab
-          link: `/pet/${record.petID}?tab=medical`,
-          notificationId: record.petMedicalID,
-          notificationType: 'medical'
-        });
-      }
+        // Get post creator's name (if not anonymous)
+        let creatorName = "Someone";
+        if (!isAnonymous) {
+            const [user] = await db.query(
+                "SELECT firstName, lastName FROM account_tbl WHERE accId = ?",
+                [accID]
+            );
+            if (user.length) {
+                creatorName = `${user[0].firstName} ${user[0].lastName}`;
+            }
+        }
 
-      // Get recent file uploads to existing records
-      const [fileUploads] = await db.execute(`
-        SELECT pf.fileID, pf.originalName, pf.uploadedOn, pf.petmedicalID,
-               pm.recordTitle, pm.labTypeID, p.petName, p.petID
-        FROM petmedical_file_tbl pf
-        JOIN petmedical_tbl pm ON pf.petmedicalID = pm.petMedicalID
-        JOIN pet_tbl p ON pm.petID = p.petID
-        WHERE pm.petID IN (${placeholders}) 
-          AND pf.isDeleted = 0
-          AND pf.uploadedOn >= DATE_SUB(NOW(), INTERVAL 30 DAY)
-        ORDER BY pf.uploadedOn DESC LIMIT 5
-      `, petIds);
-
-      for (const file of fileUploads) {
-        const [readStatus] = await db.execute(
-          'SELECT readID FROM notification_reads_tbl WHERE accID = ? AND notificationType = ? AND notificationID = ?',
-          [userId, 'medical_file', file.fileID]
+        // 1. Insert notification
+        const [result] = await db.query(
+            `INSERT INTO notifications_tbl 
+            (notifTypeID, title, message, data, referenceID, referenceTable, targetType, createdBy) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+                1,
+                `New ${postType} Pet ${postType === 'Lost' ? '🐕' : '🐈'}`,
+                `${creatorName} reported a ${postType.toLowerCase()} pet: ${description.substring(0, 50)}...`,
+                JSON.stringify({
+                    forumId: forumID,
+                    postType: postType,
+                    isAnonymous: isAnonymous
+                }),
+                forumID,
+                'forum_posts_tbl',
+                'all',
+                accID
+            ]
         );
 
-        allNotifications.push({
-          id: `file_${file.fileID}`,
-          type: 'medical',
-          title: '📎 New File Uploaded',
-          message: `${file.petName}'s ${file.recordTitle} - ${file.originalName}`,
-          time: new Date(file.uploadedOn).toLocaleString(),
-          timestamp: new Date(file.uploadedOn).getTime(),
-          read: readStatus.length > 0,
-          icon: 'fa-file-upload',
-          color: 'text-purple-500',
-          // Medical records tab
-          link: `/pet/${file.petID}?tab=medical`,
-          notificationId: file.fileID,
-          notificationType: 'medical_file'
+        const notificationId = result.insertId;
+
+        // 2. Get ALL users except the creator
+        const [users] = await db.query(
+            `SELECT accId FROM account_tbl 
+             WHERE accId != ? AND isDeleted = 0 AND roleID = 1`,
+            [accID]
+        );
+
+        // 3. Link notifications to all users
+        if (users.length > 0) {
+            const userValues = users.map(u => [u.accId, notificationId]);
+            await db.query(
+                `INSERT INTO user_notifications_tbl (accID, notificationID) VALUES ?`,
+                [userValues]
+            );
+        }
+
+        // 4. Send to online users via WebSocket
+        await sendToOnlineUsers(users.map(u => u.accId), {
+            notificationId,
+            type: 'forum_update',
+            title: `New ${postType} Pet`,
+            message: `${creatorName} reported a ${postType.toLowerCase()} pet`,
+            data: { forumId: forumID, postType },
+            createdAt: new Date()
         });
-      }
+
+        // Only send response if this is being called as an API endpoint
+        if (res && typeof res.status === 'function') {
+            res.status(201).json({ 
+                success: true, 
+                message: 'Forum notification created',
+                notificationId 
+            });
+        }
+
+    } catch (error) {
+        console.error('❌ [createForumPostNotification] Error:', error);
+        if (res && typeof res.status === 'function') {
+            res.status(500).json({ success: false, message: 'Server error' });
+        }
     }
-
-    // SORT ALL NOTIFICATIONS BY TIMESTAMP (most recent first)
-    allNotifications.sort((a, b) => b.timestamp - a.timestamp);
-
-    // Count unread notifications
-    const unreadCount = allNotifications.filter(n => !n.read).length;
-
-    res.json({
-      notifications: allNotifications.slice(0, 20), // Limit to 20 most recent
-      unreadCount
-    });
-
-  } catch (error) {
-    console.error('Error fetching notifications:', error);
-    res.status(500).json({ error: 'Failed to fetch notifications' });
-  }
 };
 
-// Mark notification as read
-export const markAsRead = async (req, res) => {
-  try {
-    const { notificationId, notificationType } = req.body;
-    const userId = req.user?.id;
+/**
+ * Create notification for pet care tips update - ONLY when new tip is published
+ */
+export const createPetTipsNotification = async (req, res) => {
+    console.log('🔍 [createPetTipsNotification] Started');
+    console.log('🔍 [createPetTipsNotification] Request body:', req.body);
+    console.log('🔍 [createPetTipsNotification] User:', req.user);
 
-    if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
+    try {
+        const { petCareID, title, shortDescription, pubStatusID, accID } = req.body;
+
+        console.log('🔍 [createPetTipsNotification] pubStatusID:', pubStatusID);
+
+        // Only notify when published
+        if (pubStatusID !== 2) { // 2 = Published
+            console.log('⚠️ [createPetTipsNotification] Not published, skipping notification');
+            return res.status(200).json({ success: true, message: 'Not published, no notification' });
+        }
+
+        // 1. Insert notification
+        console.log('🔍 [createPetTipsNotification] Inserting into notifications_tbl...');
+        const [result] = await db.query(
+            `INSERT INTO notifications_tbl 
+            (notifTypeID, title, message, data, referenceID, referenceTable, targetType, createdBy) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+                2, // pet_tips_update
+                `New Pet Care Tip 📝`,
+                title,
+                JSON.stringify({ petCareId: petCareID, shortDescription }),
+                petCareID,
+                'pet_care_tips_content_tbl',
+                'all', // Send to all users
+                accID
+            ]
+        );
+
+        const notificationId = result.insertId;
+        console.log('✅ [createPetTipsNotification] Notification inserted with ID:', notificationId);
+
+        // 2. Get ALL clients
+        console.log('🔍 [createPetTipsNotification] Fetching all clients...');
+        const [users] = await db.query(
+            `SELECT accId FROM account_tbl WHERE isDeleted = 0 AND roleID = 1`
+        );
+        console.log('🔍 [createPetTipsNotification] Found users:', users.length);
+
+        // 3. Link to all users
+        if (users.length > 0) {
+            console.log('🔍 [createPetTipsNotification] Linking notifications...');
+            const userValues = users.map(u => [u.accId, notificationId]);
+            await db.query(
+                `INSERT INTO user_notifications_tbl (accID, notificationID) VALUES ?`,
+                [userValues]
+            );
+            console.log('✅ [createPetTipsNotification] Notifications linked');
+        }
+
+        // 4. Send to online users via WebSocket
+        console.log('🔍 [createPetTipsNotification] Sending to online users...');
+        await sendToOnlineUsers(users.map(u => u.accId), {
+            notificationId,
+            type: 'pet_tips_update',
+            title: 'New Pet Care Tip 📝',
+            message: title,
+            data: { petCareId: petCareID },
+            createdAt: new Date()
+        });
+
+        console.log('✅ [createPetTipsNotification] Completed');
+        res.status(201).json({ 
+            success: true, 
+            message: 'Pet tip notification sent to all users',
+            notificationId 
+        });
+
+    } catch (error) {
+        console.error('❌ [createPetTipsNotification] Error:', error);
+        console.error('❌ [createPetTipsNotification] Stack:', error.stack);
+        res.status(500).json({ success: false, message: 'Server error', error: error.message });
     }
-
-    if (!notificationId || !notificationType) {
-      return res.status(400).json({ error: 'Notification ID and type are required' });
-    }
-
-    // INSERT OR UPDATE with ON DUPLICATE KEY UPDATE
-    await db.execute(
-      `INSERT INTO notification_reads_tbl (accID, notificationType, notificationID, readAt) 
-       VALUES (?, ?, ?, NOW())
-       ON DUPLICATE KEY UPDATE readAt = NOW()`,
-      [userId, notificationType, notificationId]
-    );
-
-    // Emit socket event for real-time update
-    const io = req.app.get('io');
-    if (io) {
-      io.to(`user_${userId}`).emit('notificationUpdate', {
-        id: `${notificationType}_${notificationId}`,
-        notificationId,
-        notificationType,
-        read: true
-      });
-
-      const unreadCount = await getUnreadCountForUser(userId);
-      io.to(`user_${userId}`).emit('unreadCountUpdate', { count: unreadCount });
-    }
-
-    res.json({ success: true, message: 'Notification marked as read' });
-
-  } catch (error) {
-    console.error('Error marking notification as read:', error);
-    res.status(500).json({ error: 'Failed to mark notification as read' });
-  }
 };
 
-// Mark all notifications as read
-export const markAllAsRead = async (req, res) => {
-  try {
-    const userId = req.user?.id;
+/**
+ * Create notification for video update - ONLY when new video is published
+ */
+export const createVideoNotification = async (req, res) => {
+    console.log('🔍 [createVideoNotification] Started');
+    console.log('🔍 [createVideoNotification] Request body:', req.body);
 
-    if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
+    try {
+        const { videoID, videoTitle, videoCategoryID, pubStatusID, accID } = req.body;
+
+        if (pubStatusID !== 2) {
+            console.log('⚠️ [createVideoNotification] Not published, skipping');
+            return res.status(200).json({ success: true, message: 'Not published, no notification' });
+        }
+
+        // Get category name
+        console.log('🔍 [createVideoNotification] Fetching video category...');
+        const [category] = await db.query(
+            'SELECT videoCategory FROM video_category_tbl WHERE videoCategoryID = ?',
+            [videoCategoryID]
+        );
+        console.log('🔍 [createVideoNotification] Category:', category[0]);
+
+        console.log('🔍 [createVideoNotification] Inserting notification...');
+        const [result] = await db.query(
+            `INSERT INTO notifications_tbl 
+            (notifTypeID, title, message, data, referenceID, referenceTable, targetType, createdBy) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+                3, // video_update
+                `New Video: ${category[0]?.videoCategory || 'Educational'} 🎥`,
+                videoTitle,
+                JSON.stringify({ videoId: videoID, category: category[0]?.videoCategory }),
+                videoID,
+                'video_content_tbl',
+                'all',
+                accID
+            ]
+        );
+
+        const notificationId = result.insertId;
+        console.log('✅ [createVideoNotification] Notification inserted:', notificationId);
+
+        const [users] = await db.query(
+            'SELECT accId FROM account_tbl WHERE isDeleted = 0 AND roleID = 1'
+        );
+        console.log('🔍 [createVideoNotification] Users to notify:', users.length);
+        
+        if (users.length > 0) {
+            const userValues = users.map(u => [u.accId, notificationId]);
+            await db.query(
+                `INSERT INTO user_notifications_tbl (accID, notificationID) VALUES ?`,
+                [userValues]
+            );
+        }
+
+        await sendToOnlineUsers(users.map(u => u.accId), {
+            notificationId,
+            type: 'video_update',
+            title: `New Video: ${category[0]?.videoCategory || 'Educational'} 🎥`,
+            message: videoTitle,
+            data: { videoId: videoID },
+            createdAt: new Date()
+        });
+
+        console.log('✅ [createVideoNotification] Completed');
+        res.status(201).json({ 
+            success: true, 
+            message: 'Video notification sent to all users',
+            notificationId 
+        });
+
+    } catch (error) {
+        console.error('❌ [createVideoNotification] Error:', error);
+        res.status(500).json({ success: false, message: 'Server error', error: error.message });
     }
-
-    const [notifications] = await db.execute(`
-      SELECT 'appointment' as type, a.appointmentID as id FROM appointment_tbl a
-      WHERE a.accID = ? AND a.isDeleted = 0 
-      AND NOT EXISTS (
-        SELECT 1 FROM notification_reads_tbl nr 
-        WHERE nr.accID = ? AND nr.notificationType = 'appointment' 
-        AND nr.notificationID = a.appointmentID
-      )
-      UNION
-      SELECT 'lost_pet' as type, f.forumID as id FROM forum_posts_tbl f
-      WHERE f.isDeleted = 0 
-      AND NOT EXISTS (
-        SELECT 1 FROM notification_reads_tbl nr 
-        WHERE nr.accID = ? AND nr.notificationType = 'lost_pet' 
-        AND nr.notificationID = f.forumID
-      )
-      UNION
-      SELECT 'care_tip' as type, p.petCareID as id FROM pet_care_tips_content_tbl p
-      WHERE p.isDeleted = 0 AND p.pubStatusID = 2
-      AND NOT EXISTS (
-        SELECT 1 FROM notification_reads_tbl nr 
-        WHERE nr.accID = ? AND nr.notificationType = 'care_tip' 
-        AND nr.notificationID = p.petCareID
-      )
-      UNION
-      SELECT 'video' as type, v.videoID as id FROM video_content_tbl v
-      WHERE v.isDeleted = 0 AND v.pubStatusID = 2
-      AND NOT EXISTS (
-        SELECT 1 FROM notification_reads_tbl nr 
-        WHERE nr.accID = ? AND nr.notificationType = 'video' 
-        AND nr.notificationID = v.videoID
-      )
-      UNION
-      SELECT 'medical' as type, pm.petMedicalID as id FROM petmedical_tbl pm
-      JOIN pet_tbl p ON pm.petID = p.petID
-      WHERE p.accID = ? AND pm.isDeleted = 0
-      AND NOT EXISTS (
-        SELECT 1 FROM notification_reads_tbl nr 
-        WHERE nr.accID = ? AND nr.notificationType = 'medical' 
-        AND nr.notificationID = pm.petMedicalID
-      )
-      UNION
-      SELECT 'medical_file' as type, pf.fileID as id FROM petmedical_file_tbl pf
-      JOIN petmedical_tbl pm ON pf.petmedicalID = pm.petMedicalID
-      JOIN pet_tbl p ON pm.petID = p.petID
-      WHERE p.accID = ? AND pf.isDeleted = 0
-      AND NOT EXISTS (
-        SELECT 1 FROM notification_reads_tbl nr 
-        WHERE nr.accID = ? AND nr.notificationType = 'medical_file' 
-        AND nr.notificationID = pf.fileID
-      )
-    `, [userId, userId, userId, userId, userId, userId, userId, userId, userId]);
-
-    for (const notif of notifications) {
-      await db.execute(
-        'INSERT IGNORE INTO notification_reads_tbl (accID, notificationType, notificationID) VALUES (?, ?, ?)',
-        [userId, notif.type, notif.id]
-      );
-    }
-
-    const io = req.app.get('io');
-    if (io) {
-      io.to(`user_${userId}`).emit('unreadCountUpdate', { count: 0 });
-      io.to(`user_${userId}`).emit('allNotificationsRead', { userId });
-    }
-
-    res.json({ 
-      success: true, 
-      message: `Marked ${notifications.length} notifications as read` 
-    });
-
-  } catch (error) {
-    console.error('Error marking all notifications as read:', error);
-    res.status(500).json({ error: 'Failed to mark all notifications as read' });
-  }
 };
 
-// Get unread count only
+/**
+ * Create notification for appointment update - ONLY for specific user
+ */
+export const createAppointmentNotification = async (req, res) => {
+    console.log('🔍 [createAppointmentNotification] Started');
+    console.log('🔍 [createAppointmentNotification] Request body:', req.body);
+
+    try {
+        const { appointmentID, accID, statusID, appointmentDate } = req.body;
+
+        // Get status name
+        console.log('🔍 [createAppointmentNotification] Fetching status name...');
+        const [status] = await db.query(
+            'SELECT statusName FROM appointment_status_tbl WHERE statusID = ?',
+            [statusID]
+        );
+        console.log('🔍 [createAppointmentNotification] Status:', status[0]);
+
+        // Status emoji mapping
+        const statusEmoji = {
+            'Pending': '⏳',
+            'Upcoming': '📅',
+            'Completed': '✅',
+            'Cancelled': '❌',
+            'Rejected': '🚫',
+            'No Show': '⚠️'
+        };
+
+        const emoji = statusEmoji[status[0]?.statusName] || '📋';
+
+        // 1. Insert notification
+        console.log('🔍 [createAppointmentNotification] Inserting notification...');
+        const [result] = await db.query(
+            `INSERT INTO notifications_tbl 
+            (notifTypeID, title, message, data, referenceID, referenceTable, targetType, createdBy) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+                4, // appointment_update
+                `Appointment ${status[0]?.statusName} ${emoji}`,
+                `Your appointment for ${new Date(appointmentDate).toLocaleDateString()} is now ${status[0]?.statusName}`,
+                JSON.stringify({ 
+                    appointmentId: appointmentID, 
+                    status: status[0]?.statusName,
+                    date: appointmentDate 
+                }),
+                appointmentID,
+                'appointment_tbl',
+                'specific',
+                req.user?.id || null // Fixed: req.user.id instead of req.user.accId
+            ]
+        );
+
+        const notificationId = result.insertId;
+        console.log('✅ [createAppointmentNotification] Notification inserted:', notificationId);
+
+        // 2. Link ONLY to the specific user
+        console.log('🔍 [createAppointmentNotification] Linking to user:', accID);
+        await db.query(
+            `INSERT INTO user_notifications_tbl (accID, notificationID) VALUES (?, ?)`,
+            [accID, notificationId]
+        );
+
+        // 3. Send to user if online
+        console.log('🔍 [createAppointmentNotification] Sending to user...');
+        await sendToOnlineUsers([accID], {
+            notificationId,
+            type: 'appointment_update',
+            title: `Appointment ${status[0]?.statusName} ${emoji}`,
+            message: `Your appointment for ${new Date(appointmentDate).toLocaleDateString()} is now ${status[0]?.statusName}`,
+            data: { appointmentId: appointmentID, status: status[0]?.statusName },
+            createdAt: new Date()
+        });
+
+        console.log('✅ [createAppointmentNotification] Completed');
+        res.status(201).json({ 
+            success: true, 
+            message: 'Appointment notification sent to specific user',
+            notificationId 
+        });
+
+    } catch (error) {
+        console.error('❌ [createAppointmentNotification] Error:', error);
+        res.status(500).json({ success: false, message: 'Server error', error: error.message });
+    }
+};
+
+/**
+ * Create notification for medical/lab record update - ONLY for specific user (pet owner)
+ */
+export const createMedicalRecordNotification = async (req, res) => {
+    console.log('🔍 [createMedicalRecordNotification] Started');
+    console.log('🔍 [createMedicalRecordNotification] Request body:', req.body);
+
+    try {
+        const { petMedicalID, petID, recordTitle, labTypeID } = req.body;
+
+        // Get pet owner
+        console.log('🔍 [createMedicalRecordNotification] Fetching pet owner...');
+        const [pet] = await db.query(
+            'SELECT accID, petName FROM pet_tbl WHERE petID = ?',
+            [petID]
+        );
+
+        if (!pet.length) {
+            console.log('❌ [createMedicalRecordNotification] Pet not found');
+            return res.status(404).json({ success: false, message: 'Pet not found' });
+        }
+        console.log('🔍 [createMedicalRecordNotification] Pet owner:', pet[0]);
+
+        // Get lab type name
+        console.log('🔍 [createMedicalRecordNotification] Fetching lab type...');
+        const [labType] = await db.query(
+            'SELECT labType FROM labtype_tbl WHERE labType_ID = ?',
+            [labTypeID]
+        );
+        console.log('🔍 [createMedicalRecordNotification] Lab type:', labType[0]);
+
+        const type = labType[0]?.labType || 'Medical Record';
+        const typeId = labTypeID === 1 ? 6 : 5;
+
+        // 1. Insert notification
+        console.log('🔍 [createMedicalRecordNotification] Inserting notification...');
+        const [result] = await db.query(
+            `INSERT INTO notifications_tbl 
+            (notifTypeID, title, message, data, referenceID, referenceTable, targetType, createdBy) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+                typeId,
+                `New ${type} for ${pet[0].petName} 📋`,
+                `${recordTitle} has been added to ${pet[0].petName}'s records`,
+                JSON.stringify({ 
+                    petMedicalId: petMedicalID, 
+                    petId: petID,
+                    petName: pet[0].petName,
+                    recordTitle,
+                    type 
+                }),
+                petMedicalID,
+                'petmedical_tbl',
+                'specific',
+                req.user?.id || null // Fixed: req.user.id instead of req.user.accId
+            ]
+        );
+
+        const notificationId = result.insertId;
+        console.log('✅ [createMedicalRecordNotification] Notification inserted:', notificationId);
+
+        // 2. Link ONLY to the pet owner
+        console.log('🔍 [createMedicalRecordNotification] Linking to owner:', pet[0].accID);
+        await db.query(
+            `INSERT INTO user_notifications_tbl (accID, notificationID) VALUES (?, ?)`,
+            [pet[0].accID, notificationId]
+        );
+
+        // 3. Send to owner if online
+        console.log('🔍 [createMedicalRecordNotification] Sending to owner...');
+        await sendToOnlineUsers([pet[0].accID], {
+            notificationId,
+            type: typeId === 5 ? 'medical_record_update' : 'lab_record_update',
+            title: `New ${type} for ${pet[0].petName} 📋`,
+            message: `${recordTitle} has been added`,
+            data: { petMedicalId: petMedicalID, petId: petID, petName: pet[0].petName },
+            createdAt: new Date()
+        });
+
+        console.log('✅ [createMedicalRecordNotification] Completed');
+        res.status(201).json({ 
+            success: true, 
+            message: 'Medical record notification sent to pet owner',
+            notificationId 
+        });
+
+    } catch (error) {
+        console.error('❌ [createMedicalRecordNotification] Error:', error);
+        res.status(500).json({ success: false, message: 'Server error', error: error.message });
+    }
+};
+
+// ===========================================
+// USER NOTIFICATION MANAGEMENT
+// ===========================================
+
+/**
+ * Get user's notifications (with pagination)
+ */
+export const getUserNotifications = async (req, res) => {
+    console.log('🔍 [getUserNotifications] Started for user:', req.user);
+    
+    try {
+        // FIXED: Use req.user.id instead of req.user.accId
+        const userId = req.user?.id;
+        
+        if (!userId) {
+            console.error('❌ [getUserNotifications] No user ID found in request');
+            return res.status(401).json({ 
+                success: false, 
+                message: 'User not authenticated' 
+            });
+        }
+
+        const { page = 1, limit = 20 } = req.query;
+        const offset = (page - 1) * limit;
+
+        console.log('🔍 [getUserNotifications] Params:', { userId, page, limit, offset });
+
+        // Get specific + global notifications (last 30 days)
+        console.log('🔍 [getUserNotifications] Fetching notifications...');
+        const [notifications] = await db.query(
+            `SELECT 
+                n.*, 
+                un.isRead, 
+                un.readAt,
+                un.deliveredAt,
+                nt.typeName
+             FROM notifications_tbl n
+             JOIN user_notifications_tbl un ON n.notificationID = un.notificationID
+             JOIN notification_type_tbl nt ON n.notifTypeID = nt.notifTypeID
+             WHERE un.accID = ? AND un.isDeleted = 0
+             
+             UNION ALL
+             
+             SELECT 
+                n.*, 
+                0 as isRead, 
+                NULL as readAt,
+                NULL as deliveredAt,
+                nt.typeName
+             FROM notifications_tbl n
+             JOIN notification_type_tbl nt ON n.notifTypeID = nt.notifTypeID
+             WHERE n.targetType = 'all' 
+             AND n.createdAt > DATE_SUB(NOW(), INTERVAL 30 DAY)
+             AND n.notificationID NOT IN (
+                 SELECT notificationID FROM user_notifications_tbl 
+                 WHERE accID = ? AND isDeleted = 0
+             )
+             
+             ORDER BY createdAt DESC
+             LIMIT ? OFFSET ?`,
+            [userId, userId, parseInt(limit), parseInt(offset)]
+        );
+
+        console.log('🔍 [getUserNotifications] Found notifications:', notifications.length);
+
+        // Get total count for pagination
+        const [totalResult] = await db.query(
+            `SELECT COUNT(*) as total FROM (
+                SELECT notificationID FROM user_notifications_tbl WHERE accID = ? AND isDeleted = 0
+                UNION ALL
+                SELECT n.notificationID FROM notifications_tbl n
+                WHERE n.targetType = 'all' 
+                AND n.createdAt > DATE_SUB(NOW(), INTERVAL 30 DAY)
+                AND n.notificationID NOT IN (
+                    SELECT notificationID FROM user_notifications_tbl WHERE accID = ?
+                )
+            ) as combined`,
+            [userId, userId]
+        );
+
+        console.log('🔍 [getUserNotifications] Total count:', totalResult[0].total);
+
+        res.json({
+            success: true,
+            notifications,
+            pagination: {
+                page: parseInt(page),
+                limit: parseInt(limit),
+                total: totalResult[0].total,
+                pages: Math.ceil(totalResult[0].total / limit)
+            }
+        });
+
+    } catch (error) {
+        console.error('❌ [getUserNotifications] Error:', error);
+        console.error('❌ [getUserNotifications] Stack:', error.stack);
+        res.status(500).json({ success: false, message: 'Server error', error: error.message });
+    }
+};
+
+/**
+ * Get unread count
+ */
 export const getUnreadCount = async (req, res) => {
-  try {
-    const userId = req.user?.id;
+    console.log('🔍 [getUnreadCount] Started for user:', req.user);
+    
+    try {
+        // FIXED: Use req.user.id instead of req.user.accId
+        const userId = req.user?.id;
+        
+        console.log('🔍 [getUnreadCount] Resolved userId:', userId);
+        
+        if (!userId) {
+            console.error('❌ [getUnreadCount] No user ID found in request');
+            return res.status(401).json({ 
+                success: false, 
+                message: 'User not authenticated' 
+            });
+        }
 
-    if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
+        console.log('🔍 [getUnreadCount] Fetching unread counts for user:', userId);
+        
+        const [result] = await db.query(
+            `SELECT 
+                (SELECT COUNT(*) FROM user_notifications_tbl 
+                 WHERE accID = ? AND isRead = 0 AND isDeleted = 0) as specific_unread,
+                
+                (SELECT COUNT(*) FROM notifications_tbl n
+                 WHERE n.targetType = 'all' 
+                 AND n.createdAt > DATE_SUB(NOW(), INTERVAL 30 DAY)
+                 AND NOT EXISTS (
+                     SELECT 1 FROM user_notifications_tbl un
+                     WHERE un.notificationID = n.notificationID 
+                     AND un.accID = ?
+                 )) as global_unread`,
+            [userId, userId]
+        );
+
+        console.log('🔍 [getUnreadCount] Counts:', result[0]);
+
+        const totalUnread = result[0].specific_unread + result[0].global_unread;
+
+        res.json({
+            success: true,
+            unread: totalUnread,
+            breakdown: {
+                specific: result[0].specific_unread,
+                global: result[0].global_unread
+            }
+        });
+
+    } catch (error) {
+        console.error('❌ [getUnreadCount] Error:', error);
+        res.status(500).json({ success: false, message: 'Server error', error: error.message });
     }
-
-    const unreadCount = await getUnreadCountForUser(userId);
-
-    res.json({ unreadCount });
-
-  } catch (error) {
-    console.error('Error getting unread count:', error);
-    res.status(500).json({ error: 'Failed to get unread count' });
-  }
 };
 
-// Helper function to get unread count
-async function getUnreadCountForUser(userId) {
-  // Get user's pets first
-  const [pets] = await db.execute(
-    'SELECT petID FROM pet_tbl WHERE accID = ? AND isDeleted = 0',
-    [userId]
-  );
-  
-  const petIds = pets.map(p => p.petID);
-  const petPlaceholders = petIds.length > 0 ? petIds.map(() => '?').join(',') : 'NULL';
+/**
+ * Mark notification as read
+ */
+export const markAsRead = async (req, res) => {
+    console.log('🔍 [markAsRead] Started for user:', req.user);
+    console.log('🔍 [markAsRead] Params:', req.params);
+    
+    try {
+        // FIXED: Use req.user.id instead of req.user.accId
+        const userId = req.user?.id;
+        const { notificationId } = req.params;
 
-  const [counts] = await db.execute(`
-    SELECT 
-      (SELECT COUNT(*) FROM appointment_tbl a
-       LEFT JOIN notification_reads_tbl nr 
-         ON nr.accID = a.accID 
-         AND nr.notificationType = 'appointment' 
-         AND nr.notificationID = a.appointmentID
-       WHERE a.accID = ? AND a.isDeleted = 0 AND nr.readID IS NULL) as appointmentCount,
-       
-      (SELECT COUNT(*) FROM forum_posts_tbl f
-       LEFT JOIN notification_reads_tbl nr 
-         ON nr.accID = ? 
-         AND nr.notificationType = 'lost_pet' 
-         AND nr.notificationID = f.forumID
-       WHERE f.isDeleted = 0 AND nr.readID IS NULL) as forumCount,
-       
-      (SELECT COUNT(*) FROM pet_care_tips_content_tbl p
-       LEFT JOIN notification_reads_tbl nr 
-         ON nr.accID = ? 
-         AND nr.notificationType = 'care_tip' 
-         AND nr.notificationID = p.petCareID
-       WHERE p.isDeleted = 0 AND p.pubStatusID = 2 AND nr.readID IS NULL) as careTipCount,
-       
-      (SELECT COUNT(*) FROM video_content_tbl v
-       LEFT JOIN notification_reads_tbl nr 
-         ON nr.accID = ? 
-         AND nr.notificationType = 'video' 
-         AND nr.notificationID = v.videoID
-       WHERE v.isDeleted = 0 AND v.pubStatusID = 2 AND nr.readID IS NULL) as videoCount,
-       
-      (SELECT COUNT(*) FROM petmedical_tbl pm
-       JOIN pet_tbl p ON pm.petID = p.petID
-       LEFT JOIN notification_reads_tbl nr 
-         ON nr.accID = ? 
-         AND nr.notificationType = 'medical' 
-         AND nr.notificationID = pm.petMedicalID
-       WHERE p.accID = ? AND pm.isDeleted = 0 AND nr.readID IS NULL) as medicalCount,
-       
-      (SELECT COUNT(*) FROM petmedical_file_tbl pf
-       JOIN petmedical_tbl pm ON pf.petmedicalID = pm.petMedicalID
-       JOIN pet_tbl p ON pm.petID = p.petID
-       LEFT JOIN notification_reads_tbl nr 
-         ON nr.accID = ? 
-         AND nr.notificationType = 'medical_file' 
-         AND nr.notificationID = pf.fileID
-       WHERE p.accID = ? AND pf.isDeleted = 0 AND nr.readID IS NULL) as fileCount
-  `, [userId, userId, userId, userId, userId, userId, userId, userId]);
+        if (!userId) {
+            return res.status(401).json({ success: false, message: 'User not authenticated' });
+        }
 
-  return counts[0].appointmentCount + 
-         counts[0].forumCount + 
-         counts[0].careTipCount + 
-         counts[0].videoCount +
-         counts[0].medicalCount +
-         counts[0].fileCount;
-}
+        console.log('🔍 [markAsRead] Marking notification as read:', { userId, notificationId });
+
+        const [result] = await db.query(
+            `UPDATE user_notifications_tbl 
+             SET isRead = 1, readAt = NOW()
+             WHERE accID = ? AND notificationID = ?`,
+            [userId, notificationId]
+        );
+
+        console.log('🔍 [markAsRead] Update result:', result);
+
+        if (result.affectedRows === 0) {
+            console.log('🔍 [markAsRead] Notification not found in user_notifications, checking global...');
+            // Check if it's a global notification
+            const [globalNotif] = await db.query(
+                `SELECT * FROM notifications_tbl 
+                 WHERE notificationID = ? AND targetType = 'all'`,
+                [notificationId]
+            );
+
+            console.log('🔍 [markAsRead] Global notification check:', globalNotif);
+
+            if (globalNotif.length) {
+                console.log('🔍 [markAsRead] Inserting as read for user...');
+                await db.query(
+                    `INSERT INTO user_notifications_tbl (accID, notificationID, isRead, readAt)
+                     VALUES (?, ?, 1, NOW())`,
+                    [userId, notificationId]
+                );
+            }
+        }
+
+        // Notify other user sessions via WebSocket
+        console.log('🔍 [markAsRead] Notifying other sessions...');
+        const [sessions] = await db.query(
+            `SELECT socketID FROM user_websocket_sessions_tbl
+             WHERE accID = ? AND isActive = 1`,
+            [userId]
+        );
+
+        console.log('🔍 [markAsRead] Active sessions:', sessions.length);
+
+        const io = getIO();
+        sessions.forEach(session => {
+            io.to(session.socketID).emit('notification_read', { notificationId });
+        });
+
+        console.log('✅ [markAsRead] Completed');
+        res.json({ success: true, message: 'Marked as read' });
+
+    } catch (error) {
+        console.error('❌ [markAsRead] Error:', error);
+        res.status(500).json({ success: false, message: 'Server error', error: error.message });
+    }
+};
+
+/**
+ * Mark all as read
+ */
+export const markAllAsRead = async (req, res) => {
+    console.log('🔍 [markAllAsRead] Started for user:', req.user);
+    
+    try {
+        // FIXED: Use req.user.id instead of req.user.accId
+        const userId = req.user?.id;
+        
+        if (!userId) {
+            return res.status(401).json({ success: false, message: 'User not authenticated' });
+        }
+
+        // Update all specific notifications
+        console.log('🔍 [markAllAsRead] Updating all user notifications...');
+        await db.query(
+            `UPDATE user_notifications_tbl 
+             SET isRead = 1, readAt = NOW()
+             WHERE accID = ? AND isRead = 0`,
+            [userId]
+        );
+
+        // Get all global notifications from last 30 days
+        console.log('🔍 [markAllAsRead] Fetching global notifications...');
+        const [globalNotifs] = await db.query(
+            `SELECT notificationID FROM notifications_tbl n
+             WHERE n.targetType = 'all' 
+             AND n.createdAt > DATE_SUB(NOW(), INTERVAL 30 DAY)
+             AND NOT EXISTS (
+                 SELECT 1 FROM user_notifications_tbl un
+                 WHERE un.notificationID = n.notificationID 
+                 AND un.accID = ?
+             )`,
+            [userId]
+        );
+
+        console.log('🔍 [markAllAsRead] Global notifications to mark:', globalNotifs.length);
+
+        // Insert as read
+        if (globalNotifs.length > 0) {
+            console.log('🔍 [markAllAsRead] Inserting global as read...');
+            const values = globalNotifs.map(n => [userId, n.notificationID, 1, new Date()]);
+            await db.query(
+                `INSERT INTO user_notifications_tbl (accID, notificationID, isRead, readAt)
+                 VALUES ?`,
+                [values]
+            );
+        }
+
+        // Notify user's sessions
+        console.log('🔍 [markAllAsRead] Notifying sessions...');
+        const [sessions] = await db.query(
+            `SELECT socketID FROM user_websocket_sessions_tbl
+             WHERE accID = ? AND isActive = 1`,
+            [userId]
+        );
+
+        const io = getIO();
+        sessions.forEach(session => {
+            io.to(session.socketID).emit('all_read');
+        });
+
+        console.log('✅ [markAllAsRead] Completed');
+        res.json({ success: true, message: 'All marked as read' });
+
+    } catch (error) {
+        console.error('❌ [markAllAsRead] Error:', error);
+        res.status(500).json({ success: false, message: 'Server error', error: error.message });
+    }
+};
+
+/**
+ * Delete notification
+ */
+export const deleteNotification = async (req, res) => {
+    console.log('🔍 [deleteNotification] Started for user:', req.user);
+    console.log('🔍 [deleteNotification] Params:', req.params);
+    
+    try {
+        // FIXED: Use req.user.id instead of req.user.accId
+        const userId = req.user?.id;
+        const { notificationId } = req.params;
+
+        if (!userId) {
+            return res.status(401).json({ success: false, message: 'User not authenticated' });
+        }
+
+        console.log('🔍 [deleteNotification] Deleting notification:', { userId, notificationId });
+
+        await db.query(
+            `UPDATE user_notifications_tbl 
+             SET isDeleted = 1 
+             WHERE accID = ? AND notificationID = ?`,
+            [userId, notificationId]
+        );
+
+        // Notify user's sessions
+        const [sessions] = await db.query(
+            `SELECT socketID FROM user_websocket_sessions_tbl
+             WHERE accID = ? AND isActive = 1`,
+            [userId]
+        );
+
+        const io = getIO();
+        sessions.forEach(session => {
+            io.to(session.socketID).emit('notification_deleted', { notificationId });
+        });
+
+        console.log('✅ [deleteNotification] Completed');
+        res.json({ success: true, message: 'Notification deleted' });
+
+    } catch (error) {
+        console.error('❌ [deleteNotification] Error:', error);
+        res.status(500).json({ success: false, message: 'Server error', error: error.message });
+    }
+};
+
+// ===========================================
+// WEBSOCKET SESSION MANAGEMENT
+// ===========================================
+
+/**
+ * Register WebSocket session (called when user connects)
+ */
+export const registerSocketSession = async (userId, socketId, userAgent, ipAddress) => {
+    console.log('🔍 [registerSocketSession] Registering session:', { userId, socketId, userAgent, ipAddress });
+    
+    try {
+        // Deactivate old sessions
+        console.log('🔍 [registerSocketSession] Deactivating old sessions...');
+        await db.query(
+            `UPDATE user_websocket_sessions_tbl 
+             SET isActive = 0 
+             WHERE accID = ? AND isActive = 1`,
+            [userId]
+        );
+
+        // Insert new session
+        console.log('🔍 [registerSocketSession] Inserting new session...');
+        await db.query(
+            `INSERT INTO user_websocket_sessions_tbl 
+             (accID, socketID, userAgent, ipAddress, lastPingAt) 
+             VALUES (?, ?, ?, ?, NOW())`,
+            [userId, socketId, userAgent, ipAddress]
+        );
+
+        console.log('✅ [registerSocketSession] Session registered successfully');
+
+    } catch (error) {
+        console.error('❌ [registerSocketSession] Error:', error);
+    }
+};
+
+/**
+ * Update session ping (keep alive)
+ */
+export const updateSessionPing = async (socketId) => {
+    console.log('🔍 [updateSessionPing] Updating ping for socket:', socketId);
+    
+    try {
+        await db.query(
+            `UPDATE user_websocket_sessions_tbl 
+             SET lastPingAt = NOW() 
+             WHERE socketID = ? AND isActive = 1`,
+            [socketId]
+        );
+        console.log('✅ [updateSessionPing] Ping updated');
+    } catch (error) {
+        console.error('❌ [updateSessionPing] Error:', error);
+    }
+};
+
+/**
+ * Remove WebSocket session (called on disconnect)
+ */
+export const removeSocketSession = async (socketId) => {
+    console.log('🔍 [removeSocketSession] Removing session for socket:', socketId);
+    
+    try {
+        await db.query(
+            `UPDATE user_websocket_sessions_tbl 
+             SET isActive = 0 
+             WHERE socketID = ?`,
+            [socketId]
+        );
+        console.log('✅ [removeSocketSession] Session removed');
+    } catch (error) {
+        console.error('❌ [removeSocketSession] Error:', error);
+    }
+};
+
+/**
+ * Cleanup inactive sessions (run as cron job)
+ */
+export const cleanupInactiveSessions = async () => {
+    console.log('🔍 [cleanupInactiveSessions] Starting cleanup...');
+    
+    try {
+        const [result] = await db.query(
+            `UPDATE user_websocket_sessions_tbl 
+             SET isActive = 0 
+             WHERE lastPingAt < DATE_SUB(NOW(), INTERVAL 5 MINUTE) 
+             AND isActive = 1`
+        );
+        console.log('✅ [cleanupInactiveSessions] Cleaned up', result.affectedRows, 'sessions');
+    } catch (error) {
+        console.error('❌ [cleanupInactiveSessions] Error:', error);
+    }
+};

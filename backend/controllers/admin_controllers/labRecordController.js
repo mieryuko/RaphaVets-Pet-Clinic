@@ -1,6 +1,7 @@
 import db from "../../config/db.js";
 import path from 'path';
 import fs from 'fs';
+import { createMedicalRecordNotification } from "../notificationController.js"; // Import the notification function
 
 export const uploadMedicalRecord = async (req, res) => {
   let connection;
@@ -43,7 +44,7 @@ export const uploadMedicalRecord = async (req, res) => {
 
     // Check if pet exists
     const [petCheck] = await connection.execute(
-      'SELECT petID FROM pet_tbl WHERE petID = ? AND isDeleted = 0',
+      'SELECT petID, accID, petName FROM pet_tbl WHERE petID = ? AND isDeleted = 0',
       [petID]
     );
 
@@ -55,6 +56,9 @@ export const uploadMedicalRecord = async (req, res) => {
         message: 'Pet not found' 
       });
     }
+
+    const petOwnerId = petCheck[0].accID; // Get the pet owner's ID for notification
+    const petName = petCheck[0].petName;
 
     // Check if lab type exists
     const [labTypeCheck] = await connection.execute(
@@ -86,10 +90,45 @@ export const uploadMedicalRecord = async (req, res) => {
       `INSERT INTO petmedical_file_tbl 
        (petmedicalID, originalName, storedName, filePath, uploadedOn, uploadedBy, isDeleted) 
        VALUES (?, ?, ?, ?, NOW(), ?, 0)`,
-      [petMedicalID, file.originalname, file.filename, file.path, req.user.id] // CHANGED: req.user.id
+      [petMedicalID, file.originalname, file.filename, file.path, req.user.id]
     );
 
     await connection.commit();
+
+    // ===========================================
+    // 🔔 TRIGGER NOTIFICATION for new medical record
+    // ===========================================
+    try {
+      console.log('🔔 [uploadMedicalRecord] Triggering notification for pet owner:', petOwnerId);
+      
+      // Create a mock request for the notification controller
+      const notifReq = {
+        body: {
+          petMedicalID: petMedicalID,
+          petID: petID,
+          recordTitle: recordTitle,
+          labTypeID: labTypeID
+        },
+        user: req.user
+      };
+      
+      // Create a mock response
+      const notifRes = {
+        status: (code) => ({
+          json: (data) => {
+            console.log(`🔔 [uploadMedicalRecord] Notification response (${code}):`, data);
+          }
+        })
+      };
+
+      // Call the notification controller
+      await createMedicalRecordNotification(notifReq, notifRes);
+      console.log('✅ [uploadMedicalRecord] Notification triggered successfully for pet owner:', petOwnerId);
+      
+    } catch (notifError) {
+      // Log but don't fail the main request if notification fails
+      console.error('⚠️ [uploadMedicalRecord] Failed to send notification:', notifError);
+    }
 
     res.status(201).json({
       success: true,
@@ -98,7 +137,8 @@ export const uploadMedicalRecord = async (req, res) => {
         petMedicalID: petMedicalID,
         fileName: file.filename,
         recordTitle,
-        uploadedOn: new Date()
+        uploadedOn: new Date(),
+        notificationSent: true
       }
     });
 
@@ -121,7 +161,8 @@ export const uploadMedicalRecord = async (req, res) => {
   }
 };
 
-// Get all medical records with pet and owner info
+// Rest of your functions remain the same...
+
 export const getMedicalRecords = async (req, res) => {
   try {
     const [records] = await db.execute(`
@@ -159,7 +200,6 @@ export const getMedicalRecords = async (req, res) => {
   }
 };
 
-// Get medical records by pet ID
 export const getMedicalRecordsByPet = async (req, res) => {
   try {
     const { petId } = req.params;
@@ -171,7 +211,7 @@ export const getMedicalRecordsByPet = async (req, res) => {
         CONCAT(act.firstName, ' ', act.lastName) as owner,
         lt.labType as type,
         pm.recordTitle,
-        pmf.originalName,  // Added this line
+        pmf.originalName,
         pmf.storedName as fileName,
         pmf.filePath,
         DATE_FORMAT(pm.uploadedOn, '%Y-%m-%d %H:%i:%s') as uploadedOn
@@ -198,7 +238,6 @@ export const getMedicalRecordsByPet = async (req, res) => {
   }
 };
 
-// Get medical records by account ID (for clients to see their pets' records)
 export const getMedicalRecordsByAccount = async (req, res) => {
   try {
     const { accId } = req.params;
@@ -238,7 +277,6 @@ export const getMedicalRecordsByAccount = async (req, res) => {
   }
 };
 
-// Get single medical record
 export const getMedicalRecordById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -288,7 +326,6 @@ export const getMedicalRecordById = async (req, res) => {
   }
 };
 
-// Update medical record
 export const updateMedicalRecord = async (req, res) => {
   let connection;
   
@@ -374,12 +411,15 @@ export const updateMedicalRecord = async (req, res) => {
           `INSERT INTO petmedical_file_tbl 
            (petmedicalID, originalName, storedName, filePath, uploadedOn, uploadedBy, isDeleted) 
            VALUES (?, ?, ?, ?, NOW(), ?, 0)`,
-          [id, file.originalname, file.filename, file.path, req.user?.accId]
+          [id, file.originalname, file.filename, file.path, req.user?.id] // CHANGED: req.user.id
         );
       }
     }
 
     await connection.commit();
+
+    // Optionally send notification for updates (if you want)
+    // You could add a notification here if the record is significant
 
     res.json({
       success: true,
@@ -410,7 +450,6 @@ export const updateMedicalRecord = async (req, res) => {
   }
 };
 
-// Delete medical record (soft delete)
 export const deleteMedicalRecord = async (req, res) => {
   let connection;
   
@@ -471,7 +510,6 @@ export const deleteMedicalRecord = async (req, res) => {
   }
 };
 
-// controllers/admin_controllers/labRecordController.js
 export const serveMedicalRecord = async (req, res) => {
   try {
     const { filename } = req.params;
@@ -516,7 +554,7 @@ export const serveMedicalRecord = async (req, res) => {
     // Set headers and send file buffer
     res.setHeader('Content-Type', contentType);
     res.setHeader('Content-Disposition', `inline; filename="${fileRecord.originalName}"`);
-    res.setHeader('Cache-Control', 'no-cache'); // Prevent caching of sensitive files
+    res.setHeader('Cache-Control', 'no-cache');
     
     // Send the file buffer
     res.send(fileBuffer);
@@ -530,7 +568,6 @@ export const serveMedicalRecord = async (req, res) => {
   }
 };
 
-// Get lab types
 export const getLabTypes = async (req, res) => {
   try {
     const [labTypes] = await db.execute(`
