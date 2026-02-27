@@ -1,5 +1,4 @@
 import db from "../config/db.js";
-
 // Helper function to cancel past pending appointments
 const cancelPastPendingAppointments = async () => {
   try {
@@ -66,8 +65,6 @@ export const getAllServices = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-
-
 
 export const getBookedSlots = async (req, res) => {
   const { date } = req.query;
@@ -264,6 +261,19 @@ export const cancelAppointment = async (req, res) => {
 
     if (!appointmentId) {
       return res.status(400).json({ message: "Appointment ID is required" });
+    }
+
+    // Get appointment details before cancelling (for notification)
+    const [appointmentDetails] = await db.query(
+      `SELECT a.appointmentDate, p.accID as petOwnerId 
+       FROM appointment_tbl a
+       JOIN pet_tbl p ON a.petID = p.petID
+       WHERE a.appointmentID = ?`,
+      [appointmentId]
+    );
+
+    if (appointmentDetails.length === 0) {
+      return res.status(404).json({ message: "Appointment not found" });
     }
 
     // Verify the appointment belongs to the user and is in a cancellable status

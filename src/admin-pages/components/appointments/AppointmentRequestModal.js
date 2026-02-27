@@ -12,12 +12,12 @@ const AppointmentRequestModal = ({ isOpen, onClose, appointment, onUpdateStatus 
   const handleApprove = async () => {
     setLoading(true);
     try {
-      await api.patch(`/admin/appointments/status/`, {status: "Upcoming", idsToUpdate: appointment.id})
+      // ✅ REMOVED the direct API call - let parent handle it
       if (onUpdateStatus) {
-        onUpdateStatus(appointment.id, "Upcoming");
+        await onUpdateStatus(appointment.id, "Upcoming");
       }
+      
       setToast({ type: "success", message: "Appointment approved successfully!" });
-      // Don't close immediately, let user see the toast
       setTimeout(() => {
         onClose();
       }, 2000);
@@ -31,11 +31,11 @@ const AppointmentRequestModal = ({ isOpen, onClose, appointment, onUpdateStatus 
   const confirmReject = async () => {
     setLoading(true);
     try {
-
-      await api.patch(`/admin/appointments/status/`, {status: "Rejected", idsToUpdate: appointment.id});
+      // ✅ REMOVED the direct API call - let parent handle it
       if (onUpdateStatus) {
         await onUpdateStatus(appointment.id, "Rejected");
       } 
+      
       setToast({ type: "success", message: "Appointment rejected successfully!" });
       setShowRejectConfirm(false);
       setTimeout(() => {
@@ -47,6 +47,7 @@ const AppointmentRequestModal = ({ isOpen, onClose, appointment, onUpdateStatus 
       setLoading(false);
     }
   };
+
 
   const handleToastClose = () => {
     setToast(null);

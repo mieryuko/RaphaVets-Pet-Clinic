@@ -72,7 +72,7 @@ export const createForumPostNotification = async (req, res) => {
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                 1,
-                `New ${postType} Pet ${postType === 'Lost' ? '🐕' : '🐈'}`,
+                `New ${postType} Pet`,
                 `${creatorName} reported a ${postType.toLowerCase()} pet: ${description.substring(0, 50)}...`,
                 JSON.stringify({
                     forumId: forumID,
@@ -111,7 +111,7 @@ export const createForumPostNotification = async (req, res) => {
             );
         }
 
-                await db.query(
+        await db.query(
             `INSERT INTO user_notifications_tbl (accID, notificationID, isRead, readAt) 
              VALUES (?, ?, 1, NOW())`,
             [accID, notificationId]
@@ -122,17 +122,16 @@ export const createForumPostNotification = async (req, res) => {
         await sendToOnlineUsers(users.map(u => u.accId), {
             notificationId,
             type: 'forum_update',
-            title: `New ${postType} Pet ${postType === 'Lost' ? '🐕' : '🐈'}`,  // ✅ Added emoji
-            message: `${creatorName} reported a ${postType.toLowerCase()} pet: ${description.substring(0, 50)}...`,  // ✅ Added description
-            fullDescription: description,  // ✅ Send full description
+            title: `New ${postType} Pet`,
+            message: `${creatorName} reported a ${postType.toLowerCase()} pet: ${description.substring(0, 50)}...`,
+            fullDescription: description,
             creatorName: creatorName,
             postType: postType,
-            emoji: postType === 'Lost' ? '🐕' : '🐈',
             createdBy: accID,
             data: { 
                 forumId: forumID, 
                 postType,
-                description: description  // ✅ Store full description in data
+                description: description
             },
             createdAt: new Date()
         });
@@ -181,7 +180,7 @@ export const createPetTipsNotification = async (req, res) => {
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                 2, // pet_tips_update
-                `New Pet Care Tip 📝`,
+                `New Pet Care Tip`,
                 title,
                 JSON.stringify({ petCareId: petCareID, shortDescription }),
                 petCareID,
@@ -215,7 +214,7 @@ export const createPetTipsNotification = async (req, res) => {
         await sendToOnlineUsers(users.map(u => u.accId), {
             notificationId,
             type: 'pet_tips_update',
-            title: `New Pet Care Tip 📝`,
+            title: `New Pet Care Tip`,
             message: title,
             fullDescription: shortDescription,
             createdBy: accID,
@@ -267,7 +266,7 @@ export const createVideoNotification = async (req, res) => {
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                 3, // video_update
-                `New Video: ${category[0]?.videoCategory || 'Educational'} 🎥`,
+                `New Video: ${category[0]?.videoCategory || 'Educational'}`,
                 videoTitle,
                 JSON.stringify({ videoId: videoID, category: category[0]?.videoCategory }),
                 videoID,
@@ -296,7 +295,7 @@ export const createVideoNotification = async (req, res) => {
         await sendToOnlineUsers(users.map(u => u.accId), {
             notificationId,
             type: 'video_update',
-            title: `New Video: ${category[0]?.videoCategory || 'Educational'} 🎥`,  // ✅ Already has emoji
+            title: `New Video: ${category[0]?.videoCategory || 'Educational'}`,
             message: videoTitle,
             createdBy: accID,
             data: { videoId: videoID, category: category[0]?.videoCategory },
@@ -334,18 +333,6 @@ export const createAppointmentNotification = async (req, res) => {
         );
         console.log('🔍 [createAppointmentNotification] Status:', status[0]);
 
-        // Status emoji mapping
-        const statusEmoji = {
-            'Pending': '⏳',
-            'Upcoming': '📅',
-            'Completed': '✅',
-            'Cancelled': '❌',
-            'Rejected': '🚫',
-            'No Show': '⚠️'
-        };
-
-        const emoji = statusEmoji[status[0]?.statusName] || '📋';
-
         // 1. Insert notification
         console.log('🔍 [createAppointmentNotification] Inserting notification...');
         const [result] = await db.query(
@@ -354,7 +341,7 @@ export const createAppointmentNotification = async (req, res) => {
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                 4, // appointment_update
-                `Appointment ${status[0]?.statusName} ${emoji}`,
+                `Appointment ${status[0]?.statusName}`,
                 `Your appointment for ${new Date(appointmentDate).toLocaleDateString()} is now ${status[0]?.statusName}`,
                 JSON.stringify({ 
                     appointmentId: appointmentID, 
@@ -364,7 +351,7 @@ export const createAppointmentNotification = async (req, res) => {
                 appointmentID,
                 'appointment_tbl',
                 'specific',
-                req.user?.id || null // Fixed: req.user.id instead of req.user.accId
+                req.user?.id || null
             ]
         );
 
@@ -383,7 +370,7 @@ export const createAppointmentNotification = async (req, res) => {
         await sendToOnlineUsers([accID], {
             notificationId,
             type: 'appointment_update',
-            title: `Appointment ${status[0]?.statusName} ${emoji}`,
+            title: `Appointment ${status[0]?.statusName}`,
             message: `Your appointment for ${new Date(appointmentDate).toLocaleDateString()} is now ${status[0]?.statusName}`,
             data: { appointmentId: appointmentID, status: status[0]?.statusName },
             createdAt: new Date()
@@ -444,7 +431,7 @@ export const createMedicalRecordNotification = async (req, res) => {
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                 typeId,
-                `New ${type} for ${pet[0].petName} 📋`,
+                `New ${type} for ${pet[0].petName}`,
                 `${recordTitle} has been added to ${pet[0].petName}'s records`,
                 JSON.stringify({ 
                     petMedicalId: petMedicalID, 
@@ -456,7 +443,7 @@ export const createMedicalRecordNotification = async (req, res) => {
                 petMedicalID,
                 'petmedical_tbl',
                 'specific',
-                req.user?.id || null // Fixed: req.user.id instead of req.user.accId
+                req.user?.id || null
             ]
         );
 
@@ -475,7 +462,7 @@ export const createMedicalRecordNotification = async (req, res) => {
         await sendToOnlineUsers([pet[0].accID], {
             notificationId,
             type: typeId === 5 ? 'medical_record_update' : 'lab_record_update',
-            title: `New ${type} for ${pet[0].petName} 📋`,
+            title: `New ${type} for ${pet[0].petName}`,
             message: `${recordTitle} has been added`,
             data: { petMedicalId: petMedicalID, petId: petID, petName: pet[0].petName },
             createdAt: new Date()
@@ -497,14 +484,10 @@ export const createMedicalRecordNotification = async (req, res) => {
 /**
  * Get user's notifications (with pagination)
  */
-/**
- * Get user's notifications (with pagination)
- */
 export const getUserNotifications = async (req, res) => {
     console.log('🔍 [getUserNotifications] Started for user:', req.user);
     
     try {
-        // FIXED: Use req.user.id instead of req.user.accId
         const userId = req.user?.id;
         
         if (!userId) {
@@ -520,8 +503,6 @@ export const getUserNotifications = async (req, res) => {
 
         console.log('🔍 [getUserNotifications] Params:', { userId, page, limit, offset });
 
-        // Get specific + global notifications (last 30 days)
-        console.log('🔍 [getUserNotifications] Fetching notifications...');
         const [notifications] = await db.query(
             `SELECT 
                 n.*, 
@@ -560,7 +541,6 @@ export const getUserNotifications = async (req, res) => {
 
         console.log('🔍 [getUserNotifications] Found notifications:', notifications.length);
 
-        // Get total count for pagination
         const [totalResult] = await db.query(
             `SELECT COUNT(*) as total FROM (
                 SELECT notificationID FROM user_notifications_tbl WHERE accID = ? AND isDeleted = 0
@@ -602,7 +582,6 @@ export const getUnreadCount = async (req, res) => {
     console.log('🔍 [getUnreadCount] Started for user:', req.user);
     
     try {
-        // FIXED: Use req.user.id instead of req.user.accId
         const userId = req.user?.id;
         
         console.log('🔍 [getUnreadCount] Resolved userId:', userId);
@@ -660,7 +639,6 @@ export const markAsRead = async (req, res) => {
     console.log('🔍 [markAsRead] Params:', req.params);
     
     try {
-        // FIXED: Use req.user.id instead of req.user.accId
         const userId = req.user?.id;
         const { notificationId } = req.params;
 
@@ -681,7 +659,6 @@ export const markAsRead = async (req, res) => {
 
         if (result.affectedRows === 0) {
             console.log('🔍 [markAsRead] Notification not found in user_notifications, checking global...');
-            // Check if it's a global notification
             const [globalNotif] = await db.query(
                 `SELECT * FROM notifications_tbl 
                  WHERE notificationID = ? AND targetType = 'all'`,
@@ -700,8 +677,6 @@ export const markAsRead = async (req, res) => {
             }
         }
 
-        // Notify other user sessions via WebSocket
-        console.log('🔍 [markAsRead] Notifying other sessions...');
         const [sessions] = await db.query(
             `SELECT socketID FROM user_websocket_sessions_tbl
              WHERE accID = ? AND isActive = 1`,
@@ -731,14 +706,12 @@ export const markAllAsRead = async (req, res) => {
     console.log('🔍 [markAllAsRead] Started for user:', req.user);
     
     try {
-        // FIXED: Use req.user.id instead of req.user.accId
         const userId = req.user?.id;
         
         if (!userId) {
             return res.status(401).json({ success: false, message: 'User not authenticated' });
         }
 
-        // Update all specific notifications
         console.log('🔍 [markAllAsRead] Updating all user notifications...');
         await db.query(
             `UPDATE user_notifications_tbl 
@@ -747,7 +720,6 @@ export const markAllAsRead = async (req, res) => {
             [userId]
         );
 
-        // Get all global notifications from last 30 days
         console.log('🔍 [markAllAsRead] Fetching global notifications...');
         const [globalNotifs] = await db.query(
             `SELECT notificationID FROM notifications_tbl n
@@ -763,7 +735,6 @@ export const markAllAsRead = async (req, res) => {
 
         console.log('🔍 [markAllAsRead] Global notifications to mark:', globalNotifs.length);
 
-        // Insert as read
         if (globalNotifs.length > 0) {
             console.log('🔍 [markAllAsRead] Inserting global as read...');
             const values = globalNotifs.map(n => [userId, n.notificationID, 1, new Date()]);
@@ -774,8 +745,6 @@ export const markAllAsRead = async (req, res) => {
             );
         }
 
-        // Notify user's sessions
-        console.log('🔍 [markAllAsRead] Notifying sessions...');
         const [sessions] = await db.query(
             `SELECT socketID FROM user_websocket_sessions_tbl
              WHERE accID = ? AND isActive = 1`,
@@ -804,7 +773,6 @@ export const deleteNotification = async (req, res) => {
     console.log('🔍 [deleteNotification] Params:', req.params);
     
     try {
-        // FIXED: Use req.user.id instead of req.user.accId
         const userId = req.user?.id;
         const { notificationId } = req.params;
 
@@ -821,7 +789,6 @@ export const deleteNotification = async (req, res) => {
             [userId, notificationId]
         );
 
-        // Notify user's sessions
         const [sessions] = await db.query(
             `SELECT socketID FROM user_websocket_sessions_tbl
              WHERE accID = ? AND isActive = 1`,
@@ -846,17 +813,10 @@ export const deleteNotification = async (req, res) => {
 // WEBSOCKET SESSION MANAGEMENT
 // ===========================================
 
-/**
- * Register WebSocket session (called when user connects)
- */
-/**
- * Register WebSocket session (called when user connects)
- */
 export const registerSocketSession = async (userId, socketId, userAgent, ipAddress) => {
     console.log('🔍 [registerSocketSession] Registering session:', { userId, socketId, userAgent, ipAddress });
     
     try {
-        // First, deactivate other sessions for this user (excluding current socket)
         console.log('🔍 [registerSocketSession] Deactivating old sessions for user:', userId);
         await db.query(
             `UPDATE user_websocket_sessions_tbl 
@@ -865,7 +825,6 @@ export const registerSocketSession = async (userId, socketId, userAgent, ipAddre
             [userId, socketId]
         );
 
-        // Insert with ON DUPLICATE KEY UPDATE - THIS FIXES THE ERROR!
         console.log('🔍 [registerSocketSession] Inserting/Updating session...');
         const [result] = await db.query(
             `INSERT INTO user_websocket_sessions_tbl 
@@ -887,9 +846,6 @@ export const registerSocketSession = async (userId, socketId, userAgent, ipAddre
     }
 };
 
-/**
- * Update session ping (keep alive)
- */
 export const updateSessionPing = async (socketId) => {
     console.log('🔍 [updateSessionPing] Updating ping for socket:', socketId);
     
@@ -906,9 +862,6 @@ export const updateSessionPing = async (socketId) => {
     }
 };
 
-/**
- * Remove WebSocket session (called on disconnect)
- */
 export const removeSocketSession = async (socketId) => {
     console.log('🔍 [removeSocketSession] Removing session for socket:', socketId);
     
@@ -939,9 +892,6 @@ export const getActiveSessions = async (userId) => {
     }
 };
 
-/**
- * Cleanup inactive sessions (run as cron job)
- */
 export const cleanupInactiveSessions = async () => {
     console.log('🔍 [cleanupInactiveSessions] Starting cleanup...');
     

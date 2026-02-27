@@ -1,4 +1,5 @@
 import db from "../../config/db.js";
+import { createPetTipsNotification } from "../notificationController.js"; // Import notification function
 
 //PET CARE TIPS
 
@@ -147,7 +148,7 @@ export const createPetCareTip = async (req, res) => {
     // Fetch the created record to return complete data
     const [newRecord] = await db.execute(
       `SELECT pt.petCareID as id, pt.title, pt.shortDescription, pt.detailedContent, pt.learnMoreURL, 
-              pc.categoryName as category, i.iconName as icon, ps.pubStatus as status
+              pc.categoryName as category, i.iconName as icon, ps.pubStatus as status, pt.pubStatusID
        FROM pet_care_tips_content_tbl pt
        LEFT JOIN pet_care_category_tbl pc ON pt.petCareCategoryID = pc.petCareCategoryID
        LEFT JOIN icon_tbl i ON pt.iconID = i.iconID
@@ -155,6 +156,40 @@ export const createPetCareTip = async (req, res) => {
        WHERE pt.petCareID = ?`,
       [result.insertId]
     );
+
+    // ===========================================
+    // 🔔 TRIGGER NOTIFICATION if published immediately
+    // ===========================================
+    if (parseInt(pubStatusID) === 2) { // 2 = Published
+      try {
+        console.log('🔔 [createPetCareTip] Triggering notification for new pet care tip');
+        
+        const notifReq = {
+          body: {
+            petCareID: result.insertId,
+            title: title,
+            shortDescription: shortDescription,
+            pubStatusID: parseInt(pubStatusID),
+            accID: accID
+          },
+          user: req.user
+        };
+        
+        const notifRes = {
+          status: (code) => ({
+            json: (data) => {
+              console.log(`🔔 [createPetCareTip] Notification response (${code}):`, data);
+            }
+          })
+        };
+
+        await createPetTipsNotification(notifReq, notifRes);
+        console.log('✅ [createPetCareTip] Notification triggered successfully');
+        
+      } catch (notifError) {
+        console.error('⚠️ [createPetCareTip] Failed to send notification:', notifError);
+      }
+    }
 
     res.status(201).json({
       success: true,
@@ -185,6 +220,25 @@ export const updatePetCareTip = async (req, res) => {
       pubStatusID
     } = req.body;
 
+    // First, get the current record to check if status is changing to Published
+    const [currentRecord] = await db.execute(
+      `SELECT pubStatusID, title, shortDescription, accID 
+       FROM pet_care_tips_content_tbl 
+       WHERE petCareID = ? AND isDeleted = 0`,
+      [id]
+    );
+
+    if (currentRecord.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Pet care tip not found'
+      });
+    }
+
+    const wasPublished = currentRecord[0].pubStatusID === 2;
+    const willBePublished = pubStatusID !== undefined ? parseInt(pubStatusID) === 2 : wasPublished;
+    const isChangingToPublished = !wasPublished && willBePublished;
+
     // Build dynamic query based on provided fields
     let query = `UPDATE pet_care_tips_content_tbl SET `;
     const updates = [];
@@ -208,15 +262,15 @@ export const updatePetCareTip = async (req, res) => {
     }
     if (iconID !== undefined) {
       updates.push('iconID = ?');
-      params.push(parseInt(iconID)); // Ensure integer
+      params.push(parseInt(iconID));
     }
     if (petCareCategoryID !== undefined) {
       updates.push('petCareCategoryID = ?');
-      params.push(parseInt(petCareCategoryID)); // Ensure integer
+      params.push(parseInt(petCareCategoryID));
     }
     if (pubStatusID !== undefined) {
       updates.push('pubStatusID = ?');
-      params.push(parseInt(pubStatusID)); // Ensure integer
+      params.push(parseInt(pubStatusID));
     }
 
     if (updates.length === 0) {
@@ -228,7 +282,7 @@ export const updatePetCareTip = async (req, res) => {
 
     updates.push('lastUpdated = CURRENT_TIMESTAMP');
     query += updates.join(', ') + ' WHERE petCareID = ? AND isDeleted = 0';
-    params.push(parseInt(id)); // Ensure integer
+    params.push(parseInt(id));
 
     const [result] = await db.execute(query, params);
 
@@ -242,7 +296,7 @@ export const updatePetCareTip = async (req, res) => {
     // Fetch updated record
     const [updatedRecord] = await db.execute(
       `SELECT pt.petCareID as id, pt.title, pt.shortDescription, pt.detailedContent, pt.learnMoreURL, 
-              pc.categoryName as category, i.iconName as icon, ps.pubStatus as status
+              pc.categoryName as category, i.iconName as icon, ps.pubStatus as status, pt.pubStatusID
        FROM pet_care_tips_content_tbl pt
        LEFT JOIN pet_care_category_tbl pc ON pt.petCareCategoryID = pc.petCareCategoryID
        LEFT JOIN icon_tbl i ON pt.iconID = i.iconID
@@ -250,6 +304,40 @@ export const updatePetCareTip = async (req, res) => {
        WHERE pt.petCareID = ?`,
       [id]
     );
+
+    // ===========================================
+    // 🔔 TRIGGER NOTIFICATION if status changed to Published
+    // ===========================================
+    if (isChangingToPublished) {
+      try {
+        console.log('🔔 [updatePetCareTip] Triggering notification for published pet care tip');
+        
+        const notifReq = {
+          body: {
+            petCareID: parseInt(id),
+            title: title || currentRecord[0].title,
+            shortDescription: shortDescription || currentRecord[0].shortDescription,
+            pubStatusID: 2, // Published
+            accID: currentRecord[0].accID
+          },
+          user: req.user
+        };
+        
+        const notifRes = {
+          status: (code) => ({
+            json: (data) => {
+              console.log(`🔔 [updatePetCareTip] Notification response (${code}):`, data);
+            }
+          })
+        };
+
+        await createPetTipsNotification(notifReq, notifRes);
+        console.log('✅ [updatePetCareTip] Publication notification triggered successfully');
+        
+      } catch (notifError) {
+        console.error('⚠️ [updatePetCareTip] Failed to send publication notification:', notifError);
+      }
+    }
 
     res.json({
       success: true,
@@ -271,6 +359,16 @@ export const deletePetCareTip = async (req, res) => {
   try {
     const { id } = req.params;
 
+    // Check if it was published before deletion (optional notification)
+    const [currentRecord] = await db.execute(
+      `SELECT pubStatusID, title, shortDescription, accID 
+       FROM pet_care_tips_content_tbl 
+       WHERE petCareID = ? AND isDeleted = 0`,
+      [id]
+    );
+
+    const wasPublished = currentRecord.length > 0 && currentRecord[0].pubStatusID === 2;
+
     const query = `
       UPDATE pet_care_tips_content_tbl 
       SET isDeleted = 1, lastUpdated = CURRENT_TIMESTAMP
@@ -285,6 +383,9 @@ export const deletePetCareTip = async (req, res) => {
         message: 'Pet care tip not found or already deleted'
       });
     }
+
+    // Optional: Send notification for deletion? 
+    // Usually you don't notify for deletions, but you can if needed
 
     res.json({
       success: true,
@@ -395,4 +496,3 @@ export const getPublicationStatuses = async (req, res) => {
     });
   }
 };
-

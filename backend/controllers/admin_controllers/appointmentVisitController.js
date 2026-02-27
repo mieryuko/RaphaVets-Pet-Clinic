@@ -1,4 +1,5 @@
 import db from "../../config/db.js";
+import { createAppointmentNotification } from "../notificationController.js"; // Import notification function
 
 export const assignAppointment = async (req, res) => {
   try {
@@ -77,9 +78,37 @@ export const assignAppointment = async (req, res) => {
       [userID, petID, serviceID, date, scheduledTimeID]
     );
 
+    const appointmentId = result.insertId;
+
+    // 🔔 TRIGGER NOTIFICATION for new appointment (Upcoming status - ID 2)
+    try {
+      const notifReq = {
+        body: {
+          appointmentID: appointmentId,
+          accID: userID,
+          statusID: 2, // Upcoming status
+          appointmentDate: date
+        },
+        user: req.user
+      };
+      
+      const notifRes = {
+        status: (code) => ({
+          json: (data) => {
+            console.log(`🔔 Notification response (${code}):`, data);
+          }
+        })
+      };
+
+      await createAppointmentNotification(notifReq, notifRes);
+      console.log('✅ Appointment notification sent to user:', userID);
+    } catch (notifError) {
+      console.error('⚠️ Failed to send appointment notification:', notifError);
+    }
+
     return res.status(201).json({
       message: "Appointment booked successfully",
-      appointmentId: result.insertId,
+      appointmentId: appointmentId,
     });
   } catch (err) {
     console.error("Error assigning appointment: ", err);
@@ -144,6 +173,7 @@ export const getAppointmentAndVisits = async (req, res) => {
       ),
       status: apt.statusName,
       visitType: apt.visitType,
+      accID: apt.accID, // Include for notification reference
     }));
 
     const cleanedVisits = visits.map((vst) => ({
@@ -162,6 +192,7 @@ export const getAppointmentAndVisits = async (req, res) => {
       }),
       visitType: vst.visitType,
       status: vst.status,
+      accID: vst.accID, // Include for notification reference
     }));
 
     return res.status(200).json({ cleanedAppointments, cleanedVisits });
@@ -300,6 +331,14 @@ export const updateStatus = async (req, res) => {
 
     const placeholder = ids.map(() => "?").join(",");
 
+    // Get appointment details before updating (for notifications)
+    const [appointments] = await db.execute(
+      `SELECT appointmentID, accID, appointmentDate 
+       FROM appointment_tbl 
+       WHERE appointmentID IN (${placeholder})`,
+      [...ids]
+    );
+
     await db.execute(
       `
          UPDATE appointment_tbl
@@ -308,6 +347,35 @@ export const updateStatus = async (req, res) => {
       `,
       [statusID, ...ids]
     );
+
+    // 🔔 TRIGGER NOTIFICATIONS for each updated appointment
+    for (const apt of appointments) {
+      try {
+        const notifReq = {
+          body: {
+            appointmentID: apt.appointmentID,
+            accID: apt.accID,
+            statusID: statusID,
+            appointmentDate: apt.appointmentDate
+          },
+          user: req.user
+        };
+        
+        const notifRes = {
+          status: (code) => ({
+            json: (data) => {
+              console.log(`🔔 Notification for appointment ${apt.appointmentID}:`, data);
+            }
+          })
+        };
+
+        await createAppointmentNotification(notifReq, notifRes);
+        console.log(`✅ Notification sent for appointment ${apt.appointmentID}`);
+      } catch (notifError) {
+        console.error(`⚠️ Failed to send notification for appointment ${apt.appointmentID}:`, notifError);
+      }
+    }
+
     res
       .status(200)
       .json({ message: "Successfully updated appointment status" });
@@ -331,6 +399,12 @@ export const completeAppointment = async (req, res) => {
       console.log("Appointment ID: ", appointmentID);
       console.log("Status ID: ", statusID);
 
+      // Get appointment details before completing (for notification)
+      const [appointment] = await db.execute(
+        `SELECT accID, appointmentDate FROM appointment_tbl WHERE appointmentID = ?`,
+        [appointmentID]
+      );
+
       await db.execute(`
          UPDATE appointment_tbl
          SET
@@ -345,6 +419,34 @@ export const completeAppointment = async (req, res) => {
          FROM appointment_tbl
          WHERE appointmentID = ?
       `, [appointmentID]);
+
+      // 🔔 TRIGGER NOTIFICATION for completed appointment
+      if (appointment.length > 0) {
+        try {
+          const notifReq = {
+            body: {
+              appointmentID: appointmentID,
+              accID: appointment[0].accID,
+              statusID: statusID,
+              appointmentDate: appointment[0].appointmentDate
+            },
+            user: req.user
+          };
+          
+          const notifRes = {
+            status: (code) => ({
+              json: (data) => {
+                console.log(`🔔 Completion notification response:`, data);
+              }
+            })
+          };
+
+          await createAppointmentNotification(notifReq, notifRes);
+          console.log(`✅ Completion notification sent for appointment ${appointmentID}`);
+        } catch (notifError) {
+          console.error('⚠️ Failed to send completion notification:', notifError);
+        }
+      }
 
       return res.status(200).json({
          message: "Appointment marked as complete",
@@ -370,6 +472,14 @@ export const deleteAppointment = async (req, res) => {
   try {
     const placeholder = ids.map(() => "?").join(",");
 
+    // Get appointment details before deleting (for notification)
+    const [appointments] = await db.execute(
+      `SELECT appointmentID, accID, appointmentDate, statusID 
+       FROM appointment_tbl 
+       WHERE appointmentID IN (${placeholder})`,
+      [...ids]
+    );
+
     await db.execute(
       `
          UPDATE appointment_tbl
@@ -378,6 +488,8 @@ export const deleteAppointment = async (req, res) => {
       `,
       [...ids]
     );
+
+   
 
     return res.status(200).json({ message: "Successfully deleted appointments." });
   } catch (err) {

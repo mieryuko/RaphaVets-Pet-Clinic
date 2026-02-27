@@ -1,5 +1,6 @@
 //VIDEOS
 import db from "../../config/db.js";
+import { createVideoNotification } from "../notificationController.js"; // Import notification function
 
 export const getAllVideos = async (req, res) => {
   try {
@@ -140,13 +141,47 @@ export const createVideo = async (req, res) => {
     // Fetch the created record to return complete data
     const [newRecord] = await db.execute(
       `SELECT v.videoID as id, v.videoTitle as title, v.videoURL, 
-              vc.videoCategory as category, ps.pubStatus as status
+              vc.videoCategory as category, ps.pubStatus as status, v.pubStatusID
        FROM video_content_tbl v
        LEFT JOIN video_category_tbl vc ON v.videoCategoryID = vc.videoCategoryID
        LEFT JOIN publication_status_tbl ps ON v.pubStatusID = ps.pubStatsID
        WHERE v.videoID = ?`,
       [result.insertId]
     );
+
+    // ===========================================
+    // 🔔 TRIGGER NOTIFICATION if published immediately
+    // ===========================================
+    if (parseInt(pubStatusID) === 2) { // 2 = Published
+      try {
+        console.log('🔔 [createVideo] Triggering notification for new video');
+        
+        const notifReq = {
+          body: {
+            videoID: result.insertId,
+            videoTitle: videoTitle,
+            videoCategoryID: parseInt(videoCategoryID),
+            pubStatusID: parseInt(pubStatusID),
+            accID: accID
+          },
+          user: req.user
+        };
+        
+        const notifRes = {
+          status: (code) => ({
+            json: (data) => {
+              console.log(`🔔 [createVideo] Notification response (${code}):`, data);
+            }
+          })
+        };
+
+        await createVideoNotification(notifReq, notifRes);
+        console.log('✅ [createVideo] Notification triggered successfully');
+        
+      } catch (notifError) {
+        console.error('⚠️ [createVideo] Failed to send notification:', notifError);
+      }
+    }
 
     res.status(201).json({
       success: true,
@@ -173,6 +208,25 @@ export const updateVideo = async (req, res) => {
       videoCategoryID,
       pubStatusID
     } = req.body;
+
+    // First, get the current record to check if status is changing to Published
+    const [currentRecord] = await db.execute(
+      `SELECT pubStatusID, videoTitle, videoCategoryID, accID 
+       FROM video_content_tbl 
+       WHERE videoID = ? AND isDeleted = 0`,
+      [id]
+    );
+
+    if (currentRecord.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Video not found'
+      });
+    }
+
+    const wasPublished = currentRecord[0].pubStatusID === 2;
+    const willBePublished = pubStatusID !== undefined ? parseInt(pubStatusID) === 2 : wasPublished;
+    const isChangingToPublished = !wasPublished && willBePublished;
 
     // Build dynamic query based on provided fields
     let query = `UPDATE video_content_tbl SET `;
@@ -227,13 +281,47 @@ export const updateVideo = async (req, res) => {
     // Fetch updated record
     const [updatedRecord] = await db.execute(
       `SELECT v.videoID as id, v.videoTitle as title, v.videoURL, 
-              vc.videoCategory as category, ps.pubStatus as status
+              vc.videoCategory as category, ps.pubStatus as status, v.pubStatusID
        FROM video_content_tbl v
        LEFT JOIN video_category_tbl vc ON v.videoCategoryID = vc.videoCategoryID
        LEFT JOIN publication_status_tbl ps ON v.pubStatusID = ps.pubStatsID
        WHERE v.videoID = ?`,
       [id]
     );
+
+    // ===========================================
+    // 🔔 TRIGGER NOTIFICATION if status changed to Published
+    // ===========================================
+    if (isChangingToPublished) {
+      try {
+        console.log('🔔 [updateVideo] Triggering notification for published video');
+        
+        const notifReq = {
+          body: {
+            videoID: parseInt(id),
+            videoTitle: videoTitle || currentRecord[0].videoTitle,
+            videoCategoryID: videoCategoryID || currentRecord[0].videoCategoryID,
+            pubStatusID: 2, // Published
+            accID: currentRecord[0].accID
+          },
+          user: req.user
+        };
+        
+        const notifRes = {
+          status: (code) => ({
+            json: (data) => {
+              console.log(`🔔 [updateVideo] Notification response (${code}):`, data);
+            }
+          })
+        };
+
+        await createVideoNotification(notifReq, notifRes);
+        console.log('✅ [updateVideo] Publication notification triggered successfully');
+        
+      } catch (notifError) {
+        console.error('⚠️ [updateVideo] Failed to send publication notification:', notifError);
+      }
+    }
 
     res.json({
       success: true,
@@ -255,6 +343,16 @@ export const deleteVideo = async (req, res) => {
   try {
     const { id } = req.params;
 
+    // Check if it was published before deletion (optional notification)
+    const [currentRecord] = await db.execute(
+      `SELECT pubStatusID, videoTitle, videoCategoryID, accID 
+       FROM video_content_tbl 
+       WHERE videoID = ? AND isDeleted = 0`,
+      [id]
+    );
+
+    const wasPublished = currentRecord.length > 0 && currentRecord[0].pubStatusID === 2;
+
     const query = `
       UPDATE video_content_tbl 
       SET isDeleted = 1, lastUpdated = CURRENT_TIMESTAMP
@@ -269,6 +367,9 @@ export const deleteVideo = async (req, res) => {
         message: 'Video not found or already deleted'
       });
     }
+
+    // Optional: Send notification for deletion? 
+    // Usually you don't notify for deletions, but you can if needed
 
     res.json({
       success: true,

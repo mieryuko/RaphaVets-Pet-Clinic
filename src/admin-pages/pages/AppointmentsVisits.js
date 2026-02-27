@@ -138,7 +138,6 @@ const AppointmentsVisits = () => {
           status: newStatus
         } : app
       ));
-      fetchAppointmentData();
       
       return true;
     } catch (error) {
@@ -254,7 +253,6 @@ const AppointmentsVisits = () => {
       setToast({ type: "success", message });
       setSelectedAppointments([]);
       setIsSelectMode(false);
-      fetchAppointmentData();
     }catch(err){
       console.log(err.message);
     }
@@ -275,7 +273,11 @@ const AppointmentsVisits = () => {
         setToast({ type: "success", message: `${appointmentToCancel.length} appointments cancelled successfully!` });
       } else {
         // Single cancellation
-        handleUpdateStatus(appointmentToCancel.id, "Cancelled");
+        setAppointments(prev => prev.map(app => 
+          app.id === appointmentToCancel.id 
+            ? { ...app, status: "Cancelled" } 
+            : app
+        ));
         setToast({ type: "success", message: "Appointment cancelled successfully!" });
       }
     }
@@ -283,7 +285,6 @@ const AppointmentsVisits = () => {
     setAppointmentToCancel(null);
     setSelectedAppointments([]);
     setIsSelectMode(false);
-    fetchAppointmentData();
   };
 
   const confirmDelete = async () => {

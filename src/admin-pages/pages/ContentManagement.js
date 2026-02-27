@@ -18,7 +18,7 @@ const ContentManagement = () => {
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [showStats, setShowStats] = useState(true); // New state for stats visibility
+  const [showStats, setShowStats] = useState(true);
 
   // State for data from backend
   const [petTips, setPetTips] = useState([]);
@@ -26,15 +26,14 @@ const ContentManagement = () => {
   const [categories, setCategories] = useState([]);
   const [icons, setIcons] = useState([]);
   const [publicationStatuses, setPublicationStatuses] = useState([]);
-
   const [videoCategories, setVideoCategories] = useState([]);
-
 
   // Handle new video category creation
   const handleNewVideoCategoryCreated = async (newCategory) => {
     console.log('New video category created:', newCategory);
     await fetchVideoCategories(); // Refresh the video categories list
   };
+
   // Fetch videos
   const fetchVideos = async () => {
     try {
@@ -106,8 +105,6 @@ const ContentManagement = () => {
     archives: 0,
     forumPosts: 0
   });
-
-  
 
   // Fetch all data on component mount (except forum posts)
   useEffect(() => {
@@ -194,7 +191,6 @@ const ContentManagement = () => {
     try {
       setLoading(true);
 
-
       const requestData = {
         title: data.title,
         shortDescription: data.shortDescription,
@@ -233,19 +229,6 @@ const ContentManagement = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const getCurrentUserId = async () => {
-    try {
-      const response = await api.get('/auth/current-user');
-      if (response.data.success) {
-        return response.data.data.accId;
-      }
-    } catch (error) {
-      console.error('Error getting current user from API:', error);
-    }
-    
-    return "no id";
   };
 
   // Handle delete pet tip
@@ -301,18 +284,12 @@ const ContentManagement = () => {
     setShowVideoModal(true);
   };
 
-  // Handle add/edit video
+  // Handle add/edit video - FIXED: Removed getCurrentUserId function call
   const handleAddVideo = async (data) => {
     try {
       setLoading(true);
       
-      const currentUserId = await getCurrentUserId();
-      
-      if (!currentUserId) {
-        alert('User not authenticated. Please log in again.');
-        return;
-      }
-
+      // No need to fetch user ID - backend gets it from the token via auth middleware
       const requestData = {
         videoTitle: data.videoTitle,
         videoURL: data.videoURL,
