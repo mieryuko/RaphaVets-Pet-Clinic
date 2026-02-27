@@ -104,7 +104,7 @@ function SideBar({ isMenuOpen, setIsMenuOpen, refreshTrigger }) {
       {/* Sidebar */}
       <div className={`
         w-[250px] h-screen md:h-full bg-[#FBFBFB] shadow-xl md:shadow-none flex-shrink-0 flex flex-col p-5 overflow-y-auto
-        ${isMenuOpen ? 'fixed md:relative top-0 left-0 z-50 md:z-auto md:top-auto md:left-auto' : 'hidden md:block'}
+        ${isMenuOpen ? 'fixed md:relative top-0 left-0 z-50 md:z-auto md:top-auto md:left-auto' : 'hidden'}
         pointer-events-auto
       `}>
         {/* Your Pets Section */}

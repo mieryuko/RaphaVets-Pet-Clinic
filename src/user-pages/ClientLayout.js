@@ -5,11 +5,12 @@ import Sidebar from "./template/SideBar";
 import FloatingChatBox from "./components/FloatingChatBox";
 
 function ClientLayout({ children }) {
-  const [isMenuOpen, setIsMenuOpen] = useState(false); // Changed to false by default on mobile
+  const [isMenuOpen, setIsMenuOpen] = useState(false); // false on mobile, will enable on desktop via effect
   const [darkMode, setDarkMode] = useState(false);
   const [chatType, setChatType] = useState(null);
   const navigate = useNavigate();
 
+  // initial theme and default sidebar state on mount
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
 
@@ -17,11 +18,21 @@ function ClientLayout({ children }) {
       setDarkMode(true);
       document.documentElement.classList.add("dark");
     }
-    
-    // Handle window resize to auto-close sidebar on mobile
+
+    // default open on desktop
+    if (window.innerWidth >= 768) {
+      setIsMenuOpen(true);
+    }
+  }, []);
+
+  // handle window resize to close sidebar on mobile and reopen when switching back to desktop
+  useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth < 768 && isMenuOpen) {
         setIsMenuOpen(false);
+      }
+      if (window.innerWidth >= 768 && !isMenuOpen) {
+        setIsMenuOpen(true);
       }
     };
 
