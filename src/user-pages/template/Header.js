@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import socket from "../../socket";
 import api from "../../api/axios";
 
-function Header({ darkMode, setDarkMode, setIsMenuOpen }) {
+function Header({ darkMode, setDarkMode, toggleMenu }) {
   const navigate = useNavigate();
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState([]);
@@ -362,7 +362,7 @@ function Header({ darkMode, setDarkMode, setIsMenuOpen }) {
       {/* Left side - Menu, Logo */}
       <div className="flex flex-row items-center gap-2 sm:gap-3 flex-shrink-0">
         <motion.button
-          onClick={() => setIsMenuOpen((prev) => !prev)}
+          onClick={toggleMenu}
           className="text-2xl sm:text-3xl text-gray-700 focus:outline-none flex-shrink-0"
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
