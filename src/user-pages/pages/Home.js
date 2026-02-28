@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import ClientLayout from "../ClientLayout";
+import socket from "../../socket"; // 👈 ADD THIS IMPORT
 
 // Component imports
 import DashboardCard from "../components/home/DashboardCard";
@@ -28,6 +29,122 @@ function Home() {
   });
   const navigate = useNavigate();
 
+  // Socket.IO connection and listeners
+  useEffect(() => {
+    const userId = localStorage.getItem("userId");
+    
+    // Setup socket connection
+    if (!socket.connected) {
+      socket.connect();
+    }
+
+    // Socket connection events
+    socket.on('connect', () => {
+      console.log('✅ Socket connected:', socket.id);
+      setSocketConnected(true);
+      
+      // Join user room when connected
+      if (userId) {
+        socket.emit('join', userId);
+        console.log(`👤 Joined room: user_${userId}`);
+      }
+    });
+
+    socket.on('disconnect', () => {
+      console.log('❌ Socket disconnected');
+      setSocketConnected(false);
+    });
+
+    socket.on('connect_error', (error) => {
+      console.error('Socket connection error:', error);
+      setSocketConnected(false);
+    });
+
+    // Join user room if already connected
+    if (socket.connected && userId) {
+      socket.emit('join', userId);
+      setSocketConnected(true);
+    }
+
+    // Listen for new medical records
+    socket.on('new_medical_record', (newRecord) => {
+      console.log('📨 New medical record received:', newRecord);
+      
+      // Show a notification or toast (optional)
+      showNotification('New Record Added', `A new ${newRecord.recordCategory} record has been added for ${newRecord.petName}`);
+      
+      // Determine if it's medical or lab based on recordCategory or labTypeID
+      if (newRecord.recordCategory === 'lab' || newRecord.labTypeID === 1) {
+        setLabRecords(prev => {
+          // Check if already exists
+          const exists = prev.some(r => r.id === newRecord.id);
+          if (exists) return prev;
+          return [newRecord, ...prev];
+        });
+      } else {
+        setMedicalRecords(prev => {
+          const exists = prev.some(r => r.id === newRecord.id);
+          if (exists) return prev;
+          return [newRecord, ...prev];
+        });
+      }
+    });
+
+    // Listen for updated medical records
+    socket.on('medical_record_updated', (updatedRecord) => {
+      console.log('📨 Medical record updated:', updatedRecord);
+      
+      showNotification('Record Updated', `The ${updatedRecord.recordCategory} record for ${updatedRecord.petName} has been updated`);
+      
+      // Update in both lists if present
+      setMedicalRecords(prev => 
+        prev.map(record => 
+          record.id === updatedRecord.id ? { ...record, ...updatedRecord } : record
+        )
+      );
+      
+      setLabRecords(prev => 
+        prev.map(record => 
+          record.id === updatedRecord.id ? { ...record, ...updatedRecord } : record
+        )
+      );
+    });
+
+    // Listen for deleted medical records
+    socket.on('medical_record_deleted', ({ id }) => {
+      console.log('📨 Medical record deleted:', id);
+      
+      // Find the record to show which pet it belonged to (optional)
+      const deletedMedical = medicalRecords.find(r => r.id === id);
+      const deletedLab = labRecords.find(r => r.id === id);
+      const deletedRecord = deletedMedical || deletedLab;
+      
+      if (deletedRecord) {
+        showNotification('Record Deleted', `A record for ${deletedRecord.petName} has been deleted`);
+      }
+      
+      setMedicalRecords(prev => prev.filter(record => record.id !== id));
+      setLabRecords(prev => prev.filter(record => record.id !== id));
+    });
+
+    // Cleanup
+    return () => {
+      socket.off('connect');
+      socket.off('disconnect');
+      socket.off('connect_error');
+      socket.off('new_medical_record');
+      socket.off('medical_record_updated');
+      socket.off('medical_record_deleted');
+    };
+  }, [medicalRecords, labRecords]); // Add dependencies to access current state in cleanup
+
+  // Simple notification function (you can replace with your preferred toast library)
+  const showNotification = (title, message) => {
+    // You can implement a toast notification here
+    console.log(`🔔 ${title}: ${message}`);
+  };
+  const [socketConnected, setSocketConnected] = useState(false);
+  
   useEffect(() => {
     fetchAppointments();
     fetchMedicalRecords();
@@ -135,7 +252,7 @@ function Home() {
     setSelectedAppointment(null);
   };
 
-  // Animation variants
+  // Animation variants (keep your existing ones)
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {

@@ -5,6 +5,7 @@ import api from "../../api/axios";
 import ClientLayout from "../ClientLayout";
 import ViewDetailsModal from "../components/home/ViewDetailsModal"; 
 import SuccessToast from "../../template/SuccessToast";
+import socket from "../../socket"; // 👈 ADD THIS IMPORT
 
 // Import the tab components
 import AppointmentTab from "../components/home/AppointmentTab";
@@ -35,6 +36,7 @@ function PetDetails() {
   
   // Add refresh trigger state
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [socketConnected, setSocketConnected] = useState(false);
   
   // Modal and toast states
   const [selectedAppointment, setSelectedAppointment] = useState(null);
@@ -44,6 +46,136 @@ function PetDetails() {
   const [toastMessage, setToastMessage] = useState("");
 
   const tabs = ["Appointments", "Medical Reports", "Lab Records"];
+
+  // ===========================================
+  // 🔌 SOCKET.IO SETUP FOR REAL-TIME UPDATES
+  // ===========================================
+  useEffect(() => {
+    const userId = localStorage.getItem("userId");
+    
+    // Setup socket connection
+    if (!socket.connected) {
+      socket.connect();
+    }
+
+    // Socket connection events
+    socket.on('connect', () => {
+      console.log('✅ Socket connected in PetDetails:', socket.id);
+      setSocketConnected(true);
+      
+      // Join user room for targeted notifications
+      if (userId) {
+        socket.emit('join', userId);
+        console.log(`👤 Joined room: user_${userId}`);
+      }
+    });
+
+    socket.on('disconnect', () => {
+      console.log('❌ Socket disconnected in PetDetails');
+      setSocketConnected(false);
+    });
+
+    socket.on('connect_error', (error) => {
+      console.error('Socket connection error in PetDetails:', error);
+      setSocketConnected(false);
+    });
+
+    // Join user room if already connected
+    if (socket.connected && userId) {
+      socket.emit('join', userId);
+      setSocketConnected(true);
+    }
+
+    // ===========================================
+    // 📨 LISTEN FOR NEW MEDICAL RECORDS
+    // ===========================================
+    socket.on('new_medical_record', (newRecord) => {
+      console.log('📨 New medical record received in PetDetails:', newRecord);
+      
+      // Only update if this record belongs to the current pet
+      if (newRecord.petID === parseInt(id)) {
+        showNotification('New Record Added', `A new ${newRecord.recordCategory} record has been added for ${newRecord.petName}`);
+        
+        // Determine if it's medical or lab based on recordCategory or labTypeID
+        if (newRecord.recordCategory === 'lab' || newRecord.labTypeID === 1) {
+          setLabRecords(prev => {
+            // Check if already exists
+            const exists = prev.some(r => r.id === newRecord.id);
+            if (exists) return prev;
+            return [newRecord, ...prev];
+          });
+        } else {
+          setMedicalRecords(prev => {
+            const exists = prev.some(r => r.id === newRecord.id);
+            if (exists) return prev;
+            return [newRecord, ...prev];
+          });
+        }
+      }
+    });
+
+    // ===========================================
+    // 📨 LISTEN FOR UPDATED MEDICAL RECORDS
+    // ===========================================
+    socket.on('medical_record_updated', (updatedRecord) => {
+      console.log('📨 Medical record updated in PetDetails:', updatedRecord);
+      
+      // Only update if this record belongs to the current pet
+      if (updatedRecord.petID === parseInt(id)) {
+        showNotification('Record Updated', `The ${updatedRecord.recordCategory} record for ${updatedRecord.petName} has been updated`);
+        
+        // Update in both lists if present
+        setMedicalRecords(prev => 
+          prev.map(record => 
+            record.id === updatedRecord.id ? { ...record, ...updatedRecord } : record
+          )
+        );
+        
+        setLabRecords(prev => 
+          prev.map(record => 
+            record.id === updatedRecord.id ? { ...record, ...updatedRecord } : record
+          )
+        );
+      }
+    });
+
+    // ===========================================
+    // 📨 LISTEN FOR DELETED MEDICAL RECORDS
+    // ===========================================
+    socket.on('medical_record_deleted', ({ id: deletedId }) => {
+      console.log('📨 Medical record deleted in PetDetails:', deletedId);
+      
+      // Check if the deleted record belongs to current pet by looking in state
+      const deletedMedical = medicalRecords.find(r => r.id === deletedId);
+      const deletedLab = labRecords.find(r => r.id === deletedId);
+      const deletedRecord = deletedMedical || deletedLab;
+      
+      if (deletedRecord && deletedRecord.petID === parseInt(id)) {
+        showNotification('Record Deleted', `A record has been deleted`);
+        
+        setMedicalRecords(prev => prev.filter(record => record.id !== deletedId));
+        setLabRecords(prev => prev.filter(record => record.id !== deletedId));
+      }
+    });
+
+    // Cleanup
+    return () => {
+      socket.off('connect');
+      socket.off('disconnect');
+      socket.off('connect_error');
+      socket.off('new_medical_record');
+      socket.off('medical_record_updated');
+      socket.off('medical_record_deleted');
+    };
+  }, [id, medicalRecords, labRecords]); // Add dependencies
+
+  // Simple notification function
+  const showNotification = (title, message) => {
+    console.log(`🔔 ${title}: ${message}`);
+    // You can implement a toast notification here
+    setToastMessage(`${title}: ${message}`);
+    setShowSuccessToast(true);
+  };
 
   // Fetch medical records for this specific pet
   const fetchMedicalRecords = async () => {
@@ -463,6 +595,13 @@ function PetDetails() {
 
   return (
     <ClientLayout refreshTrigger={refreshTrigger}>
+      {/* Socket connection status indicator (optional) */}
+      {!socketConnected && (
+        <div className="bg-yellow-100 text-yellow-800 text-xs sm:text-sm p-2 rounded mb-2 text-center">
+          ⚠️ Real-time updates are disconnected. Please refresh the page.
+        </div>
+      )}
+      
       <motion.div
         variants={containerVariants}
         initial="hidden"
