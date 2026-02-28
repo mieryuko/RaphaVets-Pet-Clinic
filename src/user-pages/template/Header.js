@@ -48,8 +48,17 @@ function Header({ darkMode, setDarkMode, toggleMenu, isMenuOpen, animateIcon }) 
     return styles[type] || { icon: 'fa-bell', color: 'text-gray-500' };
   };
 
-  // Get navigation link based on notification type
-  const getNotificationLink = (type) => {
+  // ===========================================
+  // 🔗 Get navigation link based on notification type and metadata
+  // ===========================================
+  const getNotificationLink = (type, notificationData = {}) => {
+    console.log('🔗 Getting link for notification type:', type, 'data:', notificationData);
+    
+    // Extract petId from various possible locations in the notification data
+    const petId = notificationData.petId || 
+                  notificationData.data?.petId || 
+                  notificationData.petID;
+    
     switch (type) {
       case 'forum_update':
         return '/forum';
@@ -57,11 +66,17 @@ function Header({ darkMode, setDarkMode, toggleMenu, isMenuOpen, animateIcon }) 
         return '/pet-tips';
       case 'video_update':
         return '/videos';
+      
+      // All pet-related notifications go to the pet page
       case 'appointment_update':
-        return '/appointments';
       case 'medical_record_update':
       case 'lab_record_update':
-        return '/medical-records';
+        if (petId) {
+          return `/pet/${petId}`;
+        }
+        // If no pet ID, go to general page
+        return type === 'appointment_update' ? '/appointments' : '/medical-records';
+      
       default:
         return '#';
     }
@@ -83,7 +98,6 @@ function Header({ darkMode, setDarkMode, toggleMenu, isMenuOpen, animateIcon }) 
         const formattedNotifications = response.data.notifications
           .filter(notif => {
             // 🔴 FILTER OUT OWN NOTIFICATIONS
-            // Check if this notification was created by the current user
             if (notif.createdBy && notif.createdBy === currentUserId) {
               console.log('⏭️ [fetchNotifications] Filtering out own notification:', notif.notificationID);
               return false;
@@ -92,6 +106,19 @@ function Header({ darkMode, setDarkMode, toggleMenu, isMenuOpen, animateIcon }) 
           })
           .map(notif => {
             const style = getNotificationStyle(notif.typeName);
+            
+            // Parse any metadata from the notification
+            let notificationData = {};
+            try {
+              if (notif.data) {
+                notificationData = typeof notif.data === 'string' 
+                  ? JSON.parse(notif.data) 
+                  : notif.data;
+              }
+            } catch (e) {
+              console.error('Error parsing notification data:', e);
+            }
+            
             return {
               id: notif.notificationID,
               notificationId: notif.notificationID,
@@ -102,15 +129,17 @@ function Header({ darkMode, setDarkMode, toggleMenu, isMenuOpen, animateIcon }) 
               type: notif.typeName,
               icon: style.icon,
               color: style.color,
-              link: getNotificationLink(notif.typeName),
-              createdBy: notif.createdBy // Store for future reference
+              link: getNotificationLink(notif.typeName, notificationData),
+              createdBy: notif.createdBy,
+              data: notificationData,
+              petName: notificationData.petName // Extract petName if available
             };
           });
         
-        console.log('📥 [fetchNotifications] Formatted notifications:', formattedNotifications.length);
+        console.log('📥 [fetchNotifications] Formatted notifications:', formattedNotifications);
         setNotifications(formattedNotifications);
         
-        // Update unread count (only count unread notifications that aren't your own)
+        // Update unread count
         const unreadResponse = await api.get('/notifications/unread-count');
         if (unreadResponse.data.success) {
           setUnreadCount(unreadResponse.data.unread);
@@ -179,11 +208,13 @@ function Header({ darkMode, setDarkMode, toggleMenu, isMenuOpen, animateIcon }) 
           type: notification.type || 'forum_update',
           icon: style.icon,
           color: style.color,
-          link: getNotificationLink(notification.type),
-          createdBy: notification.createdBy
+          link: getNotificationLink(notification.type, notification.data || {}),
+          createdBy: notification.createdBy,
+          data: notification.data || {},
+          petName: notification.data?.petName // Extract petName if available
         };
         
-        console.log('📨 [Socket] Adding notification to state');
+        console.log('📨 [Socket] Adding notification to state:', formattedNotification);
         
         // Update state with the new notification
         setNotifications(prev => {
@@ -207,7 +238,6 @@ function Header({ darkMode, setDarkMode, toggleMenu, isMenuOpen, animateIcon }) 
             notif.notificationId === notificationId ? { ...notif, read: true } : notif
           )
         );
-        // Update unread count
         setUnreadCount(prev => Math.max(0, prev - 1));
       });
 
@@ -327,6 +357,7 @@ function Header({ darkMode, setDarkMode, toggleMenu, isMenuOpen, animateIcon }) 
 
     // Navigate based on notification link
     if (notification.link && notification.link !== '#') {
+      console.log('🚀 Navigating to:', notification.link);
       navigate(notification.link);
     }
     
@@ -436,10 +467,10 @@ function Header({ darkMode, setDarkMode, toggleMenu, isMenuOpen, animateIcon }) 
                     >
                       <div className="flex items-start gap-2 sm:gap-3">
                         {/* Notification Icon */}
-                        <div className={`flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg sm:rounded-xl flex items-center justify-center ${
+                        <div className={`flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center ${
                           notification.read ? "bg-gray-100" : "bg-blue-100"
                         }`}>
-                          <i className={`fa-solid ${notification.icon} ${notification.color} text-sm sm:text-base md:text-lg`}></i>
+                          <i className={`fa-solid ${notification.icon} ${notification.color} text-sm sm:text-base`}></i>
                         </div>
                         
                         {/* Notification Content */}
@@ -449,6 +480,9 @@ function Header({ darkMode, setDarkMode, toggleMenu, isMenuOpen, animateIcon }) 
                               notification.read ? "text-gray-600" : "text-gray-900"
                             }`}>
                               {notification.title}
+                              {notification.petName && (
+                                <span className="ml-1 text-[#5EE6FE]">• {notification.petName}</span>
+                              )}
                             </h4>
                             <span className="text-[10px] sm:text-xs text-gray-400 ml-2 flex-shrink-0">
                               {formatNotificationTime(notification.timestamp)}
@@ -461,7 +495,7 @@ function Header({ darkMode, setDarkMode, toggleMenu, isMenuOpen, animateIcon }) 
                         
                         {/* Unread Indicator */}
                         {!notification.read && (
-                          <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-[#5EE6FE] rounded-full flex-shrink-0 mt-1 sm:mt-2 animate-pulse"></div>
+                          <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-[#5EE6FE] rounded-full flex-shrink-0 mt-1 animate-pulse"></div>
                         )}
                       </div>
                     </div>

@@ -1,7 +1,7 @@
 import db from "../../config/db.js";
 import path from 'path';
 import fs from 'fs';
-import { createMedicalRecordNotification } from "../notificationController.js"; // Import the notification function
+import { createMedicalRecordNotification } from "../notificationController.js";
 
 export const uploadMedicalRecord = async (req, res) => {
   let connection;
@@ -29,7 +29,6 @@ export const uploadMedicalRecord = async (req, res) => {
       });
     }
 
-    // Check user authentication - use req.user.id instead of req.user.accId
     if (!req.user || !req.user.id) {
       if (file) {
         fs.unlinkSync(file.path);
@@ -57,7 +56,7 @@ export const uploadMedicalRecord = async (req, res) => {
       });
     }
 
-    const petOwnerId = petCheck[0].accID; // Get the pet owner's ID for notification
+    const petOwnerId = petCheck[0].accID;
     const petName = petCheck[0].petName;
 
     // Check if lab type exists
@@ -85,7 +84,7 @@ export const uploadMedicalRecord = async (req, res) => {
 
     const petMedicalID = medicalResult.insertId;
 
-    // Insert file record - use req.user.id instead of req.user.accId
+    // Insert file record
     await connection.execute(
       `INSERT INTO petmedical_file_tbl 
        (petmedicalID, originalName, storedName, filePath, uploadedOn, uploadedBy, isDeleted) 
@@ -96,12 +95,56 @@ export const uploadMedicalRecord = async (req, res) => {
     await connection.commit();
 
     // ===========================================
+    // 🔔 EMIT SOCKET EVENT for real-time updates
+    // ===========================================
+    try {
+      const io = req.app.get('io');
+      
+      if (io) {
+        // Fetch the complete record data to send
+        const [newRecord] = await connection.execute(`
+          SELECT 
+            pm.petMedicalID as id,
+            pm.recordTitle as title,
+            DATE_FORMAT(pm.uploadedOn, '%M %e, %Y') as date,
+            lt.labType as type,
+            pmf.fileID,
+            pmf.originalName,
+            pmf.storedName,
+            pmf.filePath,
+            p.petName,
+            p.petID,
+            pm.labTypeID,
+            CASE 
+              WHEN pm.labTypeID = 1 THEN 'lab'
+              WHEN pm.labTypeID = 2 THEN 'medical'
+            END as recordCategory
+          FROM petmedical_tbl pm
+          INNER JOIN pet_tbl p ON pm.petID = p.petID
+          INNER JOIN labtype_tbl lt ON pm.labTypeID = lt.labType_ID
+          LEFT JOIN petmedical_file_tbl pmf ON pm.petMedicalID = pmf.petmedicalID AND pmf.isDeleted = 0
+          WHERE pm.petMedicalID = ?
+        `, [petMedicalID]);
+
+        if (newRecord.length > 0) {
+          const recordData = newRecord[0];
+          
+          // Emit to the specific user room
+          io.to(`user_${petOwnerId}`).emit('new_medical_record', recordData);
+          
+          console.log(`📡 Socket event emitted to user_${petOwnerId}:`, recordData);
+        }
+      }
+    } catch (socketError) {
+      console.error('Failed to emit socket event:', socketError);
+    }
+
+    // ===========================================
     // 🔔 TRIGGER NOTIFICATION for new medical record
     // ===========================================
     try {
       console.log('🔔 [uploadMedicalRecord] Triggering notification for pet owner:', petOwnerId);
       
-      // Create a mock request for the notification controller
       const notifReq = {
         body: {
           petMedicalID: petMedicalID,
@@ -112,7 +155,6 @@ export const uploadMedicalRecord = async (req, res) => {
         user: req.user
       };
       
-      // Create a mock response
       const notifRes = {
         status: (code) => ({
           json: (data) => {
@@ -121,12 +163,10 @@ export const uploadMedicalRecord = async (req, res) => {
         })
       };
 
-      // Call the notification controller
       await createMedicalRecordNotification(notifReq, notifRes);
       console.log('✅ [uploadMedicalRecord] Notification triggered successfully for pet owner:', petOwnerId);
       
     } catch (notifError) {
-      // Log but don't fail the main request if notification fails
       console.error('⚠️ [uploadMedicalRecord] Failed to send notification:', notifError);
     }
 
@@ -160,8 +200,6 @@ export const uploadMedicalRecord = async (req, res) => {
     }
   }
 };
-
-// Rest of your functions remain the same...
 
 export const getMedicalRecords = async (req, res) => {
   try {
@@ -347,10 +385,11 @@ export const updateMedicalRecord = async (req, res) => {
 
     await connection.beginTransaction();
 
-    // Get current record and file
+    // Get current record and file with pet owner info
     const [currentRecord] = await connection.execute(`
-      SELECT pm.petMedicalID, pmf.fileID, pmf.filePath 
+      SELECT pm.petMedicalID, pmf.fileID, pmf.filePath, p.accID as petOwnerId
       FROM petmedical_tbl pm
+      INNER JOIN pet_tbl p ON pm.petID = p.petID
       LEFT JOIN petmedical_file_tbl pmf ON pm.petMedicalID = pmf.petmedicalID AND pmf.isDeleted = 0
       WHERE pm.petMedicalID = ? AND pm.isDeleted = 0
     `, [id]);
@@ -363,6 +402,8 @@ export const updateMedicalRecord = async (req, res) => {
         message: 'Medical record not found' 
       });
     }
+
+    const petOwnerId = currentRecord[0].petOwnerId;
 
     // Check if lab type exists
     const [labTypeCheck] = await connection.execute(
@@ -398,7 +439,6 @@ export const updateMedicalRecord = async (req, res) => {
 
       // Update or insert file record
       if (currentFile.fileID) {
-        // Update existing file record
         await connection.execute(
           `UPDATE petmedical_file_tbl 
            SET originalName = ?, storedName = ?, filePath = ?, uploadedOn = NOW() 
@@ -406,20 +446,57 @@ export const updateMedicalRecord = async (req, res) => {
           [file.originalname, file.filename, file.path, currentFile.fileID]
         );
       } else {
-        // Insert new file record
         await connection.execute(
           `INSERT INTO petmedical_file_tbl 
            (petmedicalID, originalName, storedName, filePath, uploadedOn, uploadedBy, isDeleted) 
            VALUES (?, ?, ?, ?, NOW(), ?, 0)`,
-          [id, file.originalname, file.filename, file.path, req.user?.id] // CHANGED: req.user.id
+          [id, file.originalname, file.filename, file.path, req.user?.id]
         );
       }
     }
 
     await connection.commit();
 
-    // Optionally send notification for updates (if you want)
-    // You could add a notification here if the record is significant
+    // ===========================================
+    // 🔔 EMIT SOCKET EVENT for updates
+    // ===========================================
+    try {
+      const io = req.app.get('io');
+      
+      if (io) {
+        // Fetch the updated record data
+        const [updatedRecord] = await connection.execute(`
+          SELECT 
+            pm.petMedicalID as id,
+            pm.recordTitle as title,
+            DATE_FORMAT(pm.uploadedOn, '%M %e, %Y') as date,
+            lt.labType as type,
+            pmf.fileID,
+            pmf.originalName,
+            pmf.storedName,
+            pmf.filePath,
+            p.petName,
+            p.petID,
+            pm.labTypeID,
+            CASE 
+              WHEN pm.labTypeID = 1 THEN 'lab'
+              WHEN pm.labTypeID = 2 THEN 'medical'
+            END as recordCategory
+          FROM petmedical_tbl pm
+          INNER JOIN pet_tbl p ON pm.petID = p.petID
+          INNER JOIN labtype_tbl lt ON pm.labTypeID = lt.labType_ID
+          LEFT JOIN petmedical_file_tbl pmf ON pm.petMedicalID = pmf.petmedicalID AND pmf.isDeleted = 0
+          WHERE pm.petMedicalID = ?
+        `, [id]);
+
+        if (updatedRecord.length > 0) {
+          io.to(`user_${petOwnerId}`).emit('medical_record_updated', updatedRecord[0]);
+          console.log(`📡 Socket update event emitted to user_${petOwnerId}`);
+        }
+      }
+    } catch (socketError) {
+      console.error('Failed to emit socket event:', socketError);
+    }
 
     res.json({
       success: true,
@@ -459,10 +536,11 @@ export const deleteMedicalRecord = async (req, res) => {
 
     await connection.beginTransaction();
 
-    // Get file path before deletion
+    // Get file path and pet owner info before deletion
     const [record] = await connection.execute(`
-      SELECT pmf.filePath 
+      SELECT pmf.filePath, p.accID as petOwnerId
       FROM petmedical_tbl pm
+      INNER JOIN pet_tbl p ON pm.petID = p.petID
       LEFT JOIN petmedical_file_tbl pmf ON pm.petMedicalID = pmf.petmedicalID AND pmf.isDeleted = 0
       WHERE pm.petMedicalID = ? AND pm.isDeleted = 0
     `, [id]);
@@ -474,6 +552,8 @@ export const deleteMedicalRecord = async (req, res) => {
         message: 'Medical record not found' 
       });
     }
+
+    const petOwnerId = record[0].petOwnerId;
 
     // Soft delete the medical record
     await connection.execute(
@@ -488,6 +568,20 @@ export const deleteMedicalRecord = async (req, res) => {
     );
 
     await connection.commit();
+
+    // ===========================================
+    // 🔔 EMIT SOCKET EVENT for deletion
+    // ===========================================
+    try {
+      const io = req.app.get('io');
+      
+      if (io) {
+        io.to(`user_${petOwnerId}`).emit('medical_record_deleted', { id: parseInt(id) });
+        console.log(`📡 Socket delete event emitted to user_${petOwnerId} for record ${id}`);
+      }
+    } catch (socketError) {
+      console.error('Failed to emit socket event:', socketError);
+    }
 
     res.json({
       success: true,
@@ -516,7 +610,6 @@ export const serveMedicalRecord = async (req, res) => {
     
     console.log('Serving medical record file:', filename);
     
-    // Find the file record - authentication already verified by middleware
     const [fileRecords] = await db.execute(
       'SELECT filePath, originalName FROM petmedical_file_tbl WHERE storedName = ? AND isDeleted = 0',
       [filename]
@@ -540,10 +633,7 @@ export const serveMedicalRecord = async (req, res) => {
       });
     }
 
-    // Read file as buffer
     const fileBuffer = fs.readFileSync(filePath);
-    
-    // Determine content type
     const ext = path.extname(filename).toLowerCase();
     let contentType = 'application/octet-stream';
     
@@ -551,12 +641,9 @@ export const serveMedicalRecord = async (req, res) => {
       contentType = 'application/pdf';
     }
 
-    // Set headers and send file buffer
     res.setHeader('Content-Type', contentType);
     res.setHeader('Content-Disposition', `inline; filename="${fileRecord.originalName}"`);
     res.setHeader('Cache-Control', 'no-cache');
-    
-    // Send the file buffer
     res.send(fileBuffer);
 
   } catch (error) {

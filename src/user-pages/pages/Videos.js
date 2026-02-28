@@ -36,10 +36,6 @@ export default function Videos() {
     const onNewVideo = (newVideo) => {
       console.log('📨 Received new video via WebSocket:', newVideo);
       
-      // Show notification
-      setNewVideoNotification(newVideo);
-      setShowNotification(true);
-      
       // Add to videos list (avoid duplicates)
       setVideos(prevVideos => {
         const exists = prevVideos.some(v => v.id === newVideo.id);
@@ -58,11 +54,6 @@ export default function Videos() {
           return prev;
         });
       }
-
-      // Auto-hide notification after 5 seconds
-      setTimeout(() => {
-        setShowNotification(false);
-      }, 5000);
     };
 
     // Listen for updated videos
@@ -74,20 +65,11 @@ export default function Videos() {
           video.id === updatedVideo.id ? updatedVideo : video
         )
       );
-
-      // Show brief notification
-      setNewVideoNotification({ ...updatedVideo, action: 'updated' });
-      setShowNotification(true);
-      setTimeout(() => setShowNotification(false), 3000);
     };
 
     // Listen for deleted videos
-   // In Videos.js - Update the onVideoDeleted function
-
-    // Listen for deleted videos
-    const onVideoDeleted = ({ dbId }) => {  // Changed from { id } to { dbId }
+    const onVideoDeleted = ({ dbId }) => {
       console.log('📨 Received deleted video via WebSocket dbId:', dbId);
-      console.log('📨 Type of dbId:', typeof dbId);
       console.log('📨 Current videos in state:', videos.map(v => ({ 
         id: v.id, 
         dbId: v.dbId,
@@ -107,11 +89,6 @@ export default function Videos() {
         console.log('📨 Closing modal for deleted video:', deletedVideo.id);
         setOpenVideoId(null);
       }
-
-      // Show brief notification
-      setNewVideoNotification({ dbId, action: 'deleted' });
-      setShowNotification(true);
-      setTimeout(() => setShowNotification(false), 3000);
     };
 
     // Register event listeners
@@ -316,38 +293,6 @@ export default function Videos() {
 
   return (
     <ClientLayout>
-      {/* Real-time Notification Toast */}
-      <AnimatePresence>
-        {showNotification && newVideoNotification && (
-          <motion.div
-            initial={{ opacity: 0, y: -50, x: '-50%' }}
-            animate={{ opacity: 1, y: 0, x: '-50%' }}
-            exit={{ opacity: 0, y: -50, x: '-50%' }}
-            className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-[#2FA394] text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-2 min-w-[300px]"
-          >
-            {newVideoNotification.action === 'deleted' ? (
-              <>
-                <span className="text-lg">🗑️</span>
-                <span className="text-sm">A video was removed</span>
-              </>
-            ) : newVideoNotification.action === 'updated' ? (
-              <>
-                <span className="text-lg">📝</span>
-                <span className="text-sm">"{newVideoNotification.title}" was updated</span>
-              </>
-            ) : (
-              <>
-                <span className="text-lg">✨</span>
-                <div className="flex-1">
-                  <p className="text-sm font-medium">New Video Added!</p>
-                  <p className="text-xs opacity-90">{newVideoNotification.title}</p>
-                </div>
-              </>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       <motion.div
         variants={containerVariants}
         initial="hidden"
