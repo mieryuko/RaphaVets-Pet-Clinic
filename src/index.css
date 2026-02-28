@@ -131,3 +131,12 @@ body {
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
+@keyframes progressBar {
+  0% { width: 100%; }
+  100% { width: 0%; }
+}
+
+.animate-progress {
+  animation: progressBar 8s linear forwards;
+}

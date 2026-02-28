@@ -141,7 +141,7 @@ const AppointmentTab = ({ appointments, appointmentFilter, setAppointmentFilter,
     <>
       <div className="flex flex-col flex-1 gap-3">
         {/* Filter Buttons */}
-        <div className="flex gap-1.5 sm:gap-3 mb-2 sm:mb-3 flex-wrap">
+        <div className="flex gap-1.5 sm:gap-3 mb-2 sm:mb-3 overflow-x-auto scrollbar-hide flex-nowrap">
           {["Upcoming", "Pending", "Completed", "Cancelled", "All"].map((status) => (
             <button
               key={status}
@@ -175,20 +175,20 @@ const AppointmentTab = ({ appointments, appointmentFilter, setAppointmentFilter,
               return (
                 <div
                   key={appt.id}
-                  className="bg-white/70 backdrop-blur-md border border-[#5EE6FE]/30 p-3 sm:p-4 rounded-lg sm:rounded-xl flex flex-col sm:flex-row sm:items-center gap-3 shadow-md hover:shadow-lg hover:bg-[#EFFFFF]/60 transition-all cursor-pointer"
+                  className="bg-white/70 backdrop-blur-md border border-[#5EE6FE]/30 p-3 sm:p-4 rounded-lg sm:rounded-xl flex flex-row items-center gap-3 shadow-md hover:shadow-lg hover:bg-[#EFFFFF]/60 transition-all cursor-pointer"
                   onClick={() => handleViewDetails(appt)}
                 >
                   {/* Date */}
-                  <div className="flex flex-row sm:flex-col items-center sm:items-stretch justify-between sm:justify-center w-full sm:w-16 text-center bg-[#EFFFFF] rounded-lg py-1 sm:py-2 px-3 sm:px-0 border border-[#5EE6FE]/20 shadow-sm">
+                  <div className="flex flex-col items-center justify-center w-20 flex-shrink-0 text-center bg-[#EFFFFF] rounded-lg py-1 sm:py-2 px-2 border border-[#5EE6FE]/20 shadow-sm">
                     {formattedDate ? (
-                      <div className="flex sm:flex-col items-center gap-1">
+                      <div className="flex flex-col items-center gap-1">
                         <span className="text-xs font-semibold text-[#5EE6FE] uppercase">
                           {formattedDate.month}
                         </span>
                         <span className="text-lg sm:text-xl font-bold text-gray-800 leading-tight">
                           {formattedDate.day}
                         </span>
-                        <span className="hidden sm:block text-[10px] text-gray-500">
+                        <span className="text-[10px] text-gray-500">
                           {formattedDate.weekday}
                         </span>
                       </div>
@@ -240,7 +240,7 @@ const AppointmentTab = ({ appointments, appointmentFilter, setAppointmentFilter,
                       {canCancel && (
                         <button
                           onClick={(e) => handleCancelClick(appt, e)}
-                          className="bg-[#FFB6C1] text-gray-800 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs font-semibold hover:bg-[#FFA0B0] transition-all whitespace-nowrap border border-[#FFA0B0] flex-1 sm:flex-none"
+                          className="bg-[#FFB6C1] text-[#045D56] px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs font-semibold hover:bg-[#FFA0B0] transition-all whitespace-nowrap border border-[#FFA0B0] flex-1 sm:flex-none"
                         >
                           Cancel
                         </button>

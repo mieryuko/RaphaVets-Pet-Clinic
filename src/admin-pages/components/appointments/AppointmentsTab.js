@@ -120,7 +120,7 @@ const AppointmentsTab = ({
         </div>
       </div>
 
-      <div className="max-h-[500px] overflow-y-auto rounded-xl border border-gray-200 dark:border-gray-700">
+      <div className="max-h-[500px] overflow-auto rounded-xl border border-gray-200 dark:border-gray-700 pb-8">
         <table className="w-full text-left border-collapse">
           <thead className="bg-gray-100 dark:bg-[#1B1B1B] sticky top-0">
             <tr>
