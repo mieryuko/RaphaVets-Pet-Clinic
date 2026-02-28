@@ -25,6 +25,8 @@ function Forum() {
   const [originalPost, setOriginalPost] = useState(null);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [privacyConsent, setPrivacyConsent] = useState(false);
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
 
   const emptyPostTemplate = {
     user: "You",
@@ -188,6 +190,15 @@ function Forum() {
     }));
   };
 
+  const validatePrivacyConsent = () => {
+    if (!privacyConsent) {
+      setErrorMessage("❌ You must agree to the data privacy policy before posting.");
+      setShowErrorModal(true);
+      return false;
+    }
+    return true;
+  };
+
   const handleCreateOrUpdatePost = () => {
     if (!newPost.desc.trim()){
       setErrorMessage("❌ Please provide a description");
@@ -198,6 +209,11 @@ function Forum() {
     if(imageCount > 5){
       setErrorMessage("❌ You can only upload up to 5 images.");
       setShowErrorModal(true);
+      return;
+    }
+
+    // Check privacy consent for new posts
+    if (!newPost.id && !validatePrivacyConsent()) {
       return;
     }
 
@@ -224,10 +240,9 @@ function Forum() {
           const createdPost = res.data;
           console.log("Post created:", createdPost);
 
-          // ❌ REMOVED fetchPosts() - now using real-time updates
-          
           setShowCreateModal(false);
           setNewPost({ ...emptyPostTemplate, user: newPost.user });
+          setPrivacyConsent(false);
           setInputKey(Date.now());
 
           setSuccessMessage("Post created successfully!");
@@ -285,6 +300,7 @@ function Forum() {
       setShowCreateModal(false);
       setNewPost({ ...emptyPostTemplate, user: newPost.user });
       setOriginalPost(null);
+      setPrivacyConsent(false);
       setInputKey(Date.now());
 
       setSuccessMessage("Post updated successfully!");
@@ -363,6 +379,105 @@ function Forum() {
     setLightbox({ open: false, src: null, alt: "" });
   };
 
+  // Data Privacy Modal
+  const PrivacyPolicyModal = ({ onClose, onAccept }) => {
+    return (
+      <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[60] p-3 sm:p-4">
+        <div className="bg-white rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden animate-popUp">
+          <div className="p-4 sm:p-5 md:p-6 border-b border-gray-200 flex justify-between items-center">
+            <h2 className="text-base sm:text-lg md:text-xl font-semibold text-gray-800">
+              Data Privacy Notice
+            </h2>
+            <button
+              onClick={onClose}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              <i className="fa-solid fa-times text-lg sm:text-xl"></i>
+            </button>
+          </div>
+          
+          <div className="p-4 sm:p-5 md:p-6 overflow-y-auto max-h-[60vh]">
+            <div className="space-y-4 text-xs sm:text-sm text-gray-700">
+              <p className="font-medium text-[#2FA394]">Last Updated: February 2026</p>
+              
+              <div>
+                <h3 className="font-semibold text-gray-800 mb-2">1. Information We Collect</h3>
+                <p>When you post in our forum, we may collect:</p>
+                <ul className="list-disc pl-5 mt-1 space-y-1">
+                  <li>Your name (if not posting anonymously)</li>
+                  <li>Contact information you choose to share (phone, email)</li>
+                  <li>Images you upload of pets</li>
+                  <li>Descriptions and details about lost/found pets</li>
+                  <li>IP address and timestamps of posts</li>
+                </ul>
+              </div>
+
+              <div>
+                <h3 className="font-semibold text-gray-800 mb-2">2. How We Use Your Information</h3>
+                <ul className="list-disc pl-5 mt-1 space-y-1">
+                  <li>To help reunite lost pets with their owners</li>
+                  <li>To facilitate community communication about found pets</li>
+                  <li>To improve our forum and services</li>
+                  <li>To prevent fraudulent or inappropriate posts</li>
+                </ul>
+              </div>
+
+              <div>
+                <h3 className="font-semibold text-gray-800 mb-2">3. Information Sharing</h3>
+                <p>Your posted information will be visible to other community members. We do not sell your personal data to third parties. We may share information:</p>
+                <ul className="list-disc pl-5 mt-1 space-y-1">
+                  <li>With veterinary clinics to help identify pets</li>
+                  <li>When required by law enforcement</li>
+                  <li>To protect the safety of our community</li>
+                </ul>
+              </div>
+
+              <div>
+                <h3 className="font-semibold text-gray-800 mb-2">4. Your Rights</h3>
+                <ul className="list-disc pl-5 mt-1 space-y-1">
+                  <li>You may request deletion of your posts</li>
+                  <li>You can choose to post anonymously</li>
+                  <li>You can contact us to update or remove your information</li>
+                  <li>You may withdraw consent at any time by deleting your posts</li>
+                </ul>
+              </div>
+
+              <div>
+                <h3 className="font-semibold text-gray-800 mb-2">5. Data Retention</h3>
+                <p>We retain forum posts until you delete them or request removal. Images and descriptions may remain visible to the community until removed.</p>
+              </div>
+
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 sm:p-4">
+                <p className="text-yellow-800 text-xs sm:text-sm">
+                  <i className="fa-solid fa-shield-heart mr-2"></i>
+                  By posting in our forum, you acknowledge that your information will be publicly visible to other community members. Please do not share sensitive personal information.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-4 sm:p-5 md:p-6 border-t border-gray-200 flex flex-col sm:flex-row justify-end gap-2 sm:gap-3">
+            <button
+              onClick={onClose}
+              className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition-all text-xs sm:text-sm"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => {
+                onAccept();
+                onClose();
+              }}
+              className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg bg-[#2FA394] text-white hover:bg-[#24907e] font-semibold transition-all text-xs sm:text-sm"
+            >
+              I Understand & Agree
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div
       className={`font-sansation min-h-screen ${
@@ -386,7 +501,7 @@ function Forum() {
           {/* Main Content */}
           <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-4 sm:gap-5 md:gap-6 min-h-[calc(100vh-100px)]">
             {/* LEFT COLUMN */}
-            <div className="flex flex-col gap-3 sm:gap-4 p-3 sm:p-4 bg-white rounded-lg sm:rounded-xl overflow-y-auto">
+            <div className="flex flex-col gap-3 sm:gap-4 p-3 sm:p-4 bg-white rounded-lg sm:rounded-xl overflow-y-auto max-h-[calc(100vh-100px)]">
               {/* Header */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-2">
                 <h1 className="font-baloo text-xl sm:text-2xl md:text-3xl">
@@ -499,7 +614,7 @@ function Forum() {
             </div>
 
             {/* RIGHT COLUMN - Sidebar */}
-            <div className="flex flex-col gap-3 sm:gap-4 p-3 sm:p-4 bg-white rounded-lg sm:rounded-xl">
+            <div className="flex flex-col gap-3 sm:gap-4 p-3 sm:p-4 bg-white rounded-lg sm:rounded-xl max-h-[calc(100vh-100px)] overflow-y-auto sticky top-[100px]">
               {/* Search Bar */}
               <div className="relative mt-1 sm:mt-2">
                 <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs sm:text-sm">
@@ -542,6 +657,7 @@ function Forum() {
                 <button
                   onClick={() => {
                     setNewPost({ ...emptyPostTemplate, user: "You" });
+                    setPrivacyConsent(false);
                     setInputKey(Date.now());
                     setShowCreateModal(true);
                   }}
@@ -549,6 +665,28 @@ function Forum() {
                 >
                   + New Post
                 </button>
+              </div>
+
+              {/* Data Privacy Notice - Sidebar */}
+              <div className="bg-blue-50 rounded-lg sm:rounded-xl p-3 sm:p-4 border border-blue-100">
+                <div className="flex items-start gap-2">
+                  <i className="fa-solid fa-shield-heart text-blue-600 text-sm sm:text-base mt-0.5"></i>
+                  <div>
+                    <h4 className="font-semibold text-xs sm:text-sm text-blue-800 mb-1">
+                      Your Privacy Matters
+                    </h4>
+                    <p className="text-[10px] sm:text-xs text-blue-700">
+                      We care about your data. Read our{" "}
+                      <button
+                        onClick={() => setShowPrivacyModal(true)}
+                        className="underline font-medium hover:text-blue-900"
+                      >
+                        privacy policy
+                      </button>{" "}
+                      to learn how we protect your information.
+                    </p>
+                  </div>
+                </div>
               </div>
 
               {/* Your Posts */}
@@ -691,9 +829,42 @@ function Forum() {
                   </label>
                 </div>
 
+                {/* Data Privacy Consent - Only for new posts */}
+                {!newPost.id && (
+                  <div className="mb-4 p-3 sm:p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="flex items-start gap-2">
+                      <input
+                        type="checkbox"
+                        id="privacyConsent"
+                        checked={privacyConsent}
+                        onChange={(e) => setPrivacyConsent(e.target.checked)}
+                        className="mt-1 w-3 h-3 sm:w-4 sm:h-4 text-[#2FA394] border-gray-300 rounded focus:ring-[#5EE6FE]"
+                      />
+                      <div>
+                        <label htmlFor="privacyConsent" className="text-xs sm:text-sm font-medium text-gray-700">
+                          I agree to the{" "}
+                          <button
+                            type="button"
+                            onClick={() => setShowPrivacyModal(true)}
+                            className="text-[#2FA394] underline hover:text-[#24907e]"
+                          >
+                            Data Privacy Policy
+                          </button>
+                        </label>
+                        <p className="text-[10px] sm:text-xs text-gray-500 mt-1">
+                          By checking this box, you acknowledge that your information will be publicly visible and you consent to our data collection practices.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex justify-end gap-2 sm:gap-3 mt-3 sm:mt-4">
                   <button
-                    onClick={() => setShowCreateModal(false)}
+                    onClick={() => {
+                      setShowCreateModal(false);
+                      setPrivacyConsent(false);
+                    }}
                     className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition-all text-xs sm:text-sm"
                   >
                     Cancel
@@ -869,7 +1040,7 @@ function Forum() {
               Confirm Deletion
             </h3>
             <p className="text-xs sm:text-sm text-gray-600 mb-4 sm:mb-5 md:mb-6">
-              Are you sure you want to delete this post?
+              Are you sure you want to delete this post? This action cannot be undone.
             </p>
             <div className="flex justify-end gap-2 sm:gap-3">
               <button
@@ -965,6 +1136,14 @@ function Forum() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Privacy Policy Modal */}
+      {showPrivacyModal && (
+        <PrivacyPolicyModal
+          onClose={() => setShowPrivacyModal(false)}
+          onAccept={() => setPrivacyConsent(true)}
+        />
       )}
     </div>
   );
