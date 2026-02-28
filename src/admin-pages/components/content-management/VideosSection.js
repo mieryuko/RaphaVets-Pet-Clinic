@@ -1,15 +1,136 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { 
-  Plus, Edit2, Trash2, Search, Video, Eye
+  Plus, Edit2, Trash2, Search, Video, Eye, RefreshCw, Info
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import socket from "../../../socket";
 
 import DeleteModal from "./DeleteTipModal";
-const VideosSection = ({ videos, onAdd, onEdit, onDelete, loading, allCategories = [], allStatuses = [] }) => {
+
+const VideosSection = ({ 
+  videos, 
+  onAdd, 
+  onEdit, 
+  onDelete, 
+  onRefresh, // Add this prop
+  loading, 
+  allCategories = [], 
+  allStatuses = [],
+  currentAdminId, // Add this prop
+  currentAdminName // Add this prop
+}) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [videoToDelete, setVideoToDelete] = useState(null);
+  
+  // Real-time collaboration states
+  const [lastUpdate, setLastUpdate] = useState(null);
+  const [showUpdateIndicator, setShowUpdateIndicator] = useState(false);
+  const [activeCollaborators, setActiveCollaborators] = useState([]);
+  // ===========================================
+  // WEBSOCKET SETUP FOR REAL-TIME COLLABORATION
+  // ===========================================
+  useEffect(() => {
+    // Connect socket if not already connected
+    if (!socket.connected) {
+      socket.connect();
+    }
+
+    // Listen for new videos from other admins
+    const onAdminVideoCreated = (data) => {
+      console.log('📨 Another admin created a video:', data);
+      
+      setShowUpdateIndicator(true);
+      setLastUpdate({
+        action: 'created',
+        video: data.video,
+        adminName: data.adminName,
+        timestamp: new Date().toLocaleTimeString()
+      });
+      
+      // Refresh data after 1 second
+      setTimeout(() => {
+        if (onRefresh) onRefresh();
+        setShowUpdateIndicator(false);
+      }, 1000);
+    };
+
+    // Listen for updated videos from other admins
+    const onAdminVideoUpdated = (data) => {
+      console.log('📨 Another admin updated a video:', data);
+      
+      setShowUpdateIndicator(true);
+      setLastUpdate({
+        action: 'updated',
+        video: data.video,
+        adminName: data.adminName,
+        timestamp: new Date().toLocaleTimeString()
+      });
+      
+      // If the updated video is currently in delete modal, show a warning
+      if (videoToDelete?.id === data.video.id) {
+        console.log('⚠️ This video was updated by another admin');
+      }
+      
+      setTimeout(() => {
+        if (onRefresh) onRefresh();
+        setShowUpdateIndicator(false);
+      }, 1000);
+    };
+
+    // Listen for deleted videos from other admins
+    const onAdminVideoDeleted = (data) => {
+    console.log('📨 Another admin deleted a video:', data);
+    
+    setShowUpdateIndicator(true);
+    setLastUpdate({
+      action: 'deleted',
+      videoTitle: data.videoTitle, 
+      adminName: data.adminName,
+      timestamp: new Date().toLocaleTimeString()
+    });
+    
+    // If the deleted video is in the modal, close it - use videoId
+    if (videoToDelete?.id === data.videoId) {
+      setDeleteModalOpen(false);
+      setVideoToDelete(null);
+    }
+    
+    setTimeout(() => {
+      if (onRefresh) onRefresh();
+      setShowUpdateIndicator(false);
+    }, 1000);
+  };
+
+    // Listen for active collaborators
+    const onAdminPresence = (data) => {
+      setActiveCollaborators(data.activeAdmins || []);
+    };
+
+    // Register event listeners
+    socket.on('admin_video_created', onAdminVideoCreated);
+    socket.on('admin_video_updated', onAdminVideoUpdated);
+    socket.on('admin_video_deleted', onAdminVideoDeleted);
+    socket.on('admin_presence', onAdminPresence);
+
+    // If already connected, join admin room immediately
+    if (socket.connected) {
+      socket.emit('join_admin_room', {
+        adminId: currentAdminId,
+        adminName: currentAdminName || localStorage.getItem('adminName') || 'Unknown Admin'
+      });
+    }
+
+    // Cleanup on unmount
+    return () => {
+      socket.off('admin_video_created', onAdminVideoCreated);
+      socket.off('admin_video_updated', onAdminVideoUpdated);
+      socket.off('admin_video_deleted', onAdminVideoDeleted);
+      socket.off('admin_presence', onAdminPresence);
+    };
+  }, [currentAdminId, currentAdminName, onRefresh, videoToDelete]);
 
   // Get categories - use allCategories from database if provided, otherwise extract from videos
   const categories = ["All", ...(allCategories.length > 0 
@@ -58,7 +179,9 @@ const VideosSection = ({ videos, onAdd, onEdit, onDelete, loading, allCategories
       return new Date(dateString).toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'short',
-        day: 'numeric'
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
       });
     } catch {
       return 'Invalid Date';
@@ -78,11 +201,38 @@ const VideosSection = ({ videos, onAdd, onEdit, onDelete, loading, allCategories
     }
   };
 
+  const handleManualRefresh = () => {
+    if (onRefresh) {
+      onRefresh();
+    }
+  };
+
   return (
-    <div>
+    <div className="relative">
+      {/* Real-time Update Indicator */}
+      <AnimatePresence>
+        {showUpdateIndicator && lastUpdate && (
+          <motion.div
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -50 }}
+            className="fixed top-4 right-4 z-50 bg-blue-500 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-2"
+          >
+            <RefreshCw className="h-4 w-4 animate-spin" />
+            <div className="text-sm">
+              <strong>{lastUpdate.adminName}</strong> {lastUpdate.action} 
+              {lastUpdate.action === 'deleted' 
+                ? ` "${lastUpdate.videoTitle}"` 
+                : ` "${lastUpdate.video?.title}"`} 
+              <span className="text-xs opacity-75 ml-2">{lastUpdate.timestamp}</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Search & Filter */}
       <div className="flex gap-2 mb-4 flex-wrap items-center justify-between">
-        <div className="flex gap-2 items-center">
+        <div className="flex gap-2 items-center flex-wrap">
           {/* Search Bar */}
           <div className="relative w-full max-w-xs">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -97,7 +247,7 @@ const VideosSection = ({ videos, onAdd, onEdit, onDelete, loading, allCategories
             />
           </div>
 
-          {/* Category Filter - Shows ALL categories from database */}
+          {/* Category Filter */}
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
@@ -113,7 +263,7 @@ const VideosSection = ({ videos, onAdd, onEdit, onDelete, loading, allCategories
             })}
           </select>
 
-          {/* Status Filter - Shows ALL statuses from database */}
+          {/* Status Filter */}
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
@@ -141,10 +291,20 @@ const VideosSection = ({ videos, onAdd, onEdit, onDelete, loading, allCategories
       </div>
 
       {/* Results Info */}
-      <div className="mb-4 text-sm text-gray-600">
-        {categoryFilter !== "All" && ` in "${categoryFilter}"`}
-        {statusFilter !== "All" && ` with status "${statusFilter}"`}
-        {searchQuery && ` matching "${searchQuery}"`}
+      <div className="mb-4 text-sm text-gray-600 flex items-center justify-between">
+        <div>
+          Showing {filteredVideos.length} of {videos.length} videos
+          {categoryFilter !== "All" && ` in "${categoryFilter}"`}
+          {statusFilter !== "All" && ` with status "${statusFilter}"`}
+          {searchQuery && ` matching "${searchQuery}"`}
+        </div>
+        
+        {/* Last update indicator */}
+        {lastUpdate && !showUpdateIndicator && (
+          <div className="text-xs text-gray-400">
+            Last update: {lastUpdate.timestamp}
+          </div>
+        )}
       </div>
 
       {/* Loading State */}
@@ -177,14 +337,25 @@ const VideosSection = ({ videos, onAdd, onEdit, onDelete, loading, allCategories
               filteredVideos.map((video) => (
                 <tr
                   key={video.id}
-                  className="border-t border-gray-100 hover:bg-gray-50 transition"
+                  className={`border-t border-gray-100 hover:bg-gray-50 transition ${
+                    lastUpdate?.video?.id === video.id && lastUpdate?.action === 'updated' 
+                      ? 'bg-yellow-50' 
+                      : ''
+                  }`}
                 >
                   <td className="p-3 text-sm">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 bg-red-50 rounded-lg flex items-center justify-center border border-red-100">
                         <Video className="h-5 w-5 text-red-600" />
                       </div>
-                      <div className="font-medium text-gray-900">{video.title}</div>
+                      <div>
+                        <div className="font-medium text-gray-900">{video.title}</div>
+                        {lastUpdate?.video?.id === video.id && lastUpdate?.action === 'updated' && (
+                          <div className="text-xs text-yellow-600 mt-1">
+                            Updated by {lastUpdate.adminName} at {lastUpdate.timestamp}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </td>
                   <td className="p-3 text-sm">

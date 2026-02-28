@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight} from "lucide-react";
 import api from "../../api/axios";
 import ClientLayout from "../ClientLayout";
+import socket from "../../socket"; // Add this import
 
 export default function Videos() {
   const [activeFilter, setActiveFilter] = useState("All");
@@ -13,10 +14,118 @@ export default function Videos() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   
+  // WebSocket states
+  const [newVideoNotification, setNewVideoNotification] = useState(null);
+  const [showNotification, setShowNotification] = useState(false);
+  
   // For horizontal scroll
   const scrollContainerRef = useRef(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(true);
+
+  // ===========================================
+  // WEBSOCKET SETUP FOR REAL-TIME UPDATES
+  // ===========================================
+  useEffect(() => {
+    // Connect socket if not already connected
+    if (!socket.connected) {
+      socket.connect();
+    }
+
+    // Listen for new videos
+    const onNewVideo = (newVideo) => {
+      console.log('📨 Received new video via WebSocket:', newVideo);
+      
+      // Show notification
+      setNewVideoNotification(newVideo);
+      setShowNotification(true);
+      
+      // Add to videos list (avoid duplicates)
+      setVideos(prevVideos => {
+        const exists = prevVideos.some(v => v.id === newVideo.id);
+        if (exists) {
+          return prevVideos;
+        }
+        return [newVideo, ...prevVideos];
+      });
+
+      // Update filters if needed (add new category)
+      if (newVideo.category && !filters.includes(newVideo.category) && newVideo.category !== 'All') {
+        setFilters(prev => {
+          if (!prev.includes(newVideo.category)) {
+            return [...prev, newVideo.category];
+          }
+          return prev;
+        });
+      }
+
+      // Auto-hide notification after 5 seconds
+      setTimeout(() => {
+        setShowNotification(false);
+      }, 5000);
+    };
+
+    // Listen for updated videos
+    const onVideoUpdated = (updatedVideo) => {
+      console.log('📨 Received updated video via WebSocket:', updatedVideo);
+      
+      setVideos(prevVideos => 
+        prevVideos.map(video => 
+          video.id === updatedVideo.id ? updatedVideo : video
+        )
+      );
+
+      // Show brief notification
+      setNewVideoNotification({ ...updatedVideo, action: 'updated' });
+      setShowNotification(true);
+      setTimeout(() => setShowNotification(false), 3000);
+    };
+
+    // Listen for deleted videos
+   // In Videos.js - Update the onVideoDeleted function
+
+    // Listen for deleted videos
+    const onVideoDeleted = ({ dbId }) => {  // Changed from { id } to { dbId }
+      console.log('📨 Received deleted video via WebSocket dbId:', dbId);
+      console.log('📨 Type of dbId:', typeof dbId);
+      console.log('📨 Current videos in state:', videos.map(v => ({ 
+        id: v.id, 
+        dbId: v.dbId,
+        title: v.title 
+      })));
+      
+      setVideos(prevVideos => {
+        console.log('📨 Filtering with dbId:', dbId);
+        const filtered = prevVideos.filter(video => video.dbId !== dbId);
+        console.log('📨 Videos after filter:', filtered.length);
+        return filtered;
+      });
+      
+      // Find and close modal if the deleted video was playing
+      const deletedVideo = videos.find(v => v.dbId === dbId);
+      if (deletedVideo && openVideoId === deletedVideo.id) {
+        console.log('📨 Closing modal for deleted video:', deletedVideo.id);
+        setOpenVideoId(null);
+      }
+
+      // Show brief notification
+      setNewVideoNotification({ dbId, action: 'deleted' });
+      setShowNotification(true);
+      setTimeout(() => setShowNotification(false), 3000);
+    };
+
+    // Register event listeners
+    socket.on('new_video', onNewVideo);
+    socket.on('video_updated', onVideoUpdated);
+    socket.on('video_deleted', onVideoDeleted);
+
+    // Cleanup on unmount
+    return () => {
+      socket.off('new_video', onNewVideo);
+      socket.off('video_updated', onVideoUpdated);
+      socket.off('video_deleted', onVideoDeleted);
+    };
+  }, [filters, openVideoId]);
 
   // Fetch videos and categories
   const fetchData = async () => {
@@ -207,6 +316,38 @@ export default function Videos() {
 
   return (
     <ClientLayout>
+      {/* Real-time Notification Toast */}
+      <AnimatePresence>
+        {showNotification && newVideoNotification && (
+          <motion.div
+            initial={{ opacity: 0, y: -50, x: '-50%' }}
+            animate={{ opacity: 1, y: 0, x: '-50%' }}
+            exit={{ opacity: 0, y: -50, x: '-50%' }}
+            className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-[#2FA394] text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-2 min-w-[300px]"
+          >
+            {newVideoNotification.action === 'deleted' ? (
+              <>
+                <span className="text-lg">🗑️</span>
+                <span className="text-sm">A video was removed</span>
+              </>
+            ) : newVideoNotification.action === 'updated' ? (
+              <>
+                <span className="text-lg">📝</span>
+                <span className="text-sm">"{newVideoNotification.title}" was updated</span>
+              </>
+            ) : (
+              <>
+                <span className="text-lg">✨</span>
+                <div className="flex-1">
+                  <p className="text-sm font-medium">New Video Added!</p>
+                  <p className="text-xs opacity-90">{newVideoNotification.title}</p>
+                </div>
+              </>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <motion.div
         variants={containerVariants}
         initial="hidden"
@@ -217,15 +358,17 @@ export default function Videos() {
           variants={itemVariants}
           className="bg-white rounded-xl sm:rounded-2xl md:rounded-3xl p-4 sm:p-5 md:p-6 mt-4 sm:mt-5 md:mt-6 shadow-lg border border-gray-100"
         >
-          {/* Header + search - Responsive */}
+          {/* Header + search with connection status */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-5 md:mb-6">
-            <div>
-              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#2FA394]">
-                Pet Video Library
-              </h1>
-              <p className="text-xs sm:text-sm text-gray-500 mt-1">
-                Watch educational videos about pet care
-              </p>
+            <div className="flex items-center gap-3">
+              <div>
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#2FA394]">
+                  Pet Video Library
+                </h1>
+                <p className="text-xs sm:text-sm text-gray-500 mt-1">
+                  Watch educational videos about pet care
+                </p>
+              </div>
             </div>
 
             <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">

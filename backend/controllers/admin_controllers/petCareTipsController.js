@@ -1,7 +1,35 @@
 import db from "../../config/db.js";
-import { createPetTipsNotification } from "../notificationController.js"; // Import notification function
+import { createPetTipsNotification } from "../notificationController.js";
+import { getIO } from "../../socket.js"; 
 
-//PET CARE TIPS
+// Helper function to map icon keys to FontAwesome classes
+const getIconClass = (iconKey) => {
+  const iconMap = {
+    'Scissors': 'fa-scissors',
+    'Dumbbell': 'fa-dumbbell',
+    'Droplets': 'fa-droplet',
+    'Bone': 'fa-bone',
+    'Puzzle': 'fa-puzzle-piece',
+    'Heart': 'fa-heart',
+    'Stethoscope': 'fa-stethoscope',
+    'Utensils': 'fa-utensils',
+    'Activity': 'fa-person-running',
+    'Bath': 'fa-bath'
+  };
+  return iconMap[iconKey] || 'fa-paw';
+};
+
+const formatTipForClient = (tip) => ({
+  id: tip.petCareID || tip.id,
+  title: tip.title,
+  short: tip.shortDescription || tip.short,
+  long: tip.detailedContent || tip.long,
+  icon: getIconClass(tip.iconKey),
+  category: tip.categoryName || tip.category,
+  url: tip.learnMoreURL || tip.url,
+  lastUpdated: tip.lastUpdated,
+  author: tip.author || `${tip.firstName || ''} ${tip.lastName || ''}`.trim()
+});
 
 export const getAllPetCareTips = async (req, res) => {
   try {
@@ -14,7 +42,8 @@ export const getAllPetCareTips = async (req, res) => {
         pt.learnMoreURL,
         pc.categoryName as category,
         i.iconName as icon,
-        CONCAT(a.firstName, ' ', a.lastName) as author_name,
+        i.iconKey,
+        CONCAT(a.firstName, ' ', a.lastName) as author,
         pt.createdAt as created_at,
         pt.lastUpdated as updated_at,
         ps.pubStatus as status
@@ -58,10 +87,11 @@ export const getPetCareTipById = async (req, res) => {
         pt.learnMoreURL,
         pc.categoryName as category,
         i.iconName as icon,
+        i.iconKey,
         i.iconID,
         pc.petCareCategoryID,
         pt.pubStatusID,
-        CONCAT(a.firstName, ' ', a.lastName) as author_name,
+        CONCAT(a.firstName, ' ', a.lastName) as author,
         pt.accID,
         pt.createdAt as created_at,
         pt.lastUpdated as updated_at,
@@ -100,7 +130,6 @@ export const getPetCareTipById = async (req, res) => {
 
 export const createPetCareTip = async (req, res) => {
   try {
-    // Get accID from authenticated user (not from req.body)
     const accID = req.user?.accId || req.user?.id;
 
     if (!accID) {
@@ -117,10 +146,9 @@ export const createPetCareTip = async (req, res) => {
       learnMoreURL,
       iconID,
       petCareCategoryID,
-      pubStatusID = 1 // Default to Draft if not provided
+      pubStatusID = 1
     } = req.body;
 
-    // Validate required fields (REMOVE accID from validation)
     if (!title || !shortDescription || !detailedContent || !iconID || !petCareCategoryID) {
       return res.status(400).json({
         success: false,
@@ -135,7 +163,7 @@ export const createPetCareTip = async (req, res) => {
     `;
 
     const [result] = await db.execute(query, [
-      accID, // From req.user, not req.body
+      accID,
       parseInt(iconID),
       title,
       parseInt(petCareCategoryID),
@@ -145,25 +173,35 @@ export const createPetCareTip = async (req, res) => {
       parseInt(pubStatusID)
     ]);
 
-    // Fetch the created record to return complete data
+    // Fetch complete record with all data for client formatting
     const [newRecord] = await db.execute(
-      `SELECT pt.petCareID as id, pt.title, pt.shortDescription, pt.detailedContent, pt.learnMoreURL, 
-              pc.categoryName as category, i.iconName as icon, ps.pubStatus as status, pt.pubStatusID
+      `SELECT 
+        pt.petCareID,
+        pt.title,
+        pt.shortDescription,
+        pt.detailedContent,
+        pt.learnMoreURL,
+        pt.lastUpdated,
+        i.iconKey,
+        pcc.categoryName,
+        a.firstName,
+        a.lastName
        FROM pet_care_tips_content_tbl pt
-       LEFT JOIN pet_care_category_tbl pc ON pt.petCareCategoryID = pc.petCareCategoryID
+       LEFT JOIN pet_care_category_tbl pcc ON pt.petCareCategoryID = pcc.petCareCategoryID
        LEFT JOIN icon_tbl i ON pt.iconID = i.iconID
-       LEFT JOIN publication_status_tbl ps ON pt.pubStatusID = ps.pubStatsID
+       LEFT JOIN account_tbl a ON pt.accID = a.accId
        WHERE pt.petCareID = ?`,
       [result.insertId]
     );
 
     // ===========================================
-    // 🔔 TRIGGER NOTIFICATION if published immediately
+    // 🔔 TRIGGER NOTIFICATION AND WEBSOCKET if published
     // ===========================================
-    if (parseInt(pubStatusID) === 2) { // 2 = Published
+    if (parseInt(pubStatusID) === 2) {
       try {
-        console.log('🔔 [createPetCareTip] Triggering notification for new pet care tip');
+        console.log('🔔 [createPetCareTip] Triggering notification and WebSocket update');
         
+        // Send notification
         const notifReq = {
           body: {
             petCareID: result.insertId,
@@ -178,23 +216,60 @@ export const createPetCareTip = async (req, res) => {
         const notifRes = {
           status: (code) => ({
             json: (data) => {
-              console.log(`🔔 [createPetCareTip] Notification response (${code}):`, data);
+              console.log(`🔔 Notification response (${code}):`, data);
             }
           })
         };
 
         await createPetTipsNotification(notifReq, notifRes);
-        console.log('✅ [createPetCareTip] Notification triggered successfully');
+        
+        // 🌐 WEBSOCKET EMISSION
+        try {
+          const io = getIO();
+          
+          const formattedTip = formatTipForClient({
+            ...newRecord[0],
+            id: result.insertId
+          });
+          
+          // Emit to all connected users
+          io.emit('new_pet_care_tip', formattedTip);
+          
+          // Emit to admin room for other admins
+          io.to('admin-room').emit('admin_tip_created', {
+            tip: formattedTip,
+            adminName: req.user?.name || 'Another Admin',
+            adminId: accID,
+            timestamp: new Date()
+          });
+          
+          console.log('✅ [createPetCareTip] WebSocket events emitted');
+        } catch (wsError) {
+          console.error('⚠️ [createPetCareTip] WebSocket emission failed:', wsError.message);
+        }
         
       } catch (notifError) {
         console.error('⚠️ [createPetCareTip] Failed to send notification:', notifError);
       }
     }
 
+    // Format for admin response
+    const adminFormattedRecord = {
+      id: newRecord[0]?.petCareID,
+      title: newRecord[0]?.title,
+      shortDescription: newRecord[0]?.shortDescription,
+      detailedContent: newRecord[0]?.detailedContent,
+      learnMoreURL: newRecord[0]?.learnMoreURL,
+      category: newRecord[0]?.categoryName,
+      icon: newRecord[0]?.iconKey,
+      author: `${newRecord[0]?.firstName || ''} ${newRecord[0]?.lastName || ''}`.trim(),
+      lastUpdated: newRecord[0]?.lastUpdated
+    };
+
     res.status(201).json({
       success: true,
       message: 'Pet care tip created successfully',
-      data: newRecord[0]
+      data: adminFormattedRecord
     });
 
   } catch (error) {
@@ -220,11 +295,24 @@ export const updatePetCareTip = async (req, res) => {
       pubStatusID
     } = req.body;
 
-    // First, get the current record to check if status is changing to Published
+    // Get current record with all data needed for client formatting
     const [currentRecord] = await db.execute(
-      `SELECT pubStatusID, title, shortDescription, accID 
-       FROM pet_care_tips_content_tbl 
-       WHERE petCareID = ? AND isDeleted = 0`,
+      `SELECT 
+        pt.pubStatusID, 
+        pt.title, 
+        pt.shortDescription, 
+        pt.detailedContent,
+        pt.learnMoreURL,
+        pt.accID,
+        i.iconKey,
+        pcc.categoryName,
+        a.firstName,
+        a.lastName
+       FROM pet_care_tips_content_tbl pt
+       LEFT JOIN pet_care_category_tbl pcc ON pt.petCareCategoryID = pcc.petCareCategoryID
+       LEFT JOIN icon_tbl i ON pt.iconID = i.iconID
+       LEFT JOIN account_tbl a ON pt.accID = a.accId
+       WHERE pt.petCareID = ? AND pt.isDeleted = 0`,
       [id]
     );
 
@@ -238,8 +326,10 @@ export const updatePetCareTip = async (req, res) => {
     const wasPublished = currentRecord[0].pubStatusID === 2;
     const willBePublished = pubStatusID !== undefined ? parseInt(pubStatusID) === 2 : wasPublished;
     const isChangingToPublished = !wasPublished && willBePublished;
+    const isPublishedUpdate = wasPublished && willBePublished;
+    const isUnpublished = wasPublished && pubStatusID !== undefined && parseInt(pubStatusID) !== 2; // NEW
 
-    // Build dynamic query based on provided fields
+    // Build dynamic query
     let query = `UPDATE pet_care_tips_content_tbl SET `;
     const updates = [];
     const params = [];
@@ -293,56 +383,125 @@ export const updatePetCareTip = async (req, res) => {
       });
     }
 
-    // Fetch updated record
+    // Fetch updated record with all data for client formatting
     const [updatedRecord] = await db.execute(
-      `SELECT pt.petCareID as id, pt.title, pt.shortDescription, pt.detailedContent, pt.learnMoreURL, 
-              pc.categoryName as category, i.iconName as icon, ps.pubStatus as status, pt.pubStatusID
+      `SELECT 
+        pt.petCareID,
+        pt.title,
+        pt.shortDescription,
+        pt.detailedContent,
+        pt.learnMoreURL,
+        pt.lastUpdated,
+        i.iconKey,
+        pcc.categoryName,
+        a.firstName,
+        a.lastName
        FROM pet_care_tips_content_tbl pt
-       LEFT JOIN pet_care_category_tbl pc ON pt.petCareCategoryID = pc.petCareCategoryID
+       LEFT JOIN pet_care_category_tbl pcc ON pt.petCareCategoryID = pcc.petCareCategoryID
        LEFT JOIN icon_tbl i ON pt.iconID = i.iconID
-       LEFT JOIN publication_status_tbl ps ON pt.pubStatusID = ps.pubStatsID
+       LEFT JOIN account_tbl a ON pt.accID = a.accId
        WHERE pt.petCareID = ?`,
       [id]
     );
 
     // ===========================================
-    // 🔔 TRIGGER NOTIFICATION if status changed to Published
+    // 🔔 TRIGGER NOTIFICATION AND WEBSOCKET for all status changes
     // ===========================================
-    if (isChangingToPublished) {
+    if (isChangingToPublished || isPublishedUpdate || isUnpublished) {
       try {
-        console.log('🔔 [updatePetCareTip] Triggering notification for published pet care tip');
-        
-        const notifReq = {
-          body: {
-            petCareID: parseInt(id),
-            title: title || currentRecord[0].title,
-            shortDescription: shortDescription || currentRecord[0].shortDescription,
-            pubStatusID: 2, // Published
-            accID: currentRecord[0].accID
-          },
-          user: req.user
-        };
-        
-        const notifRes = {
-          status: (code) => ({
-            json: (data) => {
-              console.log(`🔔 [updatePetCareTip] Notification response (${code}):`, data);
-            }
-          })
-        };
+        // Send notification only when first published
+        if (isChangingToPublished) {
+          console.log('🔔 [updatePetCareTip] Triggering notification for newly published tip');
+          
+          const notifReq = {
+            body: {
+              petCareID: parseInt(id),
+              title: title || currentRecord[0].title,
+              shortDescription: shortDescription || currentRecord[0].shortDescription,
+              pubStatusID: 2,
+              accID: currentRecord[0].accID
+            },
+            user: req.user
+          };
+          
+          const notifRes = {
+            status: (code) => ({
+              json: (data) => {
+                console.log(`🔔 Notification response (${code}):`, data);
+              }
+            })
+          };
 
-        await createPetTipsNotification(notifReq, notifRes);
-        console.log('✅ [updatePetCareTip] Publication notification triggered successfully');
+          await createPetTipsNotification(notifReq, notifRes);
+        }
+        
+        // 🌐 WEBSOCKET EMISSION
+        try {
+          const io = getIO();
+          
+          const formattedTip = formatTipForClient({
+            ...updatedRecord[0],
+            id: parseInt(id)
+          });
+          
+          if (isChangingToPublished) {
+            // Newly published - treat as new tip
+            io.emit('new_pet_care_tip', formattedTip);
+            io.to('admin-room').emit('admin_tip_created', {
+              tip: formattedTip,
+              adminName: req.user?.name || 'Another Admin',
+              adminId: req.user?.id,
+              timestamp: new Date()
+            });
+          } else if (isPublishedUpdate) {
+            // Update to existing published tip
+            io.emit('pet_care_tip_updated', formattedTip);
+            io.to('admin-room').emit('admin_tip_updated', {
+              tip: formattedTip,
+              adminName: req.user?.name || 'Another Admin',
+              adminId: req.user?.id,
+              timestamp: new Date()
+            });
+          } else if (isUnpublished) {
+            // Tip was unpublished (changed to Draft or Archived)
+            io.emit('pet_care_tip_deleted', { id: parseInt(id) });
+            io.to('admin-room').emit('admin_tip_deleted', {
+              tipId: parseInt(id),
+              tipTitle: title || currentRecord[0].title,
+              adminName: req.user?.name || 'Another Admin',
+              adminId: req.user?.id,
+              timestamp: new Date(),
+              reason: 'unpublished'
+            });
+          }
+          
+          console.log(`✅ [updatePetCareTip] WebSocket ${isChangingToPublished ? 'new' : isPublishedUpdate ? 'update' : 'unpublished'} emitted`);
+        } catch (wsError) {
+          console.error('⚠️ [updatePetCareTip] WebSocket emission failed:', wsError.message);
+        }
         
       } catch (notifError) {
-        console.error('⚠️ [updatePetCareTip] Failed to send publication notification:', notifError);
+        console.error('⚠️ [updatePetCareTip] Failed to send notification:', notifError);
       }
     }
+
+    // Format for admin response
+    const adminFormattedRecord = {
+      id: updatedRecord[0]?.petCareID,
+      title: updatedRecord[0]?.title,
+      shortDescription: updatedRecord[0]?.shortDescription,
+      detailedContent: updatedRecord[0]?.detailedContent,
+      learnMoreURL: updatedRecord[0]?.learnMoreURL,
+      category: updatedRecord[0]?.categoryName,
+      icon: updatedRecord[0]?.iconKey,
+      author: `${updatedRecord[0]?.firstName || ''} ${updatedRecord[0]?.lastName || ''}`.trim(),
+      lastUpdated: updatedRecord[0]?.lastUpdated
+    };
 
     res.json({
       success: true,
       message: 'Pet care tip updated successfully',
-      data: updatedRecord[0]
+      data: adminFormattedRecord
     });
 
   } catch (error) {
@@ -359,15 +518,15 @@ export const deletePetCareTip = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Check if it was published before deletion (optional notification)
+    // Check if it was published before deletion
     const [currentRecord] = await db.execute(
-      `SELECT pubStatusID, title, shortDescription, accID 
-       FROM pet_care_tips_content_tbl 
+      `SELECT pubStatusID, title FROM pet_care_tips_content_tbl 
        WHERE petCareID = ? AND isDeleted = 0`,
       [id]
     );
 
     const wasPublished = currentRecord.length > 0 && currentRecord[0].pubStatusID === 2;
+    const tipTitle = currentRecord[0]?.title || 'Unknown';
 
     const query = `
       UPDATE pet_care_tips_content_tbl 
@@ -384,8 +543,24 @@ export const deletePetCareTip = async (req, res) => {
       });
     }
 
-    // Optional: Send notification for deletion? 
-    // Usually you don't notify for deletions, but you can if needed
+    // Emit WebSocket for deletion if it was published
+    if (wasPublished) {
+      try {
+        const io = getIO();
+        io.emit('pet_care_tip_deleted', { id: parseInt(id) });
+        io.to('admin-room').emit('admin_tip_deleted', {
+          tipId: parseInt(id),
+          tipTitle: tipTitle,
+          adminName: req.user?.name || 'Another Admin',
+          adminId: req.user?.id,
+          timestamp: new Date(),
+          reason: 'deleted'
+        });
+        console.log('✅ [deletePetCareTip] WebSocket deletion emitted');
+      } catch (wsError) {
+        console.error('⚠️ [deletePetCareTip] WebSocket emission failed:', wsError.message);
+      }
+    }
 
     res.json({
       success: true,

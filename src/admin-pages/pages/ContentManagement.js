@@ -28,6 +28,10 @@ const ContentManagement = () => {
   const [publicationStatuses, setPublicationStatuses] = useState([]);
   const [videoCategories, setVideoCategories] = useState([]);
 
+  // Get current admin info from localStorage or auth context
+  const currentAdminId = localStorage.getItem('userId') || 'unknown';
+  const currentAdminName = localStorage.getItem('userName') || 'Admin';
+
   // Handle new video category creation
   const handleNewVideoCategoryCreated = async (newCategory) => {
     console.log('New video category created:', newCategory);
@@ -284,12 +288,11 @@ const ContentManagement = () => {
     setShowVideoModal(true);
   };
 
-  // Handle add/edit video - FIXED: Removed getCurrentUserId function call
+  // Handle add/edit video
   const handleAddVideo = async (data) => {
     try {
       setLoading(true);
       
-      // No need to fetch user ID - backend gets it from the token via auth middleware
       const requestData = {
         videoTitle: data.videoTitle,
         videoURL: data.videoURL,
@@ -482,9 +485,12 @@ const ContentManagement = () => {
             onAdd={() => setShowPetTipModal(true)}
             onEdit={handleEditPetTip}
             onDelete={handleDeletePetTip}
+            onRefresh={fetchPetCareTips} // Add this for WebSocket refresh
             loading={loading}
             allCategories={categories}
             allStatuses={publicationStatuses}
+            currentAdminId={currentAdminId} // Add current admin ID
+            currentAdminName={currentAdminName} // Add current admin name
           />
         )}
 
@@ -495,9 +501,12 @@ const ContentManagement = () => {
             onAdd={() => setShowVideoModal(true)}
             onEdit={handleEditVideo}
             onDelete={handleDeleteVideo}
+            onRefresh={fetchVideos}  // Add this
             loading={loading}
             allCategories={videoCategories}
-            allStatuses={publicationStatuses} 
+            allStatuses={publicationStatuses}
+            currentAdminId={currentAdminId}  // Add this
+            currentAdminName={currentAdminName}  // Add this
           />
         )}
 

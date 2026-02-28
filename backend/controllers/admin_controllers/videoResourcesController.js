@@ -1,6 +1,32 @@
 //VIDEOS
 import db from "../../config/db.js";
 import { createVideoNotification } from "../notificationController.js"; // Import notification function
+import { getIO } from "../../socket.js"; // Add this import
+
+// Helper function to extract YouTube video ID
+const extractVideoId = (url) => {
+  if (!url) return '';
+  
+  if (url.includes('youtube.com/watch?v=')) {
+    return url.split('v=')[1]?.split('&')[0] || '';
+  } else if (url.includes('youtu.be/')) {
+    return url.split('youtu.be/')[1]?.split('?')[0] || '';
+  } else if (url.includes('youtube.com/embed/')) {
+    return url.split('embed/')[1]?.split('?')[0] || '';
+  } else {
+    return url; // Assume it's already a video ID
+  }
+};
+
+// Helper function to format video for client
+const formatVideoForClient = (video) => ({
+  id: extractVideoId(video.videoURL),
+  title: video.videoTitle || video.title,
+  category: video.category || video.videoCategory,
+  url: video.videoURL,
+  created_at: video.created_at || new Date().toISOString(),
+  updated_at: video.updated_at || new Date().toISOString()
+});
 
 export const getAllVideos = async (req, res) => {
   try {
@@ -150,7 +176,7 @@ export const createVideo = async (req, res) => {
     );
 
     // ===========================================
-    // 🔔 TRIGGER NOTIFICATION if published immediately
+    // 🔔 TRIGGER NOTIFICATION AND WEBSOCKET if published immediately
     // ===========================================
     if (parseInt(pubStatusID) === 2) { // 2 = Published
       try {
@@ -177,6 +203,27 @@ export const createVideo = async (req, res) => {
 
         await createVideoNotification(notifReq, notifRes);
         console.log('✅ [createVideo] Notification triggered successfully');
+        
+        // 🌐 WEBSOCKET EMISSION
+        const io = getIO();
+        const formattedVideo = formatVideoForClient({
+          ...newRecord[0],
+          videoTitle,
+          videoURL
+        });
+        
+        // Emit to all connected users
+        io.emit('new_video', formattedVideo);
+        
+        // Emit to admin room for other admins
+        io.to('admin-room').emit('admin_video_created', {
+          video: formattedVideo,
+          adminName: req.user?.name || 'Another Admin',
+          adminId: accID,
+          timestamp: new Date()
+        });
+        
+        console.log('✅ [createVideo] WebSocket events emitted');
         
       } catch (notifError) {
         console.error('⚠️ [createVideo] Failed to send notification:', notifError);
@@ -209,24 +256,48 @@ export const updateVideo = async (req, res) => {
       pubStatusID
     } = req.body;
 
-    // First, get the current record to check if status is changing to Published
+    console.log('========== UPDATE VIDEO DEBUG ==========');
+    console.log('1. Update request received for video ID:', id);
+    console.log('2. Request body:', { videoTitle, videoURL, videoCategoryID, pubStatusID });
+
+    // First, get the current record to check if status is changing
     const [currentRecord] = await db.execute(
-      `SELECT pubStatusID, videoTitle, videoCategoryID, accID 
+      `SELECT pubStatusID, videoTitle, videoCategoryID, videoURL, accID 
        FROM video_content_tbl 
        WHERE videoID = ? AND isDeleted = 0`,
       [id]
     );
 
     if (currentRecord.length === 0) {
+      console.log('❌ Video not found');
       return res.status(404).json({
         success: false,
         message: 'Video not found'
       });
     }
 
+    console.log('3. Current record in DB:', {
+      pubStatusID: currentRecord[0].pubStatusID,
+      videoTitle: currentRecord[0].videoTitle,
+      status: currentRecord[0].pubStatusID === 2 ? 'Published' : 
+              currentRecord[0].pubStatusID === 1 ? 'Draft' : 'Archived'
+    });
+
     const wasPublished = currentRecord[0].pubStatusID === 2;
     const willBePublished = pubStatusID !== undefined ? parseInt(pubStatusID) === 2 : wasPublished;
     const isChangingToPublished = !wasPublished && willBePublished;
+    const isPublishedUpdate = wasPublished && willBePublished;
+    const isUnpublished = wasPublished && pubStatusID !== undefined && parseInt(pubStatusID) !== 2;
+
+    console.log('4. Status change analysis:', {
+      wasPublished,
+      willBePublished,
+      isChangingToPublished,
+      isPublishedUpdate,
+      isUnpublished,
+      newStatus: pubStatusID,
+      newStatusText: pubStatusID === 2 ? 'Published' : pubStatusID === 1 ? 'Draft' : 'Archived'
+    });
 
     // Build dynamic query based on provided fields
     let query = `UPDATE video_content_tbl SET `;
@@ -269,9 +340,15 @@ export const updateVideo = async (req, res) => {
     query += updates.join(', ') + ' WHERE videoID = ? AND isDeleted = 0';
     params.push(parseInt(id));
 
+    console.log('5. Executing update query:', query);
+    console.log('6. Query params:', params);
+
     const [result] = await db.execute(query, params);
 
+    console.log('7. Update result:', result);
+
     if (result.affectedRows === 0) {
+      console.log('❌ No rows affected - video not found or already deleted');
       return res.status(404).json({
         success: false,
         message: 'Video not found or already deleted'
@@ -289,40 +366,107 @@ export const updateVideo = async (req, res) => {
       [id]
     );
 
-    // ===========================================
-    // 🔔 TRIGGER NOTIFICATION if status changed to Published
-    // ===========================================
-    if (isChangingToPublished) {
-      try {
-        console.log('🔔 [updateVideo] Triggering notification for published video');
-        
-        const notifReq = {
-          body: {
-            videoID: parseInt(id),
-            videoTitle: videoTitle || currentRecord[0].videoTitle,
-            videoCategoryID: videoCategoryID || currentRecord[0].videoCategoryID,
-            pubStatusID: 2, // Published
-            accID: currentRecord[0].accID
-          },
-          user: req.user
-        };
-        
-        const notifRes = {
-          status: (code) => ({
-            json: (data) => {
-              console.log(`🔔 [updateVideo] Notification response (${code}):`, data);
-            }
-          })
-        };
+    console.log('8. Updated record:', updatedRecord[0]);
 
-        await createVideoNotification(notifReq, notifRes);
-        console.log('✅ [updateVideo] Publication notification triggered successfully');
+    // ===========================================
+    // 🔔 TRIGGER NOTIFICATION AND WEBSOCKET for all status changes
+    // ===========================================
+    if (isChangingToPublished || isPublishedUpdate || isUnpublished) {
+      console.log('9. 🔔 Entering WebSocket emission block');
+      
+      try {
+        if (isChangingToPublished) {
+          console.log('🔔 [updateVideo] Triggering notification for published video');
+          
+          const notifReq = {
+            body: {
+              videoID: parseInt(id),
+              videoTitle: videoTitle || currentRecord[0].videoTitle,
+              videoCategoryID: videoCategoryID || currentRecord[0].videoCategoryID,
+              pubStatusID: 2, // Published
+              accID: currentRecord[0].accID
+            },
+            user: req.user
+          };
+          
+          const notifRes = {
+            status: (code) => ({
+              json: (data) => {
+                console.log(`🔔 [updateVideo] Notification response (${code}):`, data);
+              }
+            })
+          };
+
+          await createVideoNotification(notifReq, notifRes);
+          console.log('✅ [updateVideo] Publication notification triggered successfully');
+        }
+        
+        // 🌐 WEBSOCKET EMISSION
+        console.log('10. Getting IO instance...');
+        const io = getIO();
+        console.log('11. IO instance obtained');
+
+        const formattedVideo = formatVideoForClient({
+          ...updatedRecord[0],
+          videoTitle: videoTitle || currentRecord[0].videoTitle,
+          videoURL: videoURL || currentRecord[0].videoURL
+        });
+
+        console.log('12. Formatted video for client:', formattedVideo);
+        
+        if (isChangingToPublished) {
+          // Newly published - treat as new video
+          console.log(`13. Emitting 'new_video' to users with data:`, formattedVideo);
+          io.emit('new_video', formattedVideo);
+          
+          console.log(`14. Emitting 'admin_video_created' to admin room`);
+          io.to('admin-room').emit('admin_video_created', {
+            video: formattedVideo,
+            adminName: req.user?.name || 'Another Admin',
+            adminId: req.user?.id,
+            timestamp: new Date()
+          });
+        } else if (isPublishedUpdate) {
+          // Update to existing published video
+          console.log(`13. Emitting 'video_updated' to users with data:`, formattedVideo);
+          io.emit('video_updated', formattedVideo);
+          
+          console.log(`14. Emitting 'admin_video_updated' to admin room`);
+          io.to('admin-room').emit('admin_video_updated', {
+            video: formattedVideo,
+            adminName: req.user?.name || 'Another Admin',
+            adminId: req.user?.id,
+            timestamp: new Date()
+          });
+        } else if (isUnpublished) {
+          // Video was unpublished (changed to Draft or Archived)
+          console.log(`13. 🎬 UNPUBLISHING video ID: ${id}`);
+          console.log(`14. Emitting 'video_deleted' to users with ID:`, { id: parseInt(id) });
+          
+          io.emit('video_deleted', { dbId: parseInt(id) });
+          
+          console.log(`15. Emitting 'admin_video_deleted' to admin room`);
+          io.to('admin-room').emit('admin_video_deleted', {
+            videoId: parseInt(id),
+            videoTitle: videoTitle || currentRecord[0].videoTitle,
+            adminName: req.user?.name || 'Another Admin',
+            adminId: req.user?.id,
+            timestamp: new Date(),
+            reason: 'unpublished'
+          });
+        }
+        
+        console.log(`✅ [updateVideo] WebSocket ${isChangingToPublished ? 'new' : isPublishedUpdate ? 'update' : 'unpublished'} emitted successfully`);
         
       } catch (notifError) {
-        console.error('⚠️ [updateVideo] Failed to send publication notification:', notifError);
+        console.error('⚠️ [updateVideo] WebSocket emission failed:', notifError);
+        console.error('⚠️ Error stack:', notifError.stack);
       }
+    } else {
+      console.log('9. ❌ No WebSocket emission needed (no status change affecting users)');
     }
 
+    console.log('16. Sending success response to client');
     res.json({
       success: true,
       message: 'Video updated successfully',
@@ -330,7 +474,8 @@ export const updateVideo = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error updating video:', error);
+    console.error('❌ Error updating video:', error);
+    console.error('❌ Error stack:', error.stack);
     res.status(500).json({
       success: false,
       message: 'Failed to update video',
@@ -343,15 +488,15 @@ export const deleteVideo = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Check if it was published before deletion (optional notification)
+    // Check if it was published before deletion
     const [currentRecord] = await db.execute(
-      `SELECT pubStatusID, videoTitle, videoCategoryID, accID 
-       FROM video_content_tbl 
+      `SELECT pubStatusID, videoTitle FROM video_content_tbl 
        WHERE videoID = ? AND isDeleted = 0`,
       [id]
     );
 
     const wasPublished = currentRecord.length > 0 && currentRecord[0].pubStatusID === 2;
+    const videoTitle = currentRecord[0]?.videoTitle || 'Unknown';
 
     const query = `
       UPDATE video_content_tbl 
@@ -368,8 +513,29 @@ export const deleteVideo = async (req, res) => {
       });
     }
 
-    // Optional: Send notification for deletion? 
-    // Usually you don't notify for deletions, but you can if needed
+    // 🌐 WEBSOCKET EMISSION if it was published
+    if (wasPublished) {
+      try {
+        const io = getIO();
+        
+        // Emit to users
+        io.emit('video_deleted', { dbId: parseInt(id) });
+        
+        // Emit to admin room
+        io.to('admin-room').emit('admin_video_deleted', {
+          videoId: parseInt(id),
+          videoTitle: videoTitle,
+          adminName: req.user?.name || 'Another Admin',
+          adminId: req.user?.id,
+          timestamp: new Date(),
+          reason: 'deleted'
+        });
+        
+        console.log('✅ [deleteVideo] WebSocket deletion emitted');
+      } catch (error) {
+        console.error('⚠️ [deleteVideo] WebSocket emission failed:', error);
+      }
+    }
 
     res.json({
       success: true,

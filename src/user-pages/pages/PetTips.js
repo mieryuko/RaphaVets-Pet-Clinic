@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, Wifi, WifiOff } from "lucide-react";
 import ClientLayout from "../ClientLayout";
 import api from "../../api/axios";
+import socket from "../../socket";
 
 export default function PetTips() {
   const [selectedTip, setSelectedTip] = useState(null);
@@ -28,20 +29,84 @@ export default function PetTips() {
     "#FFF1F0", 
   ];
 
+  // ===========================================
+  // WEBSOCKET CONNECTION USING EXISTING SOCKET
+  // ===========================================
+  useEffect(() => {
+    // Connect socket if not already connected
+    if (!socket.connected) {
+      socket.connect();
+    }
+
+    // Tip event handlers
+    const onNewTip = (newTip) => {
+      console.log('📨 Received new tip via WebSocket:', newTip);
+      
+      // Add to tips list (avoid duplicates)
+      setTips(prevTips => {
+        const exists = prevTips.some(tip => tip.id === newTip.id);
+        if (exists) {
+          return prevTips;
+        }
+        return [newTip, ...prevTips];
+      });
+
+      // Update categories if needed
+      if (newTip.category && !categories.includes(newTip.category) && newTip.category !== 'All') {
+        setCategories(prev => {
+          if (!prev.includes(newTip.category)) {
+            return [...prev, newTip.category];
+          }
+          return prev;
+        });
+      }
+    };
+
+    const onTipUpdated = (updatedTip) => {
+      console.log('📨 Received updated tip via WebSocket:', updatedTip);
+      
+      setTips(prevTips => 
+        prevTips.map(tip => 
+          tip.id === updatedTip.id ? updatedTip : tip
+        )
+      );
+    };
+
+    const onTipDeleted = ({ id }) => {
+      console.log('📨 Received deleted tip via WebSocket:', id);
+      
+      setTips(prevTips => prevTips.filter(tip => tip.id !== id));
+      
+      // Close modal if the deleted tip was selected
+      if (selectedTip?.id === id) {
+        setSelectedTip(null);
+      }
+    };
+
+    // Register event listeners
+    socket.on('new_pet_care_tip', onNewTip);
+    socket.on('pet_care_tip_updated', onTipUpdated);
+    socket.on('pet_care_tip_deleted', onTipDeleted);
+
+
+    // Cleanup on unmount
+    return () => {
+      socket.off('new_pet_care_tip', onNewTip);
+      socket.off('pet_care_tip_updated', onTipUpdated);
+      socket.off('pet_care_tip_deleted', onTipDeleted);
+    };
+  }, [selectedTip, categories]);
+
   // Fetch pet care tips and categories
   const fetchData = async () => {
     try {
       setLoading(true);
-      console.log('🔄 Attempting to fetch from API...');
       
       const [tipsResponse, categoriesResponse] = await Promise.all([
         api.get('/pet-care-tips'),
         api.get('/pet-care-tips/categories')
       ]);
 
-      console.log('📥 API Responses:');
-      console.log('Tips data:', tipsResponse.data);
-      console.log('Categories data:', categoriesResponse.data);
 
       if (tipsResponse.data.success) {
         setTips(tipsResponse.data.data);
@@ -114,7 +179,7 @@ export default function PetTips() {
               <div className="h-8 sm:h-9 md:h-10 w-full sm:w-56 md:w-64 bg-gray-200 rounded-full animate-pulse"></div>
             </div>
 
-            {/* Filters Skeleton - Scrollable */}
+            {/* Filters Skeleton */}
             <div className="relative mb-4 sm:mb-5 md:mb-6">
               <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
                 {[1, 2, 3, 4, 5, 6, 7].map((item) => (
@@ -212,18 +277,20 @@ export default function PetTips() {
         className="max-w-6xl mx-auto w-full px-3 sm:px-4 md:px-0 overflow-y-auto max-h-[calc(100vh-100px)] sm:max-h-[calc(100vh-120px)]"
       >
         <div className="bg-white shadow-md rounded-xl p-4 sm:p-5 md:p-6 mt-4 sm:mt-5 md:mt-6">
-          {/* Header Section */}
+          {/* Header Section with Connection Status */}
           <motion.div 
             variants={itemVariants}
             className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 sm:mb-5"
           >
-            <div>
-              <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-[#2FA394]">
-                Pet Care Tips
-              </h1>
-              <p className="text-xs sm:text-sm text-gray-500 mt-1">
-                Helpful advice for your furry friends
-              </p>
+            <div className="flex items-center gap-3">
+              <div>
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-[#2FA394]">
+                  Pet Care Tips
+                </h1>
+                <p className="text-xs sm:text-sm text-gray-500 mt-1">
+                  Helpful advice for your furry friends
+                </p>
+              </div>
             </div>
             <div className="relative w-full sm:w-64 md:w-72">
               <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -345,11 +412,10 @@ export default function PetTips() {
         </div>
       </motion.div>
 
-      {/* TIP DETAILS MODAL - Fully Responsive */}
+      {/* TIP DETAILS MODAL */}
       <AnimatePresence>
         {selectedTip && (
           <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4">
-            {/* Overlay */}
             <motion.div
               className="absolute inset-0 bg-black/50 backdrop-blur-sm"
               initial={{ opacity: 0 }}
@@ -357,8 +423,6 @@ export default function PetTips() {
               exit={{ opacity: 0 }}
               onClick={() => setSelectedTip(null)}
             />
-
-            {/* Modal Content */}
             <motion.div
               className="relative z-[10000] bg-white rounded-xl sm:rounded-2xl md:rounded-3xl w-full max-w-md p-4 sm:p-5 md:p-6 shadow-2xl overflow-y-auto max-h-[90vh]"
               initial={{ opacity: 0, scale: 0.8, y: 30 }}
@@ -372,21 +436,15 @@ export default function PetTips() {
               <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-2 sm:mb-3 text-[#2FA394] text-center">
                 {selectedTip.title}
               </h2>
-              
-              {/* Category badge in modal */}
               <div className="flex justify-center mb-3 sm:mb-4">
                 <span className="inline-block text-xs font-medium text-[#2FA394] px-3 py-1 rounded-full border border-[#2FA394]">
                   {selectedTip.category}
                 </span>
               </div>
-              
               <p className="text-gray-700 mb-4 sm:mb-5 md:mb-6 text-xs sm:text-sm leading-relaxed">
                 {selectedTip.long}
               </p>
-
-              {/* Buttons Container */}
               <div className="flex flex-col xs:flex-row justify-center gap-2 sm:gap-3">
-                {/* Learn More */}
                 <motion.a
                   onClick={(e) => {
                     e.preventDefault();
@@ -398,8 +456,6 @@ export default function PetTips() {
                 >
                   Learn More
                 </motion.a>
-
-                {/* Close */}
                 <motion.button
                   onClick={() => setSelectedTip(null)}
                   className="bg-gray-300 hover:bg-gray-400 text-black px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-medium"
@@ -414,11 +470,10 @@ export default function PetTips() {
         )}
       </AnimatePresence>
 
-      {/* CONFIRM LINK MODAL - Fully Responsive */}
+      {/* CONFIRM LINK MODAL */}
       <AnimatePresence>
         {confirmLink && (
           <div className="fixed inset-0 z-[10001] flex items-center justify-center p-3 sm:p-4">
-            {/* Overlay */}
             <motion.div
               className="absolute inset-0 bg-black/50 backdrop-blur-sm"
               initial={{ opacity: 0 }}
@@ -426,8 +481,6 @@ export default function PetTips() {
               exit={{ opacity: 0 }}
               onClick={() => setConfirmLink(null)}
             />
-
-            {/* Modal Content */}
             <motion.div
               className="relative z-[10002] bg-white rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 max-w-sm w-[90%] shadow-2xl text-center"
               initial={{ opacity: 0, scale: 0.8, y: 30 }}
@@ -441,7 +494,6 @@ export default function PetTips() {
               <p className="text-gray-700 mb-4 text-xs sm:text-sm">
                 You are about to leave RVCare and visit an external website. Do you want to continue?
               </p>
-
               <div className="flex flex-col xs:flex-row justify-center gap-2 sm:gap-3">
                 <motion.button
                   onClick={() => {

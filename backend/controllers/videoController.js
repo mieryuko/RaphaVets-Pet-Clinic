@@ -1,5 +1,6 @@
 import db from '../config/db.js';
 // Get all videos
+// In the user-only controller at the bottom
 export const getAllVideos = async (req, res) => {
   try {
     const query = `
@@ -20,9 +21,7 @@ export const getAllVideos = async (req, res) => {
 
     const [results] = await db.execute(query);
     
-    // Extract YouTube video IDs from URLs and format for frontend
     const videos = results.map(video => {
-      // Extract YouTube video ID from URL
       let videoId = '';
       const url = video.videoURL;
       
@@ -33,12 +32,12 @@ export const getAllVideos = async (req, res) => {
       } else if (url.includes('youtube.com/embed/')) {
         videoId = url.split('embed/')[1]?.split('?')[0];
       } else {
-        // If it's already just the video ID
         videoId = url;
       }
       
       return {
-        id: videoId,
+        id: videoId,                    // YouTube ID for display
+        dbId: video.videoID,             // Database ID for operations (ADD THIS)
         title: video.videoTitle,
         category: video.videoCategory,
         fullUrl: video.videoURL,
