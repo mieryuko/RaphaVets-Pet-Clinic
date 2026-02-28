@@ -1,5 +1,6 @@
+// App.js
 import React from "react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import LoginPage from "./LoginPage";
 import SignupPage from "./SignupPage";
@@ -37,6 +38,26 @@ import AddVisit from "./admin-pages/pages/AddVisit";
 import VetLayout from "./vet-pages/VetLayout";
 
 import ProtectedRoute from "./components/ProtectedRoute";
+import MobileBlockPage from "./MobileBlockPage"; 
+
+const ScreenSizeGuard = ({ children }) => {
+  const [isLargeScreen, setIsLargeScreen] = useState(window.innerWidth >= 1024);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsLargeScreen(window.innerWidth >= 1024);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  if (!isLargeScreen) {
+    return <MobileBlockPage />;
+  }
+
+  return children;
+};
 
 function App() {
   useEffect(() => {
@@ -66,6 +87,7 @@ function App() {
     };
 
   }, []);
+  
   return (
     <BrowserRouter>
       <Routes>
@@ -88,7 +110,13 @@ function App() {
         <Route path="/feedback" element={<ProtectedRoute><Feedback /></ProtectedRoute>} />
 
         {/*admin*/}
-        <Route path="/admin-pages" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
+        <Route path="/admin-pages" element={
+          <ProtectedRoute>
+            <ScreenSizeGuard>
+              <AdminLayout />
+            </ScreenSizeGuard>
+          </ProtectedRoute>
+        }>
           <Route index element={<Dashboard />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="pet-management" element={<PetPatientManagement />} />
