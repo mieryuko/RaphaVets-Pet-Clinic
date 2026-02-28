@@ -8,6 +8,7 @@ import socket from "../../socket"; // Import socket
 
 function Forum() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [animateIcon, setAnimateIcon] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [filter, setFilter] = useState("All");
   const [selectedPost, setSelectedPost] = useState(null);
@@ -24,6 +25,14 @@ function Forum() {
   const closeLightbox = () => {
     setLightbox({ open: false, images: [], index: 0 });
   };
+
+  const handleToggleMenu = () => {
+    setAnimateIcon(true);
+    setTimeout(() => {
+      setIsMenuOpen(prev => !prev);
+    }, 100);
+  };
+
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [postToDelete, setPostToDelete] = useState(null);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -487,17 +496,23 @@ function Forum() {
   return (
     <div
       className={`font-sansation min-h-screen ${
-        darkMode ? "bg-[#121212] text-white" : "bg-[#F7F9FA] text-gray-800"
+        darkMode ? "bg-[#121212] text-white" : "bg-[#FBFBFB] text-gray-800"
       }`}
     >
       <Header
         darkMode={darkMode}
         setDarkMode={setDarkMode}
-        setIsMenuOpen={setIsMenuOpen}
+        toggleMenu={handleToggleMenu}
+        isMenuOpen={isMenuOpen}
+        animateIcon={animateIcon}
       />
 
       <div className="flex flex-col md:flex-row gap-4 md:gap-5 px-4 sm:px-6 md:px-8 lg:px-12">
-        <Sidebar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
+        <Sidebar
+          isMenuOpen={isMenuOpen}
+          closeMenuImmediate={() => setIsMenuOpen(false)}
+          animationEnabled={true}
+        />
 
         <div
           className={`transition-all duration-500 flex flex-col gap-4 sm:gap-6 w-full ${
@@ -505,7 +520,7 @@ function Forum() {
           }`}
         >
           {/* Main Content */}
-          <div className="flex flex-col lg:grid lg:grid-cols-[2fr_1fr] gap-4 sm:gap-5 md:gap-6 min-h-[calc(100vh-100px)]">
+          <div className="flex flex-col lg:grid lg:grid-cols-[2fr_1fr] gap-4 sm:gap-5 md:gap-6 min-h-[calc(100vh-100px)] overflow-y-auto">
             {/* LEFT COLUMN */}
             <div className="order-2 lg:order-1 flex flex-col gap-3 sm:gap-4 p-3 sm:p-4 bg-white rounded-lg sm:rounded-xl overflow-y-auto max-h-[calc(100vh-100px)]">
               {/* Header */}
@@ -1173,6 +1188,14 @@ function Forum() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Mobile overlay to close sidebar when clicking outside */}
+      {isMenuOpen && (
+        <div
+          className="fixed inset-0 z-40 md:hidden"
+          onClick={() => setIsMenuOpen(false)}
+        />
       )}
 
       {/* Error Modal */}

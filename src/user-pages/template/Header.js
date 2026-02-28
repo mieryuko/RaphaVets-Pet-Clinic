@@ -397,7 +397,7 @@ function Header({ darkMode, setDarkMode, toggleMenu, isMenuOpen, animateIcon }) 
           className={`text-2xl sm:text-3xl text-gray-700 focus:outline-none flex-shrink-0 ${
             animateIcon ? 'transition-transform duration-300' : ''
           }`}
-          style={{ transform: isMenuOpen ? 'rotate(90deg)' : 'rotate(0deg)' }}
+          //style={{ transform: isMenuOpen ? 'rotate(90deg)' : 'rotate(0deg)' }}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
           transition={{ type: "spring", stiffness: 400, damping: 17 }}
