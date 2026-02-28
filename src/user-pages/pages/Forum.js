@@ -14,7 +14,16 @@ function Forum() {
   const [showViewModal, setShowViewModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [inputKey, setInputKey] = useState(Date.now());
-  const [lightbox, setLightbox] = useState({ open: false, src: null, alt: "" });
+  const [isYourPostsOpen, setIsYourPostsOpen] = useState(true); 
+  const [lightbox, setLightbox] = useState({ open: false, images: [], index: 0 });
+
+  const openLightbox = (images, startIndex = 0) => {
+    setLightbox({ open: true, images, index: startIndex });
+  };
+
+  const closeLightbox = () => {
+    setLightbox({ open: false, images: [], index: 0 });
+  };
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [postToDelete, setPostToDelete] = useState(null);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -375,9 +384,6 @@ function Forum() {
   const accID = localStorage.getItem("userId");
   const userPosts = posts.filter((p) => p.accID == accID);
 
-  const closeLightbox = () => {
-    setLightbox({ open: false, src: null, alt: "" });
-  };
 
   // Data Privacy Modal
   const PrivacyPolicyModal = ({ onClose, onAccept }) => {
@@ -553,7 +559,7 @@ function Forum() {
                       <div
                         className={`grid gap-1 sm:gap-2 mb-2 sm:mb-3 ${
                           post.images.length === 1
-                            ? "grid-cols-1"
+                            ? "grid-cols-1 max-w-[200px] sm:max-w-[250px] md:max-w-[300px]" // Limit width for single image
                             : post.images.length === 2
                             ? "grid-cols-2"
                             : post.images.length === 3
@@ -569,15 +575,19 @@ function Forum() {
                               className="rounded-lg w-full h-full object-cover cursor-zoom-in hover:opacity-90 transition-all"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setLightbox({
-                                  open: true,
-                                  src: img.url || img,
-                                  alt: img.name || `pet-${i}`,
-                                });
+                                const urls = post.images.map(x => x.url || x);
+                                openLightbox(urls, i);
                               }}
                             />
                             {post.images.length > 4 && i === 3 && (
-                              <div className="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center text-white font-semibold text-sm sm:text-base">
+                              <div
+                                className="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center text-white font-semibold text-sm sm:text-base cursor-pointer"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const urls = post.images.map(x => x.url || x);
+                                  openLightbox(urls, 3); // start at 4th image
+                                }}
+                              >
                                 +{post.images.length - 4}
                               </div>
                             )}
@@ -689,62 +699,73 @@ function Forum() {
                 </div>
               </div>
 
-              {/* Your Posts */}
+              {/* Your Posts - Collapsible */}
               {userPosts.length > 0 && (
                 <div className="bg-white rounded-lg sm:rounded-xl shadow-sm p-3 sm:p-4 md:p-5 border border-gray-100">
-                  <h3 className="font-semibold mb-2 sm:mb-3 text-gray-700 text-sm sm:text-base">
-                    Your Posts
-                  </h3>
-                  <div className="space-y-2 max-h-64 overflow-y-auto">
-                    {userPosts.map((post) => (
-                      <div
-                        key={post.id}
-                        className="flex flex-col xs:flex-row xs:items-center justify-between gap-2 border-b last:border-none pb-2 mb-2"
-                      >
-                        <span className="text-xs sm:text-sm break-words flex-1">
-                          {post.desc.length > 20
-                            ? `${post.desc.slice(0, 20)}...`
-                            : post.desc}
-                        </span>
-                        <div className="flex gap-2 self-end xs:self-auto">
-                          {post.type === "Lost" && (
-                            <>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setPostToMarkFound(post.id);
-                                  setShowFoundConfirm(true);
-                                }}
-                                className="text-sm sm:text-lg text-green-600 hover:text-green-700"
-                                title="Mark as Found"
-                              >
-                                <i className="fas fa-check-circle"></i>
-                              </button>
-
-                              <button
-                                onClick={() => handleEditPost(post)}
-                                className="text-sm sm:text-lg text-blue-600 hover:text-blue-700"
-                                title="Edit"
-                              >
-                                <i className="fas fa-edit"></i>
-                              </button>
-                            </>
-                          )}
-
-                          <button
-                            onClick={() => {
-                              setPostToDelete(post.id);
-                              setShowDeleteConfirm(true);
-                            }}
-                            className="text-sm sm:text-lg text-red-600 hover:text-red-700"
-                            title="Delete"
-                          >
-                            <i className="fas fa-trash"></i>
-                          </button>
-                        </div>
-                      </div>
-                    ))}
+                  <div 
+                    className="flex items-center justify-between cursor-pointer"
+                    onClick={() => setIsYourPostsOpen(!isYourPostsOpen)}
+                  >
+                    <h3 className="font-semibold text-gray-700 text-sm sm:text-base">
+                      Your Posts ({userPosts.length})
+                    </h3>
+                    <button className="text-gray-500 hover:text-[#5EE6FE] transition-colors">
+                      <i className={`fa-solid fa-chevron-${isYourPostsOpen ? 'up' : 'down'} text-xs sm:text-sm`}></i>
+                    </button>
                   </div>
+                  
+                  {isYourPostsOpen && (
+                    <div className="space-y-2 max-h-64 overflow-y-auto mt-3">
+                      {userPosts.map((post) => (
+                        <div
+                          key={post.id}
+                          className="flex flex-col xs:flex-row xs:items-center justify-between gap-2 border-b last:border-none pb-2 mb-2"
+                        >
+                          <span className="text-xs sm:text-sm break-words flex-1">
+                            {post.desc.length > 20
+                              ? `${post.desc.slice(0, 20)}...`
+                              : post.desc}
+                          </span>
+                          <div className="flex gap-2 self-end xs:self-auto">
+                            {post.type === "Lost" && (
+                              <>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setPostToMarkFound(post.id);
+                                    setShowFoundConfirm(true);
+                                  }}
+                                  className="text-sm sm:text-lg text-green-600 hover:text-green-700"
+                                  title="Mark as Found"
+                                >
+                                  <i className="fas fa-check-circle"></i>
+                                </button>
+
+                                <button
+                                  onClick={() => handleEditPost(post)}
+                                  className="text-sm sm:text-lg text-blue-600 hover:text-blue-700"
+                                  title="Edit"
+                                >
+                                  <i className="fas fa-edit"></i>
+                                </button>
+                              </>
+                            )}
+
+                            <button
+                              onClick={() => {
+                                setPostToDelete(post.id);
+                                setShowDeleteConfirm(true);
+                              }}
+                              className="text-sm sm:text-lg text-red-600 hover:text-red-700"
+                              title="Delete"
+                            >
+                              <i className="fas fa-trash"></i>
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -755,132 +776,14 @@ function Forum() {
       {/* Create/Edit Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-3 sm:p-4">
-          <div className="bg-white rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-[1100px] p-3 sm:p-4 md:p-6 animate-popUp max-h-[95vh] overflow-hidden">
-            <div className="flex flex-col lg:flex-row gap-4 sm:gap-5 md:gap-6 h-full">
-              {/* LEFT: Form */}
-              <div className="lg:w-1/2 overflow-y-auto pr-1 sm:pr-2">
-                <h2 className="text-base sm:text-lg md:text-xl font-semibold mb-3 sm:mb-4 text-gray-800">
-                  {newPost.id ? "Edit Post" : "Create New Post"}
-                </h2>
-
-                <label className="block mb-1 sm:mb-2 text-xs sm:text-sm font-medium text-gray-700">
-                  Type
-                </label>
-                <select
-                  value={newPost.type}
-                  onChange={(e) =>
-                    setNewPost({ ...newPost, type: e.target.value })
-                  }
-                  className="w-full border border-gray-300 rounded-lg p-1.5 sm:p-2 mb-3 sm:mb-4 text-xs sm:text-sm text-gray-700 focus:ring-2 focus:ring-[#5EE6FE] outline-none"
-                >
-                  <option value="Lost">Lost</option>
-                  <option value="Found">Found</option>
-                </select>
-
-                <label className="block mb-1 sm:mb-2 text-xs sm:text-sm font-medium text-gray-700">
-                  Description
-                </label>
-                <textarea
-                  value={newPost.desc}
-                  onChange={(e) =>
-                    setNewPost({ ...newPost, desc: e.target.value })
-                  }
-                  className="w-full border border-gray-300 rounded-lg p-1.5 sm:p-2 mb-3 sm:mb-4 text-xs sm:text-sm text-gray-700 focus:ring-2 focus:ring-[#5EE6FE] outline-none resize-none h-24 sm:h-28 md:h-32"
-                  placeholder="Describe the pet, location, and other details..."
-                />
-
-                <label className="block mb-1 sm:mb-2 text-xs sm:text-sm font-medium text-gray-700">
-                  Contact
-                </label>
-                <input
-                  type="text"
-                  value={newPost.contact}
-                  onChange={(e) =>
-                    setNewPost({ ...newPost, contact: e.target.value })
-                  }
-                  className="w-full border border-gray-300 rounded-lg p-1.5 sm:p-2 mb-3 sm:mb-4 text-xs sm:text-sm text-gray-700 focus:ring-2 focus:ring-[#5EE6FE] outline-none"
-                  placeholder="Phone number or email"
-                />
-
-                <label className="block mb-1 sm:mb-2 text-xs sm:text-sm font-medium text-gray-700">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  value={newPost.email || ""}
-                  onChange={(e) =>
-                    setNewPost({ ...newPost, email: e.target.value })
-                  }
-                  className="w-full border border-gray-300 rounded-lg p-1.5 sm:p-2 mb-3 sm:mb-4 text-xs sm:text-sm text-gray-700 focus:ring-2 focus:ring-[#5EE6FE] outline-none"
-                  placeholder="Email address"
-                />
-
-                <div className="flex items-center mb-3 sm:mb-4">
-                  <input
-                    type="checkbox"
-                    checked={newPost.anonymous}
-                    onChange={(e) =>
-                      setNewPost({ ...newPost, anonymous: e.target.checked })
-                    }
-                    className="mr-2 w-3 h-3 sm:w-4 sm:h-4 text-[#5EE6FE] border-gray-300 rounded focus:ring-[#5EE6FE]"
-                  />
-                  <label className="text-xs sm:text-sm text-gray-700">
-                    Post anonymously
-                  </label>
-                </div>
-
-                {/* Data Privacy Consent - Only for new posts */}
-                {!newPost.id && (
-                  <div className="mb-4 p-3 sm:p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <div className="flex items-start gap-2">
-                      <input
-                        type="checkbox"
-                        id="privacyConsent"
-                        checked={privacyConsent}
-                        onChange={(e) => setPrivacyConsent(e.target.checked)}
-                        className="mt-1 w-3 h-3 sm:w-4 sm:h-4 text-[#2FA394] border-gray-300 rounded focus:ring-[#5EE6FE]"
-                      />
-                      <div>
-                        <label htmlFor="privacyConsent" className="text-xs sm:text-sm font-medium text-gray-700">
-                          I agree to the{" "}
-                          <button
-                            type="button"
-                            onClick={() => setShowPrivacyModal(true)}
-                            className="text-[#2FA394] underline hover:text-[#24907e]"
-                          >
-                            Data Privacy Policy
-                          </button>
-                        </label>
-                        <p className="text-[10px] sm:text-xs text-gray-500 mt-1">
-                          By checking this box, you acknowledge that your information will be publicly visible and you consent to our data collection practices.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex justify-end gap-2 sm:gap-3 mt-3 sm:mt-4">
-                  <button
-                    onClick={() => {
-                      setShowCreateModal(false);
-                      setPrivacyConsent(false);
-                    }}
-                    className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition-all text-xs sm:text-sm"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleCreateOrUpdatePost}
-                    className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg bg-[#5EE6FE] text-white hover:bg-[#3ecbe0] font-semibold transition-all text-xs sm:text-sm"
-                  >
-                    {newPost.id ? "Update" : "Post"}
-                  </button>
-                </div>
-              </div>
-
-              {/* RIGHT: Image Upload */}
-              <div className="lg:w-1/2 bg-gray-50 rounded-lg p-3 sm:p-4 flex flex-col gap-3 sm:gap-4">
-                <div className="flex items-center justify-between">
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-[1100px] p-3 sm:p-4 md:p-6 animate-popUp max-h-[95vh] overflow-y-auto">
+            <div className="flex flex-col lg:flex-row gap-4 sm:gap-5 md:gap-6">
+              {/* On mobile: Image Upload first, Form second */}
+              {/* On desktop: Form left, Image Upload right */}
+              
+              {/* Image Upload - Shows first on mobile, right side on desktop */}
+              <div className="lg:w-1/2 order-1 lg:order-2 bg-gray-50 rounded-lg p-3 sm:p-4 flex flex-col gap-3 sm:gap-4">
+                <div className="flex items-center justify-between sticky top-0 bg-gray-50 py-2 z-10">
                   <h4 className="font-semibold text-gray-700 text-xs sm:text-sm">
                     Images (up to 5)
                   </h4>
@@ -889,7 +792,7 @@ function Forum() {
                   </span>
                 </div>
 
-                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-1.5 sm:gap-2">
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-1.5 sm:gap-2 overflow-y-auto max-h-[300px] sm:max-h-[400px] p-1">
                   {newPost.images.map((img, index) => (
                     <div 
                       key={`${img.id}-${index}`}
@@ -975,7 +878,7 @@ function Forum() {
                 </div>
 
                 {newPost.id && newPost.images.filter(img => img.removed).length > 0 && (
-                  <div className="flex items-center justify-between mt-2 p-1.5 sm:p-2 bg-yellow-50 rounded-lg border border-yellow-200">
+                  <div className="flex items-center justify-between mt-2 p-1.5 sm:p-2 bg-yellow-50 rounded-lg border border-yellow-200 sticky bottom-0 bg-yellow-50">
                     <span className="text-[10px] sm:text-xs text-yellow-700">
                       {newPost.images.filter(img => img.removed).length} image(s) removed
                     </span>
@@ -996,6 +899,137 @@ function Forum() {
                   </div>
                 )}
               </div>
+
+              {/* LEFT: Form - Shows second on mobile, left side on desktop */}
+              <div className="lg:w-1/2 order-2 lg:order-1 overflow-y-auto pr-1 sm:pr-2">
+                <h2 className="text-base sm:text-lg md:text-xl font-semibold text-gray-800 sticky top-0 bg-white z-10 pb-2">
+                  {newPost.id ? "Edit Post" : "Create New Post"}
+                </h2>
+
+                <div className="space-y-3 sm:space-y-4">
+                  <div>
+                    <label className="block mb-1 sm:mb-2 text-xs sm:text-sm font-medium text-gray-700">
+                      Type
+                    </label>
+                    <select
+                      value={newPost.type}
+                      onChange={(e) =>
+                        setNewPost({ ...newPost, type: e.target.value })
+                      }
+                      className="w-full border border-gray-300 rounded-lg p-1.5 sm:p-2 text-xs sm:text-sm text-gray-700 focus:ring-2 focus:ring-[#5EE6FE] outline-none"
+                    >
+                      <option value="Lost">Lost</option>
+                      <option value="Found">Found</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block mb-1 sm:mb-2 text-xs sm:text-sm font-medium text-gray-700">
+                      Description
+                    </label>
+                    <textarea
+                      value={newPost.desc}
+                      onChange={(e) =>
+                        setNewPost({ ...newPost, desc: e.target.value })
+                      }
+                      className="w-full border border-gray-300 rounded-lg p-1.5 sm:p-2 text-xs sm:text-sm text-gray-700 focus:ring-2 focus:ring-[#5EE6FE] outline-none resize-none h-20 sm:h-24"
+                      placeholder="Describe the pet, location, and other details..."
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block mb-1 sm:mb-2 text-xs sm:text-sm font-medium text-gray-700">
+                      Contact
+                    </label>
+                    <input
+                      type="text"
+                      value={newPost.contact}
+                      onChange={(e) =>
+                        setNewPost({ ...newPost, contact: e.target.value })
+                      }
+                      className="w-full border border-gray-300 rounded-lg p-1.5 sm:p-2 text-xs sm:text-sm text-gray-700 focus:ring-2 focus:ring-[#5EE6FE] outline-none"
+                      placeholder="Phone number or email"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block mb-1 sm:mb-2 text-xs sm:text-sm font-medium text-gray-700">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      value={newPost.email || ""}
+                      onChange={(e) =>
+                        setNewPost({ ...newPost, email: e.target.value })
+                      }
+                      className="w-full border border-gray-300 rounded-lg p-1.5 sm:p-2 text-xs sm:text-sm text-gray-700 focus:ring-2 focus:ring-[#5EE6FE] outline-none"
+                      placeholder="Email address"
+                    />
+                  </div>
+
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={newPost.anonymous}
+                      onChange={(e) =>
+                        setNewPost({ ...newPost, anonymous: e.target.checked })
+                      }
+                      className="mr-2 w-3 h-3 sm:w-4 sm:h-4 text-[#5EE6FE] border-gray-300 rounded focus:ring-[#5EE6FE]"
+                    />
+                    <label className="text-xs sm:text-sm text-gray-700">
+                      Post anonymously
+                    </label>
+                  </div>
+
+                  {/* Data Privacy Consent - Only for new posts */}
+                  {!newPost.id && (
+                    <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <div className="flex items-start gap-2">
+                        <input
+                          type="checkbox"
+                          id="privacyConsent"
+                          checked={privacyConsent}
+                          onChange={(e) => setPrivacyConsent(e.target.checked)}
+                          className="mt-1 w-3 h-3 sm:w-4 sm:h-4 text-[#2FA394] border-gray-300 rounded focus:ring-[#5EE6FE] flex-shrink-0"
+                        />
+                        <div>
+                          <label htmlFor="privacyConsent" className="text-xs sm:text-sm font-medium text-gray-700">
+                            I agree to the{" "}
+                            <button
+                              type="button"
+                              onClick={() => setShowPrivacyModal(true)}
+                              className="text-[#2FA394] underline hover:text-[#24907e]"
+                            >
+                              Data Privacy Policy
+                            </button>
+                          </label>
+                          <p className="text-[10px] sm:text-xs text-gray-500 mt-1">
+                            By checking this box, you acknowledge that your information will be publicly visible and you consent to our data collection practices.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex justify-end gap-2 sm:gap-3 pt-2 sticky bottom-0 bg-white py-2 border-t border-gray-100">
+                    <button
+                      onClick={() => {
+                        setShowCreateModal(false);
+                        setPrivacyConsent(false);
+                      }}
+                      className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition-all text-xs sm:text-sm"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleCreateOrUpdatePost}
+                      className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg bg-[#5EE6FE] text-white hover:bg-[#3ecbe0] font-semibold transition-all text-xs sm:text-sm"
+                    >
+                      {newPost.id ? "Update" : "Post"}
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -1008,14 +1042,47 @@ function Forum() {
           onClick={closeLightbox}
         >
           <div
-            className="relative max-w-3xl w-full bg-white rounded-lg overflow-hidden"
+            className="relative max-w-3xl w-full bg-white rounded-lg overflow-hidden flex items-center justify-center"
             onClick={(e) => e.stopPropagation()}
           >
+            {/* prev arrow */}
+            {lightbox.images.length > 1 && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setLightbox(l => ({
+                    ...l,
+                    index: (l.index - 1 + l.images.length) % l.images.length
+                  }));
+                }}
+                className="absolute left-2 text-white bg-black/40 rounded-full p-2 hover:bg-black/60 transition"
+              >
+                <i className="fa-solid fa-chevron-left"></i>
+              </button>
+            )}
+
             <img
-              src={lightbox.src}
-              alt={lightbox.alt}
+              src={lightbox.images[lightbox.index]}
+              alt={`image-${lightbox.index + 1}`}
               className="w-full h-auto max-h-[90vh] object-contain"
             />
+
+            {/* next arrow */}
+            {lightbox.images.length > 1 && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setLightbox(l => ({
+                    ...l,
+                    index: (l.index + 1) % l.images.length
+                  }));
+                }}
+                className="absolute right-2 text-white bg-black/40 rounded-full p-2 hover:bg-black/60 transition"
+              >
+                <i className="fa-solid fa-chevron-right"></i>
+              </button>
+            )}
+
             <button
               onClick={closeLightbox}
               className="absolute top-2 right-2 sm:top-3 sm:right-3 bg-black/60 text-white rounded-full w-6 h-6 sm:w-8 sm:h-8 text-sm sm:text-lg flex items-center justify-center hover:bg-black transition"
