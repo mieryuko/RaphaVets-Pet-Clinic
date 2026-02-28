@@ -119,7 +119,7 @@ function BreedDetect() {
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="flex flex-col gap-4 sm:gap-5 md:gap-6 px-0 sm:px-1 md:px-0"
+        className="flex flex-col gap-4 sm:gap-5 md:gap-6 px-4 sm:px-6 md:px-0 max-w-6xl mx-auto"
       >
         {/* Title */}
         <motion.div
@@ -138,7 +138,7 @@ function BreedDetect() {
         {/* Upload Section */}
         <motion.section
           variants={itemVariants}
-          className="bg-white shadow-lg rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 border border-gray-100"
+          className="bg-white shadow-sm rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 border border-gray-100"
         >
           <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
             Upload pet image
@@ -155,7 +155,7 @@ function BreedDetect() {
                   onChange={handleFileChange}
                   className="hidden"
                 />
-                <div className="px-4 sm:px-5 py-1.5 sm:py-2 bg-[#5EE6FE] text-white rounded-lg hover:bg-[#46d7ee] transition-all shadow-sm text-xs sm:text-sm whitespace-nowrap">
+                <div className="px-4 sm:px-5 py-1.5 sm:py-2 bg-[#2FA394] text-white rounded-lg hover:bg-[#278f83] transition-all shadow-sm text-xs sm:text-sm whitespace-nowrap">
                   Choose File
                 </div>
                 <span className="text-xs sm:text-sm text-gray-600 truncate max-w-[150px] xs:max-w-[180px] sm:max-w-[200px] md:max-w-[250px]">
