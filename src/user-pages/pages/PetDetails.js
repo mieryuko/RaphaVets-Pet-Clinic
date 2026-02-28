@@ -395,56 +395,61 @@ function PetDetails() {
   if (loading.pet)
     return (
       <ClientLayout>
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-4 sm:gap-6 px-3 sm:px-0 h-[calc(100vh-120px)] overflow-hidden">
           {/* Pet Header Skeleton */}
-          <div className="relative overflow-hidden rounded-3xl bg-white shadow-lg border border-gray-100 flex flex-col sm:flex-row items-center justify-between px-6 py-5 animate-pulse">
-            <div className="flex items-center gap-6">
+          <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-white shadow-lg border border-gray-100 flex flex-col sm:flex-row items-center justify-between px-4 sm:px-6 py-4 sm:py-5 animate-pulse flex-shrink-0">
+            <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 w-full sm:w-auto">
               <div className="relative">
-                <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-gray-300 bg-gray-200 flex items-center justify-center"></div>
+                <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-full overflow-hidden border-4 border-gray-300 bg-gray-200 flex items-center justify-center"></div>
               </div>
-              <div>
-                <div className="h-7 w-48 bg-gray-200 rounded mb-2"></div>
-                <div className="h-4 w-32 bg-gray-200 rounded"></div>
+              <div className="text-center sm:text-left">
+                <div className="h-6 sm:h-7 w-36 sm:w-48 bg-gray-200 rounded mb-2"></div>
+                <div className="h-3 sm:h-4 w-24 sm:w-32 bg-gray-200 rounded"></div>
               </div>
             </div>
-            <div className="flex flex-wrap justify-center sm:justify-end gap-4 text-sm mt-4 sm:mt-0">
-              <div className="px-4 py-2 bg-gray-200 rounded-xl shadow-sm h-9 w-40"></div>
+            <div className="flex flex-wrap justify-center sm:justify-end gap-3 sm:gap-4 text-sm mt-3 sm:mt-0 w-full sm:w-auto">
+              <div className="px-3 sm:px-4 py-1.5 sm:py-2 bg-gray-200 rounded-xl shadow-sm h-8 sm:h-9 w-32 sm:w-40"></div>
             </div>
           </div>
 
-          {/* Tabs Section Skeleton */}
-          <div className="px-6 py-4 rounded-2xl bg-white shadow-lg flex flex-col h-[350px] animate-pulse">
+          {/* Tabs Section Skeleton - Flexible height */}
+          <div className="px-3 sm:px-6 py-3 sm:py-4 rounded-xl sm:rounded-2xl bg-white shadow-lg flex flex-col flex-1 min-h-0 overflow-hidden">
             {/* Tab Headers */}
-            <div className="font-semibold flex gap-6 border-b pb-3 mb-4">
+            <div className="font-semibold flex gap-4 sm:gap-6 border-b pb-2 sm:pb-3 mb-3 sm:mb-4 overflow-x-auto scrollbar-hide flex-shrink-0">
               {[1, 2, 3].map((item) => (
-                <div key={item} className="h-6 w-24 bg-gray-200 rounded"></div>
+                <div key={item} className="h-5 sm:h-6 w-16 sm:w-24 bg-gray-200 rounded flex-shrink-0"></div>
               ))}
             </div>
 
-            <div className="flex-1 overflow-y-auto flex flex-col gap-4">
+            <div className="flex-1 overflow-y-auto min-h-0 flex flex-col gap-3 sm:gap-4">
               {/* Filters Skeleton */}
-              <div className="flex gap-3 mb-3">
+              <div className="flex gap-2 sm:gap-3 mb-2 sm:mb-3 overflow-x-auto scrollbar-hide pb-1 flex-shrink-0">
                 {[1, 2, 3, 4].map((item) => (
-                  <div key={item} className="h-7 w-16 bg-gray-200 rounded-full"></div>
+                  <div key={item} className="h-6 sm:h-7 w-14 sm:w-16 bg-gray-200 rounded-full flex-shrink-0"></div>
                 ))}
               </div>
 
               {/* Appointment Cards Skeleton */}
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {[1, 2, 3].map((item) => (
-                  <div key={item} className="bg-gray-100 border border-gray-200 p-4 rounded-xl flex justify-between items-center">
-                    <div className="flex flex-col items-center justify-center w-16 text-center bg-gray-200 rounded-lg py-2">
-                      <div className="h-3 w-8 bg-gray-300 rounded mb-1"></div>
-                      <div className="h-5 w-6 bg-gray-300 rounded mb-1"></div>
-                      <div className="h-2 w-10 bg-gray-300 rounded"></div>
-                    </div>
-                    <div className="flex justify-between items-center flex-1 ml-4">
-                      <div>
-                        <div className="h-4 w-48 bg-gray-300 rounded mb-2"></div>
-                        <div className="h-3 w-32 bg-gray-300 rounded"></div>
+                  <div key={item} className="bg-gray-100 border border-gray-200 p-3 sm:p-4 rounded-lg sm:rounded-xl flex flex-col sm:flex-row gap-3">
+                    {/* Date Skeleton */}
+                    <div className="flex flex-row sm:flex-col items-center justify-between sm:justify-center w-full sm:w-16 text-center bg-gray-200 rounded-lg py-1 sm:py-2 px-3 sm:px-0">
+                      <div className="flex flex-row sm:flex-col items-center gap-1 w-full">
+                        <div className="h-2 w-8 bg-gray-300 rounded"></div>
+                        <div className="h-4 w-5 bg-gray-300 rounded"></div>
+                        <div className="h-2 w-10 bg-gray-300 rounded hidden sm:block"></div>
                       </div>
-                      <div className="h-8 w-20 bg-gray-300 rounded-lg"></div>
                     </div>
+                    
+                    {/* Content Skeleton */}
+                    <div className="flex-1">
+                      <div className="h-4 w-32 sm:w-48 bg-gray-300 rounded mb-2"></div>
+                      <div className="h-3 w-24 sm:w-32 bg-gray-300 rounded"></div>
+                    </div>
+                    
+                    {/* Button Skeleton */}
+                    <div className="h-8 w-20 sm:w-24 bg-gray-300 rounded-lg ml-auto"></div>
                   </div>
                 ))}
               </div>
@@ -456,7 +461,7 @@ function PetDetails() {
 
   if (!pet)
     return (
-      <div className="flex items-center justify-center h-screen text-red-500">
+      <div className="flex items-center justify-center h-screen text-red-500 px-4 text-center">
         Pet not found.
       </div>
     );
@@ -467,16 +472,16 @@ function PetDetails() {
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="flex flex-col gap-6"
+        className="flex flex-col gap-4 sm:gap-6 px-3 sm:px-0 h-[calc(100vh-120px)] overflow-hidden"
       >
-        {/* Pet Header */}
+        {/* Pet Header - Fixed height, not scrollable */}
         <motion.div
           variants={itemVariants}
-          className="relative overflow-hidden rounded-3xl bg-white shadow-lg border border-gray-100 flex flex-col sm:flex-row items-center justify-between px-6 py-5"
+          className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-white shadow-lg border border-gray-100 flex flex-col sm:flex-row items-center justify-between px-4 sm:px-6 py-4 sm:py-5 flex-shrink-0"
         >
-          <div className="flex items-center gap-6">
+          <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 w-full sm:w-auto">
             <div className="relative">
-              <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-[#00B8D4] bg-gray-200 flex items-center justify-center">
+              <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-full overflow-hidden border-4 border-[#00B8D4] bg-gray-200 flex items-center justify-center">
                 <img
                   src={previewImage || `http://localhost:5000${pet.image}`}
                   alt={pet.name || "Pet"}
@@ -487,8 +492,8 @@ function PetDetails() {
                 />
               </div>
             </div>
-            <div>
-              <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
+            <div className="text-center sm:text-left">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-800 flex items-center gap-2 sm:gap-3 justify-center sm:justify-start">
                 {pet.name || "Unnamed Pet"}
                 <motion.button 
                   onClick={() => setShowEditModal(true)} 
@@ -496,21 +501,21 @@ function PetDetails() {
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                 >
-                  <i className="fa-solid fa-pen text-base"></i>
+                  <i className="fa-solid fa-pen text-sm sm:text-base"></i>
                 </motion.button>
               </h2>
-              <p className="text-gray-500 text-sm">
+              <p className="text-gray-500 text-xs sm:text-sm mt-1">
                 {pet.breed || "Unknown breed"} • {pet.gender || "Unknown"} • {pet.age || "Unknown age"}
               </p>
             </div>
           </div>
           <motion.div 
             variants={itemVariants}
-            className="flex flex-wrap justify-center sm:justify-end gap-4 text-sm mt-4 sm:mt-0"
+            className="flex flex-wrap justify-center sm:justify-end gap-3 sm:gap-4 text-xs sm:text-sm mt-3 sm:mt-0 w-full sm:w-auto"
           >
-            <div className="px-4 py-2 bg-[#FFF7E6] rounded-xl shadow-sm text-gray-700">
-              <i className="fa-solid fa-calendar-check text-[#00B8D4] mr-2"></i>
-              Last Check: {pet.lastCheck || "N/A"}
+            <div className="px-3 sm:px-4 py-1.5 sm:py-2 bg-[#FFF7E6] rounded-xl shadow-sm text-gray-700 flex items-center">
+              <i className="fa-solid fa-calendar-check text-[#00B8D4] mr-1 sm:mr-2 text-xs sm:text-sm"></i>
+              <span className="whitespace-nowrap">Last Check: {pet.lastCheck || "N/A"}</span>
             </div>
           </motion.div>
         </motion.div>
@@ -518,15 +523,15 @@ function PetDetails() {
         {/* Tabs Section */}
         <motion.div 
           variants={itemVariants}
-          className="px-6 py-4 rounded-2xl bg-white shadow-lg flex flex-col h-[350px]"
+          className="px-3 sm:px-6 py-3 sm:py-4 rounded-xl sm:rounded-2xl bg-white shadow-lg flex flex-col flex-1 min-h-0 overflow-hidden"
         >
-          {/* Tab Headers */}
-          <div className="font-semibold flex gap-6 border-b pb-3 mb-4">
+          {/* Tab Headers - Fixed */}
+          <div className="font-semibold flex gap-4 sm:gap-6 border-b pb-2 sm:pb-3 mb-3 sm:mb-4 overflow-x-auto scrollbar-hide flex-shrink-0">
             {tabs.map((tab) => (
               <motion.span
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`cursor-pointer relative ${
+                className={`cursor-pointer relative whitespace-nowrap text-sm sm:text-base flex-shrink-0 ${
                   activeTab === tab ? "text-[#5EE6FE]" : "text-gray-400"
                 }`}
                 whileHover={{ scale: 1.05 }}
@@ -544,7 +549,8 @@ function PetDetails() {
             ))}
           </div>
 
-          <div className="flex-1 overflow-y-auto flex flex-col gap-4">
+          {/* Tab Content - Scrollable */}
+          <div className="flex-1 overflow-y-auto min-h-0">
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeTab}
@@ -587,10 +593,10 @@ function PetDetails() {
         </motion.div>
       </motion.div>
 
-      {/* Modals */}
+      {/* Modals - Mobile Responsive */}
       <AnimatePresence>
         {showDetailsModal && selectedAppointment && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="fixed inset-0 z-50 flex items-center justify-center px-3 sm:px-4">
             <motion.div
               className="absolute inset-0 bg-black/40 backdrop-blur-sm"
               initial={{ opacity: 0 }}
@@ -599,7 +605,7 @@ function PetDetails() {
               onClick={closeModal}
             />
             <motion.div
-              className="relative z-50 mx-4"
+              className="relative z-50 w-full max-w-[90%] sm:max-w-md"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
@@ -611,7 +617,7 @@ function PetDetails() {
         )}
 
         {showEditModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="fixed inset-0 z-50 flex items-center justify-center px-3 sm:px-4">
             <motion.div
               className="absolute inset-0 bg-black/40 backdrop-blur-sm"
               initial={{ opacity: 0 }}
@@ -620,28 +626,28 @@ function PetDetails() {
               onClick={() => setShowEditModal(false)}
             />
             <motion.div
-              className="relative z-50 mx-4 w-full max-w-sm"
+              className="relative z-50 w-full max-w-[90%] sm:max-w-sm"
               initial={{ opacity: 0, scale: 0.8, y: 30 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.8, y: 30 }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
             >
-              <div className="bg-white rounded-xl p-5 w-full shadow-2xl max-h-[80vh] overflow-y-auto">
+              <div className="bg-white rounded-xl p-4 sm:p-5 w-full shadow-2xl max-h-[80vh] overflow-y-auto">
                 <motion.button 
                   onClick={() => setShowEditModal(false)} 
-                  className="absolute top-3 right-4 text-gray-400 hover:text-gray-600 text-lg"
+                  className="absolute top-2 sm:top-3 right-3 sm:right-4 text-gray-400 hover:text-gray-600 text-lg sm:text-xl"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                 >
                   ✕
                 </motion.button>
                 
-                <h3 className="text-lg font-bold text-gray-800 mb-4 text-center">Edit Pet Profile</h3>
+                <h3 className="text-base sm:text-lg font-bold text-gray-800 mb-3 sm:mb-4 text-center">Edit Pet Profile</h3>
                 
                 {/* Profile Picture Section */}
-                <div className="flex flex-col items-center mb-4">
+                <div className="flex flex-col items-center mb-3 sm:mb-4">
                   <div className="relative">
-                    <div className="w-20 h-20 rounded-full overflow-hidden border-3 border-[#00B8D4] bg-gray-200 flex items-center justify-center mb-3">
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden border-3 border-[#00B8D4] bg-gray-200 flex items-center justify-center mb-2 sm:mb-3">
                       <img
                         src={previewImage || `http://localhost:5000${pet.image}`}
                         alt={pet.name || "Pet"}
@@ -669,37 +675,37 @@ function PetDetails() {
 
                     <motion.label 
                       htmlFor="profile-upload"
-                      className="absolute bottom-1 right-0 bg-[#5EE6FE] text-white p-1.5 rounded-full shadow-lg cursor-pointer"
+                      className="absolute bottom-0 right-0 bg-[#5EE6FE] text-white p-1 sm:p-1.5 rounded-full shadow-lg cursor-pointer"
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
                     >
-                      <i className="fa-solid fa-camera text-xs"></i>
+                      <i className="fa-solid fa-camera text-[10px] sm:text-xs"></i>
                     </motion.label>
                   </div>
-                  <p className="text-xs text-gray-500">Click camera to change photo</p>
+                  <p className="text-[10px] sm:text-xs text-gray-500">Click camera to change photo</p>
                 </div>
 
                 {/* Read-only Information */}
-                <div className="space-y-3 mb-4">
+                <div className="space-y-2 sm:space-y-3 mb-3 sm:mb-4">
                   <div className="border border-gray-200 rounded-lg p-2 bg-gray-50">
-                    <label className="text-xs text-gray-500 block mb-1">Pet Name</label>
-                    <p className="text-sm text-gray-800 font-medium">{pet.name || "Unnamed Pet"}</p>
+                    <label className="text-[10px] sm:text-xs text-gray-500 block mb-1">Pet Name</label>
+                    <p className="text-xs sm:text-sm text-gray-800 font-medium">{pet.name || "Unnamed Pet"}</p>
                   </div>
                   
                   <div className="border border-gray-200 rounded-lg p-2 bg-gray-50">
-                    <label className="text-xs text-gray-500 block mb-1">Breed</label>
-                    <p className="text-sm text-gray-800 font-medium">{pet.breed || "Unknown breed"}</p>
+                    <label className="text-[10px] sm:text-xs text-gray-500 block mb-1">Breed</label>
+                    <p className="text-xs sm:text-sm text-gray-800 font-medium">{pet.breed || "Unknown breed"}</p>
                   </div>
                   
                   <div className="grid grid-cols-2 gap-2">
                     <div className="border border-gray-200 rounded-lg p-2 bg-gray-50">
-                      <label className="text-xs text-gray-500 block mb-1">Age</label>
-                      <p className="text-sm text-gray-800 font-medium">{pet.age || "Unknown age"}</p>
+                      <label className="text-[10px] sm:text-xs text-gray-500 block mb-1">Age</label>
+                      <p className="text-xs sm:text-sm text-gray-800 font-medium">{pet.age || "Unknown age"}</p>
                     </div>
                     
                     <div className="border border-gray-200 rounded-lg p-2 bg-gray-50">
-                      <label className="text-xs text-gray-500 block mb-1">Gender</label>
-                      <p className="text-sm text-gray-800 font-medium">{pet.gender || "Unknown"}</p>
+                      <label className="text-[10px] sm:text-xs text-gray-500 block mb-1">Gender</label>
+                      <p className="text-xs sm:text-sm text-gray-800 font-medium">{pet.gender || "Unknown"}</p>
                     </div>
                   </div>
                 </div>
@@ -707,7 +713,7 @@ function PetDetails() {
                 <div className="flex gap-2">
                   <motion.button 
                     onClick={() => setShowEditModal(false)}
-                    className="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg text-sm font-medium"
+                    className="flex-1 border border-gray-300 text-gray-700 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
@@ -715,7 +721,7 @@ function PetDetails() {
                   </motion.button>
                   <motion.button 
                     onClick={handleSaveChanges}
-                    className="flex-1 bg-[#5EE6FE] text-white py-2 rounded-lg text-sm font-medium"
+                    className="flex-1 bg-[#5EE6FE] text-white py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
@@ -723,7 +729,7 @@ function PetDetails() {
                   </motion.button>
                 </div>
 
-                <p className="text-xs text-gray-400 text-center mt-3">
+                <p className="text-[10px] sm:text-xs text-gray-400 text-center mt-2 sm:mt-3">
                   Contact support to update pet information
                 </p>
               </div>
