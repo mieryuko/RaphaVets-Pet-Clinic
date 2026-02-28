@@ -480,9 +480,6 @@ function Header({ darkMode, setDarkMode, toggleMenu, isMenuOpen, animateIcon }) 
                               notification.read ? "text-gray-600" : "text-gray-900"
                             }`}>
                               {notification.title}
-                              {notification.petName && (
-                                <span className="ml-1 text-[#5EE6FE]">• {notification.petName}</span>
-                              )}
                             </h4>
                             <span className="text-[10px] sm:text-xs text-gray-400 ml-2 flex-shrink-0">
                               {formatNotificationTime(notification.timestamp)}

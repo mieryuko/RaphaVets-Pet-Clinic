@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 26, 2026 at 04:51 PM
+-- Generation Time: Feb 28, 2026 at 11:07 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -51,13 +51,13 @@ CREATE TABLE `account_tbl` (
 INSERT INTO `account_tbl` (`accId`, `roleID`, `firstName`, `lastName`, `email`, `password`, `createdAt`, `lastUpdatedAt`, `passwordChangeAt`, `logInAt`, `logOutAt`, `isDeleted`, `resetToken`, `resetTokenExpiry`) VALUES
 (2, 3, 'Marke', 'Mapili', 'markmapili29@gmail.com', '$2b$10$NNG154DuvS/ST/lInE1Pp.XyhniL6YtSE.3UaiAv6/OvON5uMi3MC', '2025-11-19 19:01:01', '2026-02-26 17:26:56', '2025-11-09 12:21:30', '2026-02-26 17:26:43', '2026-02-26 17:26:56', 0, '205676104592a4bdda5ae79ab8b33f59d772d71ba631da7c9af8e03be2ba39c5', '2026-02-02 11:07:19'),
 (3, 2, 'Fionah Irish', 'Beltran', 'soupcuppy@gmail.com', '$2b$10$l/lPrlJ8Vho/LyqoOiq2sOlSSrZ1t.atCEgMaxBBOW05jri/FfwIS', '0000-00-00 00:00:00', '2025-11-22 12:57:36', '2025-11-09 12:21:30', '2025-11-22 12:57:36', '2025-11-09 12:20:21', 0, NULL, NULL),
-(5, 2, 'mark', 'mapili', 'markmapili72@gmail.com', '$2b$10$LMTrRhOAEKAweVGBy1NXQeGCWEzgN2d5WueonGDiRibvDGER08YVe', '0000-00-00 00:00:00', '2026-02-26 14:22:05', '2025-11-09 12:21:30', '2026-02-26 14:22:05', '2026-02-26 14:21:48', 0, NULL, NULL),
+(5, 2, 'mark', 'mapili', 'markmapili72@gmail.com', '$2b$10$LMTrRhOAEKAweVGBy1NXQeGCWEzgN2d5WueonGDiRibvDGER08YVe', '0000-00-00 00:00:00', '2026-02-28 16:33:29', '2025-11-09 12:21:30', '2026-02-28 16:33:29', '2026-02-27 22:25:38', 0, NULL, NULL),
 (6, 1, 'Miguel', 'Rojero', 'miguelrojero@gmail.com', '0908@Taks', '2025-11-15 18:31:41', '2025-11-17 10:17:26', '2025-11-15 18:31:41', '2025-11-15 18:31:41', '2025-11-15 18:31:41', 1, NULL, NULL),
 (8, 1, 'Vanerie', 'Parcon', 'vnaerie@gmail.com', '', '2025-11-16 00:09:49', '2025-11-16 14:50:13', '2025-11-16 00:09:49', '2025-11-16 00:09:49', '2025-11-16 00:09:49', 1, NULL, NULL),
 (9, 1, 'Marvin', 'Tomales', 'marvin@gmail.com09123456789', '', '2025-11-16 00:15:22', '2026-02-26 14:48:02', '2025-11-16 00:15:22', '2025-11-16 00:15:22', '2025-11-16 00:15:22', 1, NULL, NULL),
 (15, 1, 'Mark', 'Mapili', 'markmam@gmail.com', '$2b$10$HtvFEFf/H6rlr5R109DxCu5UXMYAcoVnnkCRZZckloDTavRFUmh62', '2025-11-16 13:46:52', '2025-11-22 14:52:23', '2025-11-16 13:46:52', '2025-11-16 13:46:52', '2025-11-16 13:46:52', 1, NULL, NULL),
-(17, 1, 'Mark', 'Mapili', 'markmapili2004@gmail.com', '$2b$10$CI2dPBXHpUJh1CyNdY6E2uFQtvdVqRPrx9gCMDkWqEPWkmQ4kF9Ry', '2025-11-18 09:28:29', '2026-02-26 22:28:45', '2026-02-22 14:48:49', '2026-02-26 22:28:45', '2026-02-26 22:28:27', 0, '40a82edcc2a8cf3b16dd129a8c6f397d2312723bfd093e7ff5a476f60cc4db86', '2026-02-01 22:58:54'),
-(18, 1, 'Fionah Irish ', 'Beltran', 'beltran.fionahirish@gmail.com', '$2b$10$7jPfNY9j1xAcyTepUT1.pOGUPDrAWQuKdxboD6kzYpU7ppvBAv6mS', '2025-11-22 12:58:29', '2026-02-26 22:35:05', '2025-11-22 12:58:29', '2026-02-26 22:35:05', '2026-02-26 22:34:38', 0, NULL, NULL);
+(17, 1, 'Mark', 'Mapili', 'markmapili2004@gmail.com', '$2b$10$CI2dPBXHpUJh1CyNdY6E2uFQtvdVqRPrx9gCMDkWqEPWkmQ4kF9Ry', '2025-11-18 09:28:29', '2026-02-28 14:51:14', '2026-02-22 14:48:49', '2026-02-28 14:51:14', '2026-02-28 14:47:23', 0, '4df04bfc545c3761ec093b9526c8a7c79d4da93498fd1fa64f7e06081f1d057a', '2026-02-28 15:50:56'),
+(18, 1, 'Fionah Irish ', 'Beltran', 'beltran.fionahirish@gmail.com', '$2b$10$7jPfNY9j1xAcyTepUT1.pOGUPDrAWQuKdxboD6kzYpU7ppvBAv6mS', '2025-11-22 12:58:29', '2026-02-27 17:38:30', '2025-11-22 12:58:29', '2026-02-27 09:52:49', '2026-02-27 17:38:30', 0, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -133,57 +133,58 @@ INSERT INTO `appointment_tbl` (`appointmentID`, `accID`, `petID`, `serviceID`, `
 (75, 2, 56, 4, '2025-10-07', 6, NULL, 'Scheduled', 2, '2025-10-07 13:20:00', '2025-10-07 13:20:00', 0),
 (76, 17, 62, 2, '2025-10-11', 2, NULL, 'Scheduled', 6, '2025-10-11 10:00:00', '2025-10-11 10:00:00', 0),
 (77, 17, 60, 5, '2025-10-15', 8, NULL, 'Scheduled', 2, '2025-10-15 15:30:00', '2025-10-15 15:30:00', 0),
-(78, 18, 61, 1, '2025-10-19', 4, NULL, 'Scheduled', 2, '2025-10-19 09:15:00', '2025-10-19 09:15:00', 0),
+(78, 18, 61, 1, '2025-10-19', 4, NULL, 'Scheduled', 6, '2025-10-19 09:15:00', '2026-02-27 11:51:26', 0),
 (79, 2, 56, 3, '2025-10-22', 5, NULL, 'Scheduled', 2, '2025-10-22 11:30:00', '2025-10-22 11:30:00', 0),
 (80, 17, 60, 6, '2025-10-26', 7, NULL, 'Scheduled', 6, '2025-10-26 14:45:00', '2025-10-26 14:45:00', 0),
 (81, 17, 62, 1, '2025-10-30', 3, NULL, 'Scheduled', 4, '2025-10-30 10:30:00', '2026-02-25 16:02:20', 0),
-(82, 17, 60, 2, '2025-11-03', 4, NULL, 'Scheduled', 2, '2025-11-03 09:00:00', '2025-11-03 09:00:00', 0),
+(82, 17, 60, 2, '2025-11-03', 4, NULL, 'Scheduled', 6, '2025-11-03 09:00:00', '2026-02-27 17:50:19', 0),
 (83, 2, 56, 1, '2025-11-06', 6, NULL, 'Scheduled', 6, '2025-11-06 13:45:00', '2025-11-06 13:45:00', 0),
-(84, 17, 62, 5, '2025-11-09', 2, NULL, 'Scheduled', 2, '2025-11-09 11:15:00', '2025-11-09 11:15:00', 0),
-(85, 18, 61, 3, '2025-11-12', 5, NULL, 'Scheduled', 2, '2025-11-12 15:00:00', '2025-11-12 15:00:00', 0),
+(84, 17, 62, 5, '2025-11-09', 2, NULL, 'Scheduled', 6, '2025-11-09 11:15:00', '2026-02-27 17:40:03', 0),
+(85, 18, 61, 3, '2025-11-12', 5, NULL, 'Scheduled', 6, '2025-11-12 15:00:00', '2026-02-27 11:54:19', 0),
 (86, 17, 60, 4, '2025-11-15', 7, NULL, 'Scheduled', 2, '2025-11-15 10:30:00', '2025-11-15 10:30:00', 0),
 (87, 2, 56, 1, '2025-11-16', 1, NULL, 'Scheduled', 2, '2025-11-16 15:19:32', '2025-11-16 15:19:32', 0),
 (88, 17, 60, 3, '2025-11-18', 4, NULL, 'Scheduled', 2, '2025-11-18 09:28:29', '2025-11-18 09:28:29', 0),
 (89, 17, 62, 6, '2025-11-19', 3, NULL, 'Scheduled', 2, '2025-11-19 10:45:00', '2025-11-19 10:45:00', 0),
 (90, 17, 60, 1, '2025-11-22', 5, NULL, 'Scheduled', 2, '2025-11-22 19:11:30', '2025-11-22 19:11:30', 0),
-(91, 18, 61, 2, '2025-11-24', 4, NULL, 'Scheduled', 2, '2025-11-24 14:20:00', '2025-11-24 14:20:00', 0),
+(91, 18, 61, 2, '2025-11-24', 4, NULL, 'Scheduled', 6, '2025-11-24 14:20:00', '2026-02-27 11:58:41', 0),
 (92, 2, 56, 5, '2025-11-27', 6, NULL, 'Scheduled', 6, '2025-11-27 11:00:00', '2025-11-27 11:00:00', 0),
 (93, 17, 60, 3, '2025-11-29', 2, NULL, 'Scheduled', 2, '2025-11-29 16:15:00', '2025-11-29 16:15:00', 0),
-(94, 17, 60, 1, '2025-12-02', 4, NULL, 'Scheduled', 2, '2025-12-02 09:30:00', '2025-12-02 09:30:00', 0),
+(94, 17, 60, 1, '2025-12-02', 4, NULL, 'Scheduled', 4, '2025-12-02 09:30:00', '2026-02-27 17:50:55', 0),
 (95, 2, 56, 3, '2025-12-05', 7, NULL, 'Scheduled', 2, '2025-12-05 13:15:00', '2025-12-05 13:15:00', 0),
 (96, 17, 62, 2, '2025-12-08', 3, NULL, 'Scheduled', 6, '2025-12-08 10:45:00', '2025-12-08 10:45:00', 0),
-(97, 18, 61, 5, '2025-12-11', 5, NULL, 'Scheduled', 2, '2025-12-11 15:30:00', '2025-12-11 15:30:00', 0),
+(97, 18, 61, 5, '2025-12-11', 5, NULL, 'Scheduled', 6, '2025-12-11 15:30:00', '2026-02-27 15:43:34', 0),
 (98, 17, 60, 4, '2025-12-14', 2, NULL, 'Scheduled', 2, '2025-12-14 11:00:00', '2025-12-14 11:00:00', 0),
 (99, 17, 60, 6, '2025-12-17', 6, NULL, 'Scheduled', 2, '2025-12-17 14:20:00', '2025-12-17 14:20:00', 0),
 (100, 2, 56, 1, '2025-12-19', 4, NULL, 'Scheduled', 2, '2025-12-19 09:45:00', '2025-12-19 09:45:00', 0),
 (101, 17, 62, 3, '2025-12-22', 7, NULL, 'Scheduled', 2, '2025-12-22 16:00:00', '2025-12-22 16:00:00', 0),
-(102, 18, 61, 1, '2025-12-26', 3, NULL, 'Scheduled', 2, '2025-12-26 10:30:00', '2025-12-26 10:30:00', 0),
+(102, 18, 61, 1, '2025-12-26', 3, NULL, 'Scheduled', 4, '2025-12-26 10:30:00', '2026-02-27 15:43:47', 0),
 (103, 17, 60, 5, '2025-12-29', 5, NULL, 'Scheduled', 6, '2025-12-29 13:45:00', '2025-12-29 13:45:00', 0),
 (104, 17, 60, 1, '2026-01-05', 3, NULL, 'Scheduled', 2, '2026-01-05 08:30:00', '2026-01-05 08:30:00', 0),
 (105, 2, 56, 2, '2026-01-07', 5, NULL, 'Scheduled', 2, '2026-01-07 10:15:00', '2026-01-07 10:15:00', 0),
 (106, 17, 62, 4, '2026-01-09', 7, NULL, 'Scheduled', 2, '2026-01-09 14:00:00', '2026-01-09 14:00:00', 0),
-(107, 18, 61, 3, '2026-01-11', 2, NULL, 'Scheduled', 2, '2026-01-11 11:30:00', '2026-01-11 11:30:00', 0),
+(107, 18, 61, 3, '2026-01-11', 2, NULL, 'Scheduled', 4, '2026-01-11 11:30:00', '2026-02-27 15:44:04', 0),
 (108, 17, 60, 5, '2026-01-13', 4, NULL, 'Scheduled', 3, '2026-01-13 14:24:57', '2026-01-13 14:24:57', 0),
 (109, 17, 60, 6, '2026-01-15', 6, NULL, 'Scheduled', 2, '2026-01-15 09:45:00', '2026-01-15 09:45:00', 0),
 (110, 2, 56, 1, '2026-01-17', 3, NULL, 'Scheduled', 2, '2026-01-17 15:20:00', '2026-01-17 15:20:00', 0),
 (111, 17, 62, 2, '2026-01-19', 5, NULL, 'Scheduled', 2, '2026-01-19 13:10:00', '2026-01-19 13:10:00', 0),
-(112, 18, 61, 4, '2026-01-21', 7, NULL, 'Scheduled', 2, '2026-01-21 10:30:00', '2026-01-21 10:30:00', 0),
+(112, 18, 61, 4, '2026-01-21', 7, NULL, 'Scheduled', 4, '2026-01-21 10:30:00', '2026-02-27 15:48:41', 0),
 (113, 17, 60, 1, '2026-01-23', 2, NULL, 'Scheduled', 2, '2026-01-23 16:45:00', '2026-01-23 16:45:00', 0),
 (114, 17, 60, 3, '2026-01-25', 4, NULL, 'Scheduled', 2, '2026-01-25 11:15:00', '2026-01-25 11:15:00', 0),
 (115, 2, 56, 5, '2026-01-27', 6, NULL, 'Scheduled', 2, '2026-01-27 14:30:00', '2026-01-27 14:30:00', 0),
 (116, 17, 62, 1, '2026-01-28', 3, NULL, 'Scheduled', 2, '2026-01-28 09:00:00', '2026-01-28 09:00:00', 0),
-(117, 18, 61, 2, '2026-01-29', 5, NULL, 'Scheduled', 2, '2026-01-29 15:45:00', '2026-01-29 15:45:00', 0),
+(117, 18, 61, 2, '2026-01-29', 5, NULL, 'Scheduled', 4, '2026-01-29 15:45:00', '2026-02-27 16:19:24', 0),
 (118, 17, 60, 6, '2026-01-30', 7, NULL, 'Scheduled', 2, '2026-01-30 10:20:00', '2026-01-30 10:20:00', 0),
 (119, 2, 56, 2, '2026-02-02', 5, NULL, 'Scheduled', 2, '2026-02-02 10:08:48', '2026-02-02 10:08:48', 0),
 (120, 17, 60, 5, '2026-02-05', 3, NULL, 'Scheduled', 2, '2026-02-05 16:48:22', '2026-02-05 16:48:22', 0),
-(121, 18, 61, 1, '2026-02-07', 4, NULL, 'Scheduled', 2, '2026-02-07 09:30:00', '2026-02-07 09:30:00', 0),
+(121, 18, 61, 1, '2026-02-07', 4, NULL, 'Scheduled', 4, '2026-02-07 09:30:00', '2026-02-27 15:49:23', 0),
 (122, 17, 62, 3, '2026-02-09', 6, NULL, 'Scheduled', 2, '2026-02-09 14:15:00', '2026-02-09 14:15:00', 0),
 (123, 2, 56, 4, '2026-02-11', 2, NULL, 'Scheduled', 2, '2026-02-11 11:00:00', '2026-02-11 11:00:00', 0),
 (124, 17, 60, 1, '2026-02-13', 5, NULL, 'Scheduled', 2, '2026-02-13 13:45:00', '2026-02-13 13:45:00', 0),
-(125, 18, 61, 6, '2026-02-15', 7, NULL, 'Scheduled', 2, '2026-02-15 10:30:00', '2026-02-15 10:30:00', 0),
+(125, 18, 61, 6, '2026-02-15', 7, NULL, 'Scheduled', 4, '2026-02-15 10:30:00', '2026-02-27 16:31:39', 0),
 (126, 17, 60, 2, '2026-02-18', 3, NULL, 'Scheduled', 2, '2026-02-18 15:20:00', '2026-02-18 15:20:00', 0),
 (127, 17, 62, 5, '2026-02-20', 4, NULL, 'Scheduled', 2, '2026-02-20 09:45:00', '2026-02-20 09:45:00', 0),
-(128, 17, 60, 5, '2026-02-26', 3, NULL, 'Scheduled', 1, '2026-02-25 13:05:45', '2026-02-25 13:05:45', 0);
+(128, 17, 60, 5, '2026-02-26', 3, NULL, 'Scheduled', 4, '2026-02-25 13:05:45', '2026-02-27 09:51:52', 0),
+(129, 18, 61, 2, '2026-02-27', 12, NULL, 'Scheduled', 3, '2026-02-27 16:38:23', '2026-02-27 17:14:17', 0);
 
 -- --------------------------------------------------------
 
@@ -425,7 +426,30 @@ INSERT INTO `forum_images_tbl` (`forumImageID`, `forumID`, `imageName`, `isDelet
 (42, 38, 'image-1772116593308-573182454.jpg', 1),
 (43, 39, 'image-1772116905609-283622326.webp', 1),
 (44, 40, 'image-1772116974313-821152912.png', 1),
-(45, 41, 'image-1772118674625-42917705.png', 1);
+(45, 41, 'image-1772118674625-42917705.png', 1),
+(46, 42, 'image-1772157227089-895490890.webp', 0),
+(47, 43, 'image-1772157332033-609848180.webp', 0),
+(48, 44, 'image-1772157359150-677261809.jpg', 0),
+(49, 45, 'image-1772157739438-968254219.png', 0),
+(50, 46, 'image-1772157820702-401612435.png', 0),
+(51, 47, 'image-1772158937966-971947685.jpg', 0),
+(52, 48, 'image-1772159361425-981890978.webp', 0),
+(53, 48, 'image-1772159361428-923012072.webp', 0),
+(54, 48, 'image-1772159361430-905292623.png', 0),
+(55, 48, 'image-1772159361457-608637281.png', 0),
+(56, 48, 'image-1772159361497-360332981.png', 0),
+(57, 49, 'image-1772160483923-677584276.png', 0),
+(58, 49, 'image-1772160483928-680372329.png', 0),
+(59, 49, 'image-1772160483952-972376583.png', 0),
+(60, 49, 'image-1772160483962-878502811.png', 0),
+(61, 49, 'image-1772160483967-400546848.jpg', 0),
+(62, 50, 'image-1772164780241-618760903.png', 0),
+(63, 51, 'image-1772184670829-535026719.webp', 0),
+(64, 51, 'image-1772184670833-837453151.webp', 0),
+(65, 51, 'image-1772184670838-69121994.png', 0),
+(66, 51, 'image-1772184670866-378090102.png', 0),
+(67, 51, 'image-1772184670885-775123681.png', 0),
+(68, 52, 'image-1772184739458-264875400.png', 0);
 
 -- --------------------------------------------------------
 
@@ -490,7 +514,18 @@ INSERT INTO `forum_posts_tbl` (`forumID`, `accID`, `postType`, `description`, `c
 (38, 18, 'Lost', 'test20', '09123456789', '', '2026-02-26 22:36:33', '2026-02-26 23:47:17', 0, 1),
 (39, 17, 'Lost', 'test21', '09123456789', '', '2026-02-26 22:41:45', '2026-02-26 23:47:31', 0, 1),
 (40, 17, 'Lost', 'test22', '09123456789', '', '2026-02-26 22:42:54', '2026-02-26 23:45:38', 0, 1),
-(41, 17, 'Lost', 'test22', '09123456789', '', '2026-02-26 23:11:14', '2026-02-26 23:11:37', 0, 1);
+(41, 17, 'Lost', 'test22', '09123456789', '', '2026-02-26 23:11:14', '2026-02-26 23:11:37', 0, 1),
+(42, 18, 'Found', 'Test24', '09123456789', '', '2026-02-27 09:53:47', '2026-02-27 09:53:47', 0, 0),
+(43, 18, 'Found', 'test25', '09123456789', '', '2026-02-27 09:55:32', '2026-02-27 09:55:32', 0, 0),
+(44, 18, 'Found', 'test26', '09513733696', '', '2026-02-27 09:55:59', '2026-02-27 09:55:59', 0, 0),
+(45, 18, 'Lost', 'Test27', '09513733696', '', '2026-02-27 10:02:19', '2026-02-27 10:02:19', 0, 0),
+(46, 18, 'Lost', 'test28', '09123456789', '', '2026-02-27 10:03:40', '2026-02-27 10:03:40', 0, 0),
+(47, 18, 'Lost', 'Test28', '09123456789', '', '2026-02-27 10:22:18', '2026-02-27 10:22:18', 0, 0),
+(48, 18, 'Found', 'Test29', '09513733696', '', '2026-02-27 10:29:21', '2026-02-27 10:29:21', 0, 0),
+(49, 18, 'Found', 'Test30', '09513733696', '', '2026-02-27 10:48:04', '2026-02-27 10:48:04', 0, 0),
+(50, 17, 'Lost', 'test31', '09513733696', '', '2026-02-27 11:59:40', '2026-02-27 11:59:40', 0, 0),
+(51, 18, 'Lost', 'Lost near acacia street', '09123456789', '', '2026-02-27 17:31:10', '2026-02-27 17:31:10', 0, 0),
+(52, 17, 'Lost', 'Halo', '09513733696', '', '2026-02-27 17:32:19', '2026-02-27 17:32:19', 0, 0);
 
 -- --------------------------------------------------------
 
@@ -587,7 +622,95 @@ INSERT INTO `notifications_tbl` (`notificationID`, `notifTypeID`, `title`, `mess
 (22, 1, 'New Lost Pet 🐕', 'Fionah Irish  Beltran reported a lost pet: test20...', '{\"forumId\":38,\"postType\":\"Lost\",\"isAnonymous\":false}', 38, 'forum_posts_tbl', 'all', NULL, 18, '2026-02-26 22:36:33'),
 (23, 1, 'New Lost Pet 🐕', 'Mark Mapili reported a lost pet: test21...', '{\"forumId\":39,\"postType\":\"Lost\",\"isAnonymous\":false}', 39, 'forum_posts_tbl', 'all', NULL, 17, '2026-02-26 22:41:45'),
 (24, 1, 'New Lost Pet 🐕', 'Mark Mapili reported a lost pet: test22...', '{\"forumId\":40,\"postType\":\"Lost\",\"isAnonymous\":false}', 40, 'forum_posts_tbl', 'all', NULL, 17, '2026-02-26 22:42:54'),
-(25, 1, 'New Lost Pet 🐕', 'Mark Mapili reported a lost pet: test22...', '{\"forumId\":41,\"postType\":\"Lost\",\"isAnonymous\":false}', 41, 'forum_posts_tbl', 'all', NULL, 17, '2026-02-26 23:11:15');
+(25, 1, 'New Lost Pet 🐕', 'Mark Mapili reported a lost pet: test22...', '{\"forumId\":41,\"postType\":\"Lost\",\"isAnonymous\":false}', 41, 'forum_posts_tbl', 'all', NULL, 17, '2026-02-26 23:11:15'),
+(26, 1, 'New Found Pet 🐈', 'Fionah Irish  Beltran reported a found pet: Test24...', '{\"forumId\":42,\"postType\":\"Found\",\"isAnonymous\":false}', 42, 'forum_posts_tbl', 'all', NULL, 18, '2026-02-27 09:53:47'),
+(27, 1, 'New Found Pet 🐈', 'Fionah Irish  Beltran reported a found pet: test25...', '{\"forumId\":43,\"postType\":\"Found\",\"isAnonymous\":false}', 43, 'forum_posts_tbl', 'all', NULL, 18, '2026-02-27 09:55:32'),
+(28, 1, 'New Found Pet 🐈', 'Fionah Irish  Beltran reported a found pet: test26...', '{\"forumId\":44,\"postType\":\"Found\",\"isAnonymous\":false}', 44, 'forum_posts_tbl', 'all', NULL, 18, '2026-02-27 09:55:59'),
+(29, 1, 'New Lost Pet 🐕', 'Fionah Irish  Beltran reported a lost pet: Test27...', '{\"forumId\":45,\"postType\":\"Lost\",\"isAnonymous\":false}', 45, 'forum_posts_tbl', 'all', NULL, 18, '2026-02-27 10:02:19'),
+(30, 1, 'New Lost Pet 🐕', 'Fionah Irish  Beltran reported a lost pet: test28...', '{\"forumId\":46,\"postType\":\"Lost\",\"isAnonymous\":false}', 46, 'forum_posts_tbl', 'all', NULL, 18, '2026-02-27 10:03:40'),
+(31, 1, 'New Lost Pet 🐕', 'Fionah Irish  Beltran reported a lost pet: Test28...', '{\"forumId\":47,\"postType\":\"Lost\",\"isAnonymous\":false}', 47, 'forum_posts_tbl', 'all', NULL, 18, '2026-02-27 10:22:18'),
+(32, 1, 'New Found Pet 🐈', 'Fionah Irish  Beltran reported a found pet: Test29...', '{\"forumId\":48,\"postType\":\"Found\",\"isAnonymous\":false}', 48, 'forum_posts_tbl', 'all', NULL, 18, '2026-02-27 10:29:21'),
+(33, 1, 'New Found Pet 🐈', 'Fionah Irish  Beltran reported a found pet: Test30...', '{\"forumId\":49,\"postType\":\"Found\",\"isAnonymous\":false}', 49, 'forum_posts_tbl', 'all', NULL, 18, '2026-02-27 10:48:04'),
+(34, 4, 'Appointment Completed ✅', 'Your appointment for 10/19/2025 is now Completed', '{\"appointmentId\":78,\"status\":\"Completed\",\"date\":\"2025-10-18T16:00:00.000Z\"}', 78, 'appointment_tbl', 'specific', NULL, 5, '2026-02-27 11:51:26'),
+(35, 4, 'Appointment Completed ✅', 'Your appointment for 11/12/2025 is now Completed', '{\"appointmentId\":85,\"status\":\"Completed\",\"date\":\"2025-11-11T16:00:00.000Z\"}', 85, 'appointment_tbl', 'specific', NULL, 5, '2026-02-27 11:54:19'),
+(36, 4, 'Appointment Completed', 'Your appointment for 11/24/2025 is now Completed', '{\"appointmentId\":91,\"status\":\"Completed\",\"date\":\"2025-11-23T16:00:00.000Z\"}', 91, 'appointment_tbl', 'specific', NULL, 5, '2026-02-27 11:58:41'),
+(37, 1, 'New Lost Pet', 'Mark Mapili reported a lost pet: test31...', '{\"forumId\":50,\"postType\":\"Lost\",\"isAnonymous\":false}', 50, 'forum_posts_tbl', 'all', NULL, 17, '2026-02-27 11:59:40'),
+(38, 5, 'New Lab Record for Mark Angel Mapili', 'TestMedical1 has been added to Mark Angel Mapili\'s records', '{\"petMedicalId\":11,\"petId\":\"61\",\"petName\":\"Mark Angel Mapili\",\"recordTitle\":\"TestMedical1\",\"type\":\"Lab Record\"}', 11, 'petmedical_tbl', 'specific', NULL, 5, '2026-02-27 13:05:37'),
+(39, 5, 'New Lab Record for Mark Angel Mapili', 'TestLab1 has been added to Mark Angel Mapili\'s records', '{\"petMedicalId\":12,\"petId\":\"61\",\"petName\":\"Mark Angel Mapili\",\"recordTitle\":\"TestLab1\",\"type\":\"Lab Record\"}', 12, 'petmedical_tbl', 'specific', NULL, 5, '2026-02-27 13:06:24'),
+(40, 5, 'New Medical History for Mark Angel Mapili', 'TestMedical1 has been added to Mark Angel Mapili\'s records', '{\"petMedicalId\":13,\"petId\":\"61\",\"petName\":\"Mark Angel Mapili\",\"recordTitle\":\"TestMedical1\",\"type\":\"Medical History\"}', 13, 'petmedical_tbl', 'specific', NULL, 5, '2026-02-27 13:07:05'),
+(41, 2, 'New Pet Care Tip', 'TestPetTIp1', '{\"petCareId\":14,\"shortDescription\":\"TestPetTIp1\"}', 14, 'pet_care_tips_content_tbl', 'all', NULL, 5, '2026-02-27 13:15:43'),
+(42, 2, 'New Pet Care Tip', 'TestPetTIp1', '{\"petCareId\":15,\"shortDescription\":\"TestPetTIp1\"}', 15, 'pet_care_tips_content_tbl', 'all', NULL, 5, '2026-02-27 13:20:55'),
+(43, 3, 'New Video: Behavior', 'Cat Nutrition: The Food, The Bad & The Ugly: Part 1: Dry Food!', '{\"videoId\":7,\"category\":\"Behavior\"}', 7, 'video_content_tbl', 'all', NULL, 5, '2026-02-27 13:21:22'),
+(44, 3, 'New Video: Behavior', 'Top 10 Best Foods for Dogs!!', '{\"videoId\":3,\"category\":\"Behavior\"}', 3, 'video_content_tbl', 'all', NULL, 5, '2026-02-27 14:50:56'),
+(45, 3, 'New Video: Health Tips', '10 Signs Your Cat is Sick And Needs Help (A Vet\'s Advice)', '{\"videoId\":4,\"category\":\"Health Tips\"}', 4, 'video_content_tbl', 'all', NULL, 5, '2026-02-27 15:31:41'),
+(46, 3, 'New Video: Grooming', 'How to Bathe your Cat that Hates Water (6 Step Tutorial) | The Cat Butler', '{\"videoId\":2,\"category\":\"Grooming\"}', 2, 'video_content_tbl', 'all', NULL, 5, '2026-02-27 15:32:17'),
+(47, 3, 'New Video: Training', 'Dog Training 101: How to Train ANY DOG the Basics', '{\"videoId\":1,\"category\":\"Training\"}', 1, 'video_content_tbl', 'all', NULL, 5, '2026-02-27 15:32:27'),
+(48, 2, 'New Pet Care Tip', 'Offer Fresh Water Multiple Times a Day', '{\"petCareId\":5,\"shortDescription\":\"Prevents dehydration.\"}', 5, 'pet_care_tips_content_tbl', 'all', NULL, 5, '2026-02-27 15:41:12'),
+(49, 4, 'Appointment Completed', 'Your appointment for 12/11/2025 is now Completed', '{\"appointmentId\":97,\"status\":\"Completed\",\"date\":\"2025-12-10T16:00:00.000Z\"}', 97, 'appointment_tbl', 'specific', NULL, 5, '2026-02-27 15:43:34'),
+(50, 4, 'Appointment Cancelled', 'Your appointment for 12/26/2025 is now Cancelled', '{\"appointmentId\":102,\"status\":\"Cancelled\",\"date\":\"2025-12-25T16:00:00.000Z\"}', 102, 'appointment_tbl', 'specific', NULL, 5, '2026-02-27 15:43:47'),
+(51, 4, 'Appointment Cancelled', 'Your appointment for 12/26/2025 is now Cancelled', '{\"appointmentId\":102,\"status\":\"Cancelled\",\"date\":\"2025-12-25T16:00:00.000Z\"}', 102, 'appointment_tbl', 'specific', NULL, 5, '2026-02-27 15:43:47'),
+(52, 4, 'Appointment Cancelled', 'Your appointment for 1/11/2026 is now Cancelled', '{\"appointmentId\":107,\"status\":\"Cancelled\",\"date\":\"2026-01-10T16:00:00.000Z\"}', 107, 'appointment_tbl', 'specific', NULL, 5, '2026-02-27 15:44:04'),
+(53, 4, 'Appointment Cancelled', 'Your appointment for 1/11/2026 is now Cancelled', '{\"appointmentId\":107,\"status\":\"Cancelled\",\"date\":\"2026-01-10T16:00:00.000Z\"}', 107, 'appointment_tbl', 'specific', NULL, 5, '2026-02-27 15:44:04'),
+(54, 4, 'Appointment Cancelled', 'Your appointment for 1/21/2026 is now Cancelled', '{\"appointmentId\":112,\"status\":\"Cancelled\",\"date\":\"2026-01-20T16:00:00.000Z\"}', 112, 'appointment_tbl', 'specific', NULL, 5, '2026-02-27 15:48:42'),
+(55, 4, 'Appointment Cancelled', 'Your appointment for 1/21/2026 is now Cancelled', '{\"appointmentId\":112,\"status\":\"Cancelled\",\"date\":\"2026-01-20T16:00:00.000Z\"}', 112, 'appointment_tbl', 'specific', NULL, 5, '2026-02-27 15:48:42'),
+(56, 4, 'Appointment Cancelled', 'Your appointment for 2/7/2026 is now Cancelled', '{\"appointmentId\":121,\"status\":\"Cancelled\",\"date\":\"2026-02-06T16:00:00.000Z\"}', 121, 'appointment_tbl', 'specific', NULL, 5, '2026-02-27 15:49:23'),
+(57, 4, 'Appointment Cancelled', 'Your appointment for 2/7/2026 is now Cancelled', '{\"appointmentId\":121,\"status\":\"Cancelled\",\"date\":\"2026-02-06T16:00:00.000Z\"}', 121, 'appointment_tbl', 'specific', NULL, 5, '2026-02-27 15:49:23'),
+(58, 4, 'Appointment Cancelled', 'Your appointment for 1/29/2026 is now Cancelled', '{\"appointmentId\":117,\"status\":\"Cancelled\",\"date\":\"2026-01-28T16:00:00.000Z\"}', 117, 'appointment_tbl', 'specific', NULL, 5, '2026-02-27 16:19:24'),
+(59, 4, 'Appointment Cancelled', 'Your appointment for 1/29/2026 is now Cancelled', '{\"appointmentId\":117,\"status\":\"Cancelled\",\"date\":\"2026-01-28T16:00:00.000Z\"}', 117, 'appointment_tbl', 'specific', NULL, 5, '2026-02-27 16:19:24'),
+(60, 4, 'Appointment Cancelled', 'Your appointment for 2/15/2026 is now Cancelled', '{\"appointmentId\":125,\"status\":\"Cancelled\",\"date\":\"2026-02-14T16:00:00.000Z\"}', 125, 'appointment_tbl', 'specific', NULL, 5, '2026-02-27 16:31:39'),
+(61, 4, 'Appointment Cancelled', 'Your appointment for 2/15/2026 is now Cancelled', '{\"appointmentId\":125,\"status\":\"Cancelled\",\"date\":\"2026-02-14T16:00:00.000Z\"}', 125, 'appointment_tbl', 'specific', NULL, 5, '2026-02-27 16:31:39'),
+(62, 4, 'Appointment Upcoming', 'Your appointment for 2/27/2026 is now Upcoming', '{\"appointmentId\":129,\"status\":\"Upcoming\",\"date\":\"2026-02-26T16:00:00.000Z\"}', 129, 'appointment_tbl', 'specific', NULL, 5, '2026-02-27 16:38:58'),
+(63, 4, 'Appointment Upcoming', 'Your appointment for 2/27/2026 is now Upcoming', '{\"appointmentId\":129,\"status\":\"Upcoming\",\"date\":\"2026-02-26T16:00:00.000Z\"}', 129, 'appointment_tbl', 'specific', NULL, 5, '2026-02-27 16:38:58'),
+(64, 4, 'Appointment Completed', 'Your appointment for 2/27/2026 is now Completed', '{\"appointmentId\":129,\"status\":\"Completed\",\"date\":\"2026-02-26T16:00:00.000Z\"}', 129, 'appointment_tbl', 'specific', NULL, 5, '2026-02-27 16:39:32'),
+(65, 4, 'Appointment Cancelled', 'Your appointment for 2/27/2026 is now Cancelled', '{\"appointmentId\":129,\"status\":\"Cancelled\",\"date\":\"2026-02-26T16:00:00.000Z\"}', 129, 'appointment_tbl', 'specific', NULL, 5, '2026-02-27 16:41:23'),
+(66, 4, 'Appointment Cancelled', 'Your appointment for 2/27/2026 is now Cancelled', '{\"appointmentId\":129,\"status\":\"Cancelled\",\"date\":\"2026-02-26T16:00:00.000Z\"}', 129, 'appointment_tbl', 'specific', NULL, 5, '2026-02-27 16:41:23'),
+(67, 4, 'Appointment Cancelled', 'Your appointment for 2/27/2026 is now Cancelled', '{\"appointmentId\":129,\"status\":\"Cancelled\",\"date\":\"2026-02-26T16:00:00.000Z\"}', 129, 'appointment_tbl', 'specific', NULL, 5, '2026-02-27 17:01:28'),
+(68, 4, 'Appointment Upcoming', 'Your appointment for 2/27/2026 is now Upcoming', '{\"appointmentId\":129,\"status\":\"Upcoming\",\"date\":\"2026-02-26T16:00:00.000Z\"}', 129, 'appointment_tbl', 'specific', NULL, 5, '2026-02-27 17:04:42'),
+(69, 4, 'Appointment Upcoming', 'Your appointment for 2/27/2026 is now Upcoming', '{\"appointmentId\":129,\"status\":\"Upcoming\",\"date\":\"2026-02-26T16:00:00.000Z\"}', 129, 'appointment_tbl', 'specific', NULL, 5, '2026-02-27 17:04:42'),
+(70, 4, 'Appointment Upcoming', 'Your appointment for 2/27/2026 is now Upcoming', '{\"appointmentId\":129,\"status\":\"Upcoming\",\"date\":\"2026-02-26T16:00:00.000Z\"}', 129, 'appointment_tbl', 'specific', NULL, 5, '2026-02-27 17:10:52'),
+(71, 4, 'Appointment Cancelled', 'Your appointment for 2/27/2026 is now Cancelled', '{\"appointmentId\":129,\"status\":\"Cancelled\",\"date\":\"2026-02-26T16:00:00.000Z\"}', 129, 'appointment_tbl', 'specific', NULL, 5, '2026-02-27 17:12:49'),
+(72, 4, 'Appointment Rejected', 'Your appointment for 2/27/2026 is now Rejected', '{\"appointmentId\":129,\"status\":\"Rejected\",\"date\":\"2026-02-26T16:00:00.000Z\"}', 129, 'appointment_tbl', 'specific', NULL, 5, '2026-02-27 17:14:17'),
+(73, 1, 'New Lost Pet', 'Fionah Irish  Beltran reported a lost pet: Lost near acacia street...', '{\"forumId\":51,\"postType\":\"Lost\",\"isAnonymous\":false}', 51, 'forum_posts_tbl', 'all', NULL, 18, '2026-02-27 17:31:10'),
+(74, 1, 'New Lost Pet', 'Mark Mapili reported a lost pet: Halo...', '{\"forumId\":52,\"postType\":\"Lost\",\"isAnonymous\":false}', 52, 'forum_posts_tbl', 'all', NULL, 17, '2026-02-27 17:32:19'),
+(75, 4, 'Appointment Completed', 'Your appointment for 11/9/2025 is now Completed', '{\"appointmentId\":84,\"status\":\"Completed\",\"date\":\"2025-11-08T16:00:00.000Z\"}', 84, 'appointment_tbl', 'specific', NULL, 5, '2026-02-27 17:40:03'),
+(76, 4, 'Appointment Cancelled', 'Your appointment for 12/2/2025 is now Cancelled', '{\"appointmentId\":94,\"status\":\"Cancelled\",\"date\":\"2025-12-01T16:00:00.000Z\"}', 94, 'appointment_tbl', 'specific', NULL, 5, '2026-02-27 17:50:55'),
+(77, 2, 'New Pet Care Tip', 'Feed Measured Portions', '{\"petCareId\":6,\"shortDescription\":\"Controls weight and digestion.\"}', 6, 'pet_care_tips_content_tbl', 'all', NULL, 5, '2026-02-27 22:56:31'),
+(78, 2, 'New Pet Care Tip', 'Feed Measured Portions', '{\"petCareId\":6,\"shortDescription\":\"Controls weight and digestion.\"}', 6, 'pet_care_tips_content_tbl', 'all', NULL, 5, '2026-02-27 22:58:44'),
+(79, 2, 'New Pet Care Tip', 'TestPetTIp1', '{\"petCareId\":15,\"shortDescription\":\"TestPetTIp1\"}', 15, 'pet_care_tips_content_tbl', 'all', NULL, 5, '2026-02-27 23:09:03'),
+(80, 2, 'New Pet Care Tip', 'TestPetTIp1', '{\"petCareId\":14,\"shortDescription\":\"TestPetTIp1\"}', 14, 'pet_care_tips_content_tbl', 'all', NULL, 5, '2026-02-27 23:09:26'),
+(81, 2, 'New Pet Care Tip', 'test1', '{\"petCareId\":16,\"shortDescription\":\"test1\"}', 16, 'pet_care_tips_content_tbl', 'all', NULL, 5, '2026-02-27 23:24:45'),
+(82, 2, 'New Pet Care Tip', 'Offer Fresh Water Multiple Times a Day', '{\"petCareId\":5,\"shortDescription\":\"Prevents dehydration.\"}', 5, 'pet_care_tips_content_tbl', 'all', NULL, 5, '2026-02-27 23:43:54'),
+(83, 2, 'New Pet Care Tip', 'Offer Fresh Water Multiple Times a Day', '{\"petCareId\":5,\"shortDescription\":\"Prevents dehydration.\"}', 5, 'pet_care_tips_content_tbl', 'all', NULL, 5, '2026-02-27 23:44:09'),
+(84, 2, 'New Pet Care Tip', 'Feed Measured Portions', '{\"petCareId\":6,\"shortDescription\":\"Controls weight and digestion.\"}', 6, 'pet_care_tips_content_tbl', 'all', NULL, 5, '2026-02-27 23:44:16'),
+(85, 3, 'New Video: Training', 'Dog Training 101: How to Train ANY DOG the Basics', '{\"videoId\":1,\"category\":\"Training\"}', 1, 'video_content_tbl', 'all', NULL, 5, '2026-02-27 23:44:41'),
+(86, 3, 'New Video: Training', 'Dog Training 101: How to Train ANY DOG the Basics', '{\"videoId\":1,\"category\":\"Training\"}', 1, 'video_content_tbl', 'all', NULL, 5, '2026-02-27 23:45:37'),
+(87, 2, 'New Pet Care Tip', 'Feed Measured Portions', '{\"petCareId\":6,\"shortDescription\":\"Controls weight and digestion.\"}', 6, 'pet_care_tips_content_tbl', 'all', NULL, 5, '2026-02-28 00:12:06'),
+(88, 3, 'New Video: Grooming', 'How to Bathe your Cat that Hates Water (6 Step Tutorial) | The Cat Butler', '{\"videoId\":2,\"category\":\"Grooming\"}', 2, 'video_content_tbl', 'all', NULL, 5, '2026-02-28 00:12:20'),
+(89, 3, 'New Video: Behavior', 'Top 10 Best Foods for Dogs!!', '{\"videoId\":3,\"category\":\"Behavior\"}', 3, 'video_content_tbl', 'all', NULL, 5, '2026-02-28 00:24:47'),
+(90, 3, 'New Video: Health Tips', '10 Signs Your Cat is Sick And Needs Help (A Vet\'s Advice)', '{\"videoId\":4,\"category\":\"Health Tips\"}', 4, 'video_content_tbl', 'all', NULL, 5, '2026-02-28 00:25:29'),
+(91, 3, 'New Video: Behavior', 'Cat Nutrition: The Food, The Bad & The Ugly: Part 1: Dry Food!', '{\"videoId\":7,\"category\":\"Behavior\"}', 7, 'video_content_tbl', 'all', NULL, 5, '2026-02-28 00:44:28'),
+(92, 3, 'New Video: Grooming', 'How to Trim Dog Nails Safely', '{\"videoId\":6,\"category\":\"Grooming\"}', 6, 'video_content_tbl', 'all', NULL, 5, '2026-02-28 01:00:51'),
+(93, 3, 'New Video: Grooming', 'How to Trim Dog Nails Safely', '{\"videoId\":6,\"category\":\"Grooming\"}', 6, 'video_content_tbl', 'all', NULL, 5, '2026-02-28 01:02:01'),
+(94, 3, 'New Video: Grooming', 'How to Trim Dog Nails Safely', '{\"videoId\":6,\"category\":\"Grooming\"}', 6, 'video_content_tbl', 'all', NULL, 5, '2026-02-28 01:05:43'),
+(95, 3, 'New Video: Grooming', 'How to Trim Dog Nails Safely', '{\"videoId\":6,\"category\":\"Grooming\"}', 6, 'video_content_tbl', 'all', NULL, 5, '2026-02-28 01:07:46'),
+(96, 3, 'New Video: Grooming', 'How to Trim Dog Nails Safely', '{\"videoId\":6,\"category\":\"Grooming\"}', 6, 'video_content_tbl', 'all', NULL, 5, '2026-02-28 01:08:22'),
+(97, 2, 'New Pet Care Tip', 'Feed Measured Portions', '{\"petCareId\":6,\"shortDescription\":\"Controls weight and digestion.\"}', 6, 'pet_care_tips_content_tbl', 'all', NULL, 5, '2026-02-28 01:10:45'),
+(98, 3, 'New Video: Nutrition', 'How To Stop Your Dog Barking - You Can Do This Right Now', '{\"videoId\":5,\"category\":\"Nutrition\"}', 5, 'video_content_tbl', 'all', NULL, 5, '2026-02-28 01:11:15'),
+(99, 2, 'New Pet Care Tip', 'Feed Measured Portions', '{\"petCareId\":6,\"shortDescription\":\"Controls weight and digestion.\"}', 6, 'pet_care_tips_content_tbl', 'all', NULL, 5, '2026-02-28 13:27:10'),
+(100, 3, 'New Video: Grooming', 'How to Trim Dog Nails Safely', '{\"videoId\":6,\"category\":\"Grooming\"}', 6, 'video_content_tbl', 'all', NULL, 5, '2026-02-28 13:36:25'),
+(101, 3, 'New Video: Nutrition', 'How To Stop Your Dog Barking - You Can Do This Right Now', '{\"videoId\":5,\"category\":\"Nutrition\"}', 5, 'video_content_tbl', 'all', NULL, 5, '2026-02-28 13:36:34'),
+(102, 5, 'New Lab Record for Markei', 'test3 has been added to Markei\'s records', '{\"petMedicalId\":14,\"petId\":\"60\",\"petName\":\"Markei\",\"recordTitle\":\"test3\",\"type\":\"Lab Record\"}', 14, 'petmedical_tbl', 'specific', NULL, 5, '2026-02-28 13:57:13'),
+(103, 5, 'New Medical History for Markei', 'test4 has been added to Markei\'s records', '{\"petMedicalId\":15,\"petId\":\"60\",\"petName\":\"Markei\",\"recordTitle\":\"test4\",\"type\":\"Medical History\"}', 15, 'petmedical_tbl', 'specific', NULL, 5, '2026-02-28 14:11:51'),
+(104, 5, 'New Medical History for Gigi', 'test5 has been added to Gigi\'s records', '{\"petMedicalId\":16,\"petId\":\"62\",\"petName\":\"Gigi\",\"recordTitle\":\"test5\",\"type\":\"Medical History\"}', 16, 'petmedical_tbl', 'specific', NULL, 5, '2026-02-28 14:52:20'),
+(105, 5, 'New Lab Record for Markei', 'test6 has been added to Markei\'s records', '{\"petMedicalId\":17,\"petId\":\"60\",\"petName\":\"Markei\",\"recordTitle\":\"test6\",\"type\":\"Lab Record\"}', 17, 'petmedical_tbl', 'specific', NULL, 5, '2026-02-28 14:52:57'),
+(106, 5, 'New Medical History for Gigi', 'test7 has been added to Gigi\'s records', '{\"petMedicalId\":18,\"petId\":\"62\",\"petName\":\"Gigi\",\"recordTitle\":\"test7\",\"type\":\"Medical History\"}', 18, 'petmedical_tbl', 'specific', NULL, 5, '2026-02-28 14:53:26'),
+(107, 5, 'New Lab Record for Markei', 'test7 has been added to Markei\'s records', '{\"petMedicalId\":19,\"petId\":\"60\",\"petName\":\"Markei\",\"recordTitle\":\"test7\",\"type\":\"Lab Record\"}', 19, 'petmedical_tbl', 'specific', NULL, 5, '2026-02-28 16:35:50'),
+(108, 5, 'New Medical History for Markei', 'test8 has been added to Markei\'s records', '{\"petMedicalId\":20,\"petId\":\"60\",\"petName\":\"Markei\",\"recordTitle\":\"test8\",\"type\":\"Medical History\"}', 20, 'petmedical_tbl', 'specific', NULL, 5, '2026-02-28 16:36:29'),
+(109, 5, 'New Medical History for Gigi', 'test8gigi has been added to Gigi\'s records', '{\"petMedicalId\":21,\"petId\":\"62\",\"petName\":\"Gigi\",\"recordTitle\":\"test8gigi\",\"type\":\"Medical History\"}', 21, 'petmedical_tbl', 'specific', NULL, 5, '2026-02-28 16:36:55'),
+(110, 5, 'New Lab Record for Gigi', 'test09gigi has been added to Gigi\'s records', '{\"petMedicalId\":22,\"petId\":\"62\",\"petName\":\"Gigi\",\"recordTitle\":\"test09gigi\",\"type\":\"Lab Record\"}', 22, 'petmedical_tbl', 'specific', NULL, 5, '2026-02-28 16:42:53'),
+(111, 5, 'New Medical History for Gigi', 'test10gigi has been added to Gigi\'s records', '{\"petMedicalId\":23,\"petId\":\"62\",\"petName\":\"Gigi\",\"recordTitle\":\"test10gigi\",\"type\":\"Medical History\"}', 23, 'petmedical_tbl', 'specific', NULL, 5, '2026-02-28 16:43:15'),
+(112, 5, 'New Medical History for Mark Angel Mapili', 'test10 has been added to Mark Angel Mapili\'s records', '{\"petMedicalId\":24,\"petId\":\"61\",\"petName\":\"Mark Angel Mapili\",\"recordTitle\":\"test10\",\"type\":\"Medical History\"}', 24, 'petmedical_tbl', 'specific', NULL, 5, '2026-02-28 17:12:59'),
+(113, 5, 'New Medical History for Gigi', 'hgafas has been added to Gigi\'s records', '{\"petMedicalId\":25,\"petId\":\"62\",\"petName\":\"Gigi\",\"recordTitle\":\"hgafas\",\"type\":\"Medical History\"}', 25, 'petmedical_tbl', 'specific', NULL, 5, '2026-02-28 17:13:39');
 
 -- --------------------------------------------------------
 
@@ -642,7 +765,22 @@ INSERT INTO `petmedical_file_tbl` (`fileID`, `petmedicalID`, `originalName`, `st
 (5, 7, 'MODULE-2-DERIVATIVE-Students (1).pdf', 'file-1763904927620-819342555.pdf', 'C:\\Users\\LENOVO\\OneDrive\\Desktop\\RaphaVets\\RaphaVets-Pet-Clinic\\uploads\\medical_records\\file-1763904927620-819342555.pdf', '2025-11-23 21:35:27', 1, 0),
 (6, 8, 'Mapili, Mark Angel O. - Midterm Exams Discrete Structures.pdf', 'file-1763904969883-497559202.pdf', 'C:\\Users\\LENOVO\\OneDrive\\Desktop\\RaphaVets\\RaphaVets-Pet-Clinic\\uploads\\medical_records\\file-1763904969883-497559202.pdf', '2025-11-23 21:36:09', 1, 0),
 (7, 9, 'UMREC - Wonderpets.pdf', 'file-1772009241828-603012922.pdf', 'C:\\Users\\LENOVO\\OneDrive\\Desktop\\RVCare\\RaphaVets-Pet-Clinic\\uploads\\medical_records\\file-1772009241828-603012922.pdf', '2026-02-25 16:47:22', 5, 0),
-(8, 10, 'Medical Certificate.pdf', 'file-1772024123159-768713351.pdf', 'C:\\Users\\LENOVO\\OneDrive\\Desktop\\RVCare\\RaphaVets-Pet-Clinic\\uploads\\medical_records\\file-1772024123159-768713351.pdf', '2026-02-25 20:55:24', 5, 0);
+(8, 10, 'Medical Certificate.pdf', 'file-1772024123159-768713351.pdf', 'C:\\Users\\LENOVO\\OneDrive\\Desktop\\RVCare\\RaphaVets-Pet-Clinic\\uploads\\medical_records\\file-1772024123159-768713351.pdf', '2026-02-25 20:55:24', 5, 0),
+(9, 11, 'Mark Angel Mapili_Task2 Google Workspace Business and Enterprise.pdf', 'file-1772168737354-959656183.pdf', 'C:\\Users\\LENOVO\\OneDrive\\Desktop\\RVCare\\RaphaVets-Pet-Clinic\\uploads\\medical_records\\file-1772168737354-959656183.pdf', '2026-02-27 13:05:37', 5, 0),
+(10, 12, 'CLP-QF-06 Recommendation Letter.pdf', 'file-1772168784528-56601929.pdf', 'C:\\Users\\LENOVO\\OneDrive\\Desktop\\RVCare\\RaphaVets-Pet-Clinic\\uploads\\medical_records\\file-1772168784528-56601929.pdf', '2026-02-27 13:06:24', 5, 0),
+(11, 13, 'Mark Angel O. Mapili_Task2_Google Workspace Business.pdf', 'file-1772168825825-363185126.pdf', 'C:\\Users\\LENOVO\\OneDrive\\Desktop\\RVCare\\RaphaVets-Pet-Clinic\\uploads\\medical_records\\file-1772168825825-363185126.pdf', '2026-02-27 13:07:05', 5, 0),
+(12, 14, 'Mark Angel Mapili_Task2 Google Workspace Business and Enterprise.pdf', 'file-1772258233586-611890411.pdf', 'C:\\Users\\LENOVO\\OneDrive\\Desktop\\RVCare\\RaphaVets-Pet-Clinic\\uploads\\medical_records\\file-1772258233586-611890411.pdf', '2026-02-28 13:57:13', 5, 0),
+(13, 15, 'CLP-QF-08 Consent and Agreement Form.pdf.pdf', 'file-1772259110753-774395181.pdf', 'C:\\Users\\LENOVO\\OneDrive\\Desktop\\RVCare\\RaphaVets-Pet-Clinic\\uploads\\medical_records\\file-1772259110753-774395181.pdf', '2026-02-28 14:11:51', 5, 0),
+(14, 16, 'Mark Angel Mapili_Task2 Google Workspace Business and Enterprise.pdf', 'file-1772261539634-972449432.pdf', 'C:\\Users\\LENOVO\\OneDrive\\Desktop\\RVCare\\RaphaVets-Pet-Clinic\\uploads\\medical_records\\file-1772261539634-972449432.pdf', '2026-02-28 14:52:20', 5, 0),
+(15, 17, 'Mark Angel Mapili_Task2 Google Workspace Business and Enterprise.pdf', 'file-1772261576665-518599554.pdf', 'C:\\Users\\LENOVO\\OneDrive\\Desktop\\RVCare\\RaphaVets-Pet-Clinic\\uploads\\medical_records\\file-1772261576665-518599554.pdf', '2026-02-28 14:52:56', 5, 0),
+(16, 18, 'Mark Angel O. Mapili_Task2_Google Workspace Business.pdf', 'file-1772261605062-397875559.pdf', 'C:\\Users\\LENOVO\\OneDrive\\Desktop\\RVCare\\RaphaVets-Pet-Clinic\\uploads\\medical_records\\file-1772261605062-397875559.pdf', '2026-02-28 14:53:25', 5, 0),
+(17, 19, 'Mark Angel Mapili_Task2 Google Workspace Business and Enterprise.pdf', 'file-1772267750128-80028247.pdf', 'C:\\Users\\LENOVO\\OneDrive\\Desktop\\RVCare\\RaphaVets-Pet-Clinic\\uploads\\medical_records\\file-1772267750128-80028247.pdf', '2026-02-28 16:35:50', 5, 0),
+(18, 20, 'Mark Angel Mapili_Task2 Google Workspace Business and Enterprise.pdf', 'file-1772267789137-409248016.pdf', 'C:\\Users\\LENOVO\\OneDrive\\Desktop\\RVCare\\RaphaVets-Pet-Clinic\\uploads\\medical_records\\file-1772267789137-409248016.pdf', '2026-02-28 16:36:29', 5, 0),
+(19, 21, 'Certificate Automation.pdf', 'file-1772267815110-639691338.pdf', 'C:\\Users\\LENOVO\\OneDrive\\Desktop\\RVCare\\RaphaVets-Pet-Clinic\\uploads\\medical_records\\file-1772267815110-639691338.pdf', '2026-02-28 16:36:55', 5, 0),
+(20, 22, 'Mark Angel O. Mapili_Task2_Google Workspace Business (1).pdf', 'file-1772268173061-214538216.pdf', 'C:\\Users\\LENOVO\\OneDrive\\Desktop\\RVCare\\RaphaVets-Pet-Clinic\\uploads\\medical_records\\file-1772268173061-214538216.pdf', '2026-02-28 16:42:53', 5, 0),
+(21, 23, 'Certificate Automation.pdf', 'file-1772268195507-445505965.pdf', 'C:\\Users\\LENOVO\\OneDrive\\Desktop\\RVCare\\RaphaVets-Pet-Clinic\\uploads\\medical_records\\file-1772268195507-445505965.pdf', '2026-02-28 16:43:15', 5, 0),
+(22, 24, 'Mark Angel O. Mapili_Task2_Google Workspace Business (1).pdf', 'file-1772269978803-687771673.pdf', 'C:\\Users\\LENOVO\\OneDrive\\Desktop\\RVCare\\RaphaVets-Pet-Clinic\\uploads\\medical_records\\file-1772269978803-687771673.pdf', '2026-02-28 17:12:58', 5, 0),
+(23, 25, 'Mark Angel O. Mapili_Task2_Google Workspace Business (1).pdf', 'file-1772270019436-417062004.pdf', 'C:\\Users\\LENOVO\\OneDrive\\Desktop\\RVCare\\RaphaVets-Pet-Clinic\\uploads\\medical_records\\file-1772270019436-417062004.pdf', '2026-02-28 17:13:39', 5, 0);
 
 -- --------------------------------------------------------
 
@@ -674,7 +812,22 @@ INSERT INTO `petmedical_tbl` (`petMedicalID`, `petID`, `recordTitle`, `labTypeID
 (7, 60, 'working', 1, '2025-11-23 21:27:56', '2025-11-23 21:35:27', 0),
 (8, 62, 'Working na', 1, '2025-11-23 21:36:09', '2025-11-23 21:39:30', 0),
 (9, 62, 'test1', 2, '2026-02-25 16:47:22', '2026-02-25 16:47:22', 0),
-(10, 62, 'Test2', 1, '2026-02-25 20:55:24', '2026-02-25 20:55:24', 0);
+(10, 62, 'Test2', 1, '2026-02-25 20:55:24', '2026-02-25 20:55:24', 0),
+(11, 61, 'TestMedical1', 1, '2026-02-27 13:05:37', '2026-02-27 13:05:37', 0),
+(12, 61, 'TestLab1', 1, '2026-02-27 13:06:24', '2026-02-27 13:06:24', 0),
+(13, 61, 'TestMedical1', 2, '2026-02-27 13:07:05', '2026-02-27 13:07:05', 0),
+(14, 60, 'test3', 1, '2026-02-28 13:57:13', '2026-02-28 13:57:13', 0),
+(15, 60, 'test4', 2, '2026-02-28 14:11:51', '2026-02-28 14:11:51', 0),
+(16, 62, 'test5', 2, '2026-02-28 14:52:20', '2026-02-28 14:52:20', 0),
+(17, 60, 'test6', 1, '2026-02-28 14:52:56', '2026-02-28 14:52:56', 0),
+(18, 62, 'test7', 2, '2026-02-28 14:53:25', '2026-02-28 14:53:25', 0),
+(19, 60, 'test7', 1, '2026-02-28 16:35:50', '2026-02-28 16:35:50', 0),
+(20, 60, 'test8', 2, '2026-02-28 16:36:29', '2026-02-28 16:36:29', 0),
+(21, 62, 'test8gigi', 2, '2026-02-28 16:36:55', '2026-02-28 16:36:55', 0),
+(22, 62, 'test09gigi', 1, '2026-02-28 16:42:53', '2026-02-28 16:42:53', 0),
+(23, 62, 'test10gigi', 2, '2026-02-28 16:43:15', '2026-02-28 16:43:15', 0),
+(24, 61, 'test10', 2, '2026-02-28 17:12:58', '2026-02-28 17:12:58', 0),
+(25, 62, 'hgafas', 2, '2026-02-28 17:13:39', '2026-02-28 17:13:39', 0);
 
 -- --------------------------------------------------------
 
@@ -740,13 +893,17 @@ INSERT INTO `pet_care_tips_content_tbl` (`petCareID`, `accID`, `iconID`, `title`
 (1, 5, 1, 'Brushed Your Dog’s Fur Daily', 4, 'Prevents mats and reduces shedding.', 'https://lila-loves-it.com/en/magazine/brushing-dogs-why-it-is-so-important/\r\n', 'Use a suitable brush to remove loose hair and prevent tangles. This keeps your dog comfortable, prevents skin irritation, and helps detect lumps or skin issues early.', 2, '2025-11-18 14:46:13', '2025-11-17 11:53:28', 0),
 (2, 5, 1, 'Trim Your Cat’s Nails Weekly', 1, 'Avoids scratching injuries.', 'https://www.petmd.com/news/view/how-often-should-you-trim-cats-nails-37807', 'Use cat-specific nail clippers. Gently trim the sharp tips, avoid the quick, and reward your cat afterwards. Regular trimming keeps them safe and prevents furniture damage.', 2, '2025-11-18 14:46:13', '2025-11-18 15:35:02', 0),
 (4, 5, 1, 'Give 30-Minute Walks Daily', 1, 'Keeps your dog healthy and active.', 'https://vcahospitals.com/know-your-pet/the-benefits-of-walking-your-dog', 'Walk your dog twice a day or a single 30-minute session. Walking supports physical fitness, reduces anxiety, and strengthens the bond with your pet.', 2, '2025-11-18 14:46:13', '2025-11-18 15:37:42', 0),
-(5, 5, 3, 'Offer Fresh Water Multiple Times a Day', 1, 'Prevents dehydration.', 'https://www.wellnesspetfood.com/blog/how-often-should-you-change-your-pets-water/', 'Change your pet\'s water 2–3 times daily. Clean bowls thoroughly to avoid bacteria. Proper hydration keeps pets energetic and prevents kidney and urinary issues.', 1, '2025-11-18 14:46:13', '2025-11-17 13:04:10', 0),
-(6, 5, 4, 'Feed Measured Portions', 2, 'Controls weight and digestion.', 'https://www.northpointpets.com/whyaccuratelymeasuringyourpetsfoodisessential/', 'Use a measuring cup to feed your pet appropriate portions based on age, size, and activity level. Avoid free-feeding. Consult your vet for dietary adjustments if needed.', 1, '2025-11-18 14:46:13', '2025-11-17 13:04:10', 0),
+(5, 5, 3, 'Offer Fresh Water Multiple Times a Day', 1, 'Prevents dehydration.', 'https://www.wellnesspetfood.com/blog/how-often-should-you-change-your-pets-water/', 'Change your pet\'s water 2–3 times daily. Clean bowls thoroughly to avoid bacteria. Proper hydration keeps pets energetic and prevents kidney and urinary issues.', 2, '2025-11-18 14:46:13', '2026-02-28 01:11:01', 1),
+(6, 5, 4, 'Feed Measured Portions', 2, 'Controls weight and digestion.', 'https://www.northpointpets.com/whyaccuratelymeasuringyourpetsfoodisessential/', 'Use a measuring cup to feed your pet appropriate portions based on age, size, and activity level. Avoid free-feeding. Consult your vet for dietary adjustments if needed.', 3, '2025-11-18 14:46:13', '2026-02-28 13:27:23', 0),
 (7, 5, 1, 'Use Puzzle Toys to Stimulate Your Pet', 1, 'Keeps their mind sharp.', 'https://vmc.vet.osu.edu/sites/default/files/documents/behavioral-med-puzzle-toys-2024.pdf', 'Introduce treat puzzles, hide-and-seek games, or interactive toys. Mental stimulation prevents boredom, improves behavior, and strengthens your bond.', 2, '2025-11-18 14:46:13', '2026-02-25 15:48:22', 0),
 (9, 2, 2, 'GAGi', 11, 'is it me your looking for', 'miss na miss kita', 'pinyabuhay sarap sustasya', 3, '2025-11-18 17:15:17', '2026-02-25 15:47:55', 1),
-(10, 5, 1, 'HEHE', 1, 'GAHSFDSGDFDF', 'adfagdagdag', 'gdafgdafafa', 2, '2026-02-25 15:51:32', '2026-02-25 15:51:32', 0),
-(11, 5, 7, 'NEW', 1, 'TEST', '', 'TEST', 2, '2026-02-25 15:52:13', '2026-02-25 23:04:54', 0),
-(12, 5, 3, 'test123', 1, '123test', '', 'test123', 1, '2026-02-25 16:00:03', '2026-02-25 16:00:03', 0);
+(10, 5, 1, 'HEHE', 1, 'GAHSFDSGDFDF', 'adfagdagdag', 'gdafgdafafa', 2, '2026-02-25 15:51:32', '2026-02-27 13:15:05', 1),
+(11, 5, 7, 'NEW', 1, 'TEST', '', 'TEST', 2, '2026-02-25 15:52:13', '2026-02-27 13:14:56', 1),
+(12, 5, 3, 'test123', 1, '123test', '', 'test123', 2, '2026-02-25 16:00:03', '2026-02-27 13:14:58', 1),
+(13, 5, 8, 'TestPetTIp1', 1, 'TestPetTIp1', '', 'TestPetTIp1', 2, '2026-02-27 13:08:22', '2026-02-27 13:14:52', 1),
+(14, 5, 1, 'TestPetTIp1', 1, 'TestPetTIp1', '', 'TestPetTIp1', 2, '2026-02-27 13:15:20', '2026-02-27 23:10:08', 1),
+(15, 5, 1, 'TestPetTIp1', 1, 'TestPetTIp1', '', 'TestPetTIp1', 2, '2026-02-27 13:20:50', '2026-02-27 23:10:22', 1),
+(16, 5, 1, 'test1', 1, 'test1', '', 'test1', 2, '2026-02-27 23:24:36', '2026-02-27 23:25:05', 1);
 
 -- --------------------------------------------------------
 
@@ -1019,7 +1176,139 @@ INSERT INTO `user_notifications_tbl` (`userNotifID`, `accID`, `notificationID`, 
 (61, 18, 24, 1, '2026-02-26 23:45:16', 0, '2026-02-26 22:42:54'),
 (62, 18, 25, 1, '2026-02-26 23:45:16', 0, '2026-02-26 23:11:15'),
 (63, 17, 24, 1, '2026-02-26 23:45:24', 0, '2026-02-26 23:45:24'),
-(64, 17, 25, 1, '2026-02-26 23:45:24', 0, '2026-02-26 23:45:24');
+(64, 17, 25, 1, '2026-02-26 23:45:24', 0, '2026-02-26 23:45:24'),
+(65, 17, 26, 1, '2026-02-27 10:21:41', 0, '2026-02-27 09:53:47'),
+(66, 17, 27, 1, '2026-02-27 10:21:41', 0, '2026-02-27 09:55:32'),
+(67, 17, 28, 1, '2026-02-27 10:21:41', 0, '2026-02-27 09:55:59'),
+(68, 17, 29, 1, '2026-02-27 10:21:41', 0, '2026-02-27 10:02:19'),
+(69, 17, 30, 1, '2026-02-27 10:21:41', 0, '2026-02-27 10:03:40'),
+(70, 18, 26, 1, '2026-02-27 10:21:46', 0, '2026-02-27 10:21:46'),
+(71, 18, 27, 1, '2026-02-27 10:21:46', 0, '2026-02-27 10:21:46'),
+(72, 18, 28, 1, '2026-02-27 10:21:46', 0, '2026-02-27 10:21:46'),
+(73, 18, 29, 1, '2026-02-27 10:21:46', 0, '2026-02-27 10:21:46'),
+(74, 18, 30, 1, '2026-02-27 10:21:46', 0, '2026-02-27 10:21:46'),
+(75, 17, 31, 1, '2026-02-27 10:47:31', 0, '2026-02-27 10:22:18'),
+(76, 18, 31, 1, '2026-02-27 10:22:18', 0, '2026-02-27 10:22:18'),
+(77, 17, 32, 1, '2026-02-27 10:47:31', 0, '2026-02-27 10:29:21'),
+(78, 18, 32, 1, '2026-02-27 10:29:21', 0, '2026-02-27 10:29:21'),
+(79, 17, 33, 1, '2026-02-27 17:50:04', 0, '2026-02-27 10:48:04'),
+(80, 18, 33, 1, '2026-02-27 10:48:04', 0, '2026-02-27 10:48:04'),
+(81, 18, 34, 1, '2026-02-27 11:51:57', 0, '2026-02-27 11:51:26'),
+(82, 18, 35, 1, '2026-02-27 14:51:06', 0, '2026-02-27 11:54:19'),
+(83, 18, 36, 1, '2026-02-27 14:51:06', 0, '2026-02-27 11:58:41'),
+(84, 18, 37, 1, '2026-02-27 14:51:06', 0, '2026-02-27 11:59:40'),
+(85, 17, 37, 1, '2026-02-27 11:59:40', 0, '2026-02-27 11:59:40'),
+(86, 18, 38, 1, '2026-02-27 14:51:06', 0, '2026-02-27 13:05:37'),
+(87, 18, 39, 1, '2026-02-27 14:51:06', 0, '2026-02-27 13:06:24'),
+(88, 18, 40, 1, '2026-02-27 14:51:06', 0, '2026-02-27 13:07:05'),
+(89, 17, 41, 1, '2026-02-27 17:50:04', 0, '2026-02-27 13:15:43'),
+(90, 18, 41, 1, '2026-02-27 14:51:06', 0, '2026-02-27 13:15:43'),
+(91, 17, 42, 1, '2026-02-27 17:50:04', 0, '2026-02-27 13:20:56'),
+(92, 18, 42, 1, '2026-02-27 14:51:06', 0, '2026-02-27 13:20:56'),
+(93, 17, 43, 1, '2026-02-27 17:50:04', 0, '2026-02-27 13:21:22'),
+(94, 18, 43, 1, '2026-02-27 14:51:06', 0, '2026-02-27 13:21:22'),
+(95, 17, 44, 1, '2026-02-27 17:50:04', 0, '2026-02-27 14:50:56'),
+(96, 18, 44, 1, '2026-02-27 14:51:06', 0, '2026-02-27 14:50:56'),
+(97, 17, 45, 1, '2026-02-27 17:50:04', 0, '2026-02-27 15:31:41'),
+(98, 18, 45, 1, '2026-02-27 15:49:20', 0, '2026-02-27 15:31:41'),
+(99, 17, 46, 1, '2026-02-27 17:50:04', 0, '2026-02-27 15:32:17'),
+(100, 18, 46, 1, '2026-02-27 15:49:20', 0, '2026-02-27 15:32:17'),
+(101, 17, 47, 1, '2026-02-27 17:50:04', 0, '2026-02-27 15:32:27'),
+(102, 18, 47, 1, '2026-02-27 15:49:20', 0, '2026-02-27 15:32:27'),
+(103, 17, 48, 1, '2026-02-27 17:50:04', 0, '2026-02-27 15:41:12'),
+(104, 18, 48, 1, '2026-02-27 15:49:20', 0, '2026-02-27 15:41:12'),
+(105, 18, 49, 1, '2026-02-27 15:49:20', 0, '2026-02-27 15:43:34'),
+(106, 18, 50, 1, '2026-02-27 15:49:20', 0, '2026-02-27 15:43:47'),
+(107, 18, 51, 1, '2026-02-27 15:49:20', 0, '2026-02-27 15:43:47'),
+(108, 18, 52, 1, '2026-02-27 15:49:20', 0, '2026-02-27 15:44:04'),
+(109, 18, 53, 1, '2026-02-27 15:49:20', 0, '2026-02-27 15:44:04'),
+(110, 18, 54, 1, '2026-02-27 15:49:20', 0, '2026-02-27 15:48:42'),
+(111, 18, 55, 1, '2026-02-27 15:49:20', 0, '2026-02-27 15:48:42'),
+(112, 18, 56, 1, '2026-02-27 16:25:53', 0, '2026-02-27 15:49:23'),
+(113, 18, 57, 1, '2026-02-27 16:25:53', 0, '2026-02-27 15:49:23'),
+(114, 18, 58, 1, '2026-02-27 16:25:08', 0, '2026-02-27 16:19:24'),
+(115, 18, 59, 1, '2026-02-27 16:25:53', 0, '2026-02-27 16:19:24'),
+(116, 18, 60, 1, '2026-02-27 16:31:55', 0, '2026-02-27 16:31:39'),
+(117, 18, 61, 1, '2026-02-27 16:38:33', 0, '2026-02-27 16:31:39'),
+(118, 18, 62, 1, '2026-02-27 16:39:55', 0, '2026-02-27 16:38:58'),
+(119, 18, 63, 1, '2026-02-27 16:39:55', 0, '2026-02-27 16:38:58'),
+(120, 18, 64, 1, '2026-02-27 16:39:55', 0, '2026-02-27 16:39:32'),
+(121, 18, 65, 1, '2026-02-27 17:30:44', 0, '2026-02-27 16:41:23'),
+(122, 18, 66, 1, '2026-02-27 17:30:44', 0, '2026-02-27 16:41:23'),
+(123, 18, 67, 1, '2026-02-27 17:30:44', 0, '2026-02-27 17:01:28'),
+(124, 18, 68, 1, '2026-02-27 17:30:44', 0, '2026-02-27 17:04:42'),
+(125, 18, 69, 1, '2026-02-27 17:30:44', 0, '2026-02-27 17:04:42'),
+(126, 18, 70, 1, '2026-02-27 17:30:44', 0, '2026-02-27 17:10:52'),
+(127, 18, 71, 1, '2026-02-27 17:30:44', 0, '2026-02-27 17:12:49'),
+(128, 18, 72, 1, '2026-02-27 17:30:44', 0, '2026-02-27 17:14:17'),
+(129, 17, 73, 1, '2026-02-27 17:31:33', 0, '2026-02-27 17:31:10'),
+(130, 18, 73, 1, '2026-02-27 17:31:10', 0, '2026-02-27 17:31:10'),
+(131, 18, 74, 0, NULL, 0, '2026-02-27 17:32:19'),
+(132, 17, 74, 1, '2026-02-27 17:32:19', 0, '2026-02-27 17:32:19'),
+(133, 17, 75, 1, '2026-02-27 17:50:04', 0, '2026-02-27 17:40:03'),
+(134, 17, 76, 1, '2026-02-27 23:24:53', 0, '2026-02-27 17:50:55'),
+(135, 17, 77, 1, '2026-02-27 23:24:53', 0, '2026-02-27 22:56:31'),
+(136, 18, 77, 0, NULL, 0, '2026-02-27 22:56:31'),
+(137, 17, 78, 1, '2026-02-27 22:59:01', 0, '2026-02-27 22:58:47'),
+(138, 18, 78, 0, NULL, 0, '2026-02-27 22:58:47'),
+(139, 17, 79, 1, '2026-02-27 23:24:53', 0, '2026-02-27 23:09:04'),
+(140, 18, 79, 0, NULL, 0, '2026-02-27 23:09:04'),
+(141, 17, 80, 1, '2026-02-27 23:24:53', 0, '2026-02-27 23:09:26'),
+(142, 18, 80, 0, NULL, 0, '2026-02-27 23:09:26'),
+(143, 17, 81, 1, '2026-02-27 23:24:53', 0, '2026-02-27 23:24:45'),
+(144, 18, 81, 0, NULL, 0, '2026-02-27 23:24:45'),
+(145, 17, 82, 1, '2026-02-28 01:09:56', 0, '2026-02-27 23:43:54'),
+(146, 18, 82, 0, NULL, 0, '2026-02-27 23:43:54'),
+(147, 17, 83, 1, '2026-02-28 01:09:56', 0, '2026-02-27 23:44:09'),
+(148, 18, 83, 0, NULL, 0, '2026-02-27 23:44:09'),
+(149, 17, 84, 1, '2026-02-28 01:09:56', 0, '2026-02-27 23:44:16'),
+(150, 18, 84, 0, NULL, 0, '2026-02-27 23:44:16'),
+(151, 17, 85, 1, '2026-02-28 01:09:56', 0, '2026-02-27 23:44:41'),
+(152, 18, 85, 0, NULL, 0, '2026-02-27 23:44:41'),
+(153, 17, 86, 1, '2026-02-28 01:09:56', 0, '2026-02-27 23:45:37'),
+(154, 18, 86, 0, NULL, 0, '2026-02-27 23:45:37'),
+(155, 17, 87, 1, '2026-02-28 01:09:56', 0, '2026-02-28 00:12:06'),
+(156, 18, 87, 0, NULL, 0, '2026-02-28 00:12:06'),
+(157, 17, 88, 1, '2026-02-28 01:09:56', 0, '2026-02-28 00:12:20'),
+(158, 18, 88, 0, NULL, 0, '2026-02-28 00:12:20'),
+(159, 17, 89, 1, '2026-02-28 01:09:56', 0, '2026-02-28 00:24:47'),
+(160, 18, 89, 0, NULL, 0, '2026-02-28 00:24:47'),
+(161, 17, 90, 1, '2026-02-28 01:09:56', 0, '2026-02-28 00:25:29'),
+(162, 18, 90, 0, NULL, 0, '2026-02-28 00:25:29'),
+(163, 17, 91, 1, '2026-02-28 01:09:56', 0, '2026-02-28 00:44:28'),
+(164, 18, 91, 0, NULL, 0, '2026-02-28 00:44:28'),
+(165, 17, 92, 1, '2026-02-28 16:43:55', 0, '2026-02-28 01:00:51'),
+(166, 18, 92, 0, NULL, 0, '2026-02-28 01:00:51'),
+(167, 17, 93, 1, '2026-02-28 01:09:56', 0, '2026-02-28 01:02:01'),
+(168, 18, 93, 0, NULL, 0, '2026-02-28 01:02:01'),
+(169, 17, 94, 1, '2026-02-28 01:09:56', 0, '2026-02-28 01:05:48'),
+(170, 18, 94, 0, NULL, 0, '2026-02-28 01:05:48'),
+(171, 17, 95, 1, '2026-02-28 01:09:56', 0, '2026-02-28 01:07:46'),
+(172, 18, 95, 0, NULL, 0, '2026-02-28 01:07:46'),
+(173, 17, 96, 1, '2026-02-28 01:09:56', 0, '2026-02-28 01:08:22'),
+(174, 18, 96, 0, NULL, 0, '2026-02-28 01:08:22'),
+(175, 17, 97, 1, '2026-02-28 16:44:00', 0, '2026-02-28 01:10:46'),
+(176, 18, 97, 0, NULL, 0, '2026-02-28 01:10:46'),
+(177, 17, 98, 1, '2026-02-28 01:11:21', 0, '2026-02-28 01:11:15'),
+(178, 18, 98, 0, NULL, 0, '2026-02-28 01:11:15'),
+(179, 17, 99, 1, '2026-02-28 16:41:34', 0, '2026-02-28 13:27:10'),
+(180, 18, 99, 0, NULL, 0, '2026-02-28 13:27:10'),
+(181, 17, 100, 1, '2026-02-28 16:41:34', 0, '2026-02-28 13:36:25'),
+(182, 18, 100, 0, NULL, 0, '2026-02-28 13:36:25'),
+(183, 17, 101, 1, '2026-02-28 16:41:34', 0, '2026-02-28 13:36:34'),
+(184, 18, 101, 0, NULL, 0, '2026-02-28 13:36:34'),
+(185, 17, 102, 1, '2026-02-28 14:25:26', 0, '2026-02-28 13:57:13'),
+(186, 17, 103, 1, '2026-02-28 16:41:34', 0, '2026-02-28 14:11:51'),
+(187, 17, 104, 1, '2026-02-28 16:41:34', 0, '2026-02-28 14:52:20'),
+(188, 17, 105, 1, '2026-02-28 16:41:34', 0, '2026-02-28 14:52:58'),
+(189, 17, 106, 1, '2026-02-28 16:41:34', 0, '2026-02-28 14:53:26'),
+(190, 17, 107, 1, '2026-02-28 16:41:34', 0, '2026-02-28 16:35:50'),
+(191, 17, 108, 1, '2026-02-28 17:05:31', 0, '2026-02-28 16:36:29'),
+(192, 17, 109, 1, '2026-02-28 17:04:41', 0, '2026-02-28 16:36:55'),
+(193, 17, 110, 1, '2026-02-28 17:05:09', 0, '2026-02-28 16:42:53'),
+(194, 17, 111, 1, '2026-02-28 17:05:35', 0, '2026-02-28 16:43:15'),
+(195, 18, 112, 0, NULL, 0, '2026-02-28 17:12:59'),
+(196, 17, 113, 0, NULL, 0, '2026-02-28 17:13:39');
 
 -- --------------------------------------------------------
 
@@ -1037,6 +1326,119 @@ CREATE TABLE `user_websocket_sessions_tbl` (
   `userAgent` text DEFAULT NULL,
   `ipAddress` varchar(45) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `user_websocket_sessions_tbl`
+--
+
+INSERT INTO `user_websocket_sessions_tbl` (`sessionID`, `accID`, `socketID`, `connectedAt`, `lastPingAt`, `isActive`, `userAgent`, `ipAddress`) VALUES
+(45, 17, 'xKDE91GhOQSMbM7tAAAE', '2026-02-27 09:51:37', '2026-02-27 09:54:22', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(47, 17, 'sSQB9IgfiVnGiqv3AAAB', '2026-02-27 09:51:48', '2026-02-27 09:51:52', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(55, 17, 'EhvccAyqGTqYlwB6AAAK', '2026-02-27 09:54:12', '2026-02-27 09:54:12', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(61, 18, 'oPuTtpCpXkdLZu2jAAAB', '2026-02-27 10:01:47', '2026-02-27 10:02:01', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(65, 17, 'Je0wCpF28FitEmHBAAAG', '2026-02-27 10:03:17', '2026-02-27 10:03:17', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
+(67, 18, '1z6ScIIlpZ8kYId4AAAJ', '2026-02-27 10:03:21', '2026-02-27 10:03:21', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(69, 18, 'IRQyf59bvReUDLh7AAAM', '2026-02-27 10:04:28', '2026-02-27 10:04:28', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(71, 18, 'f2k7wxhANNq_vsoRAAAH', '2026-02-27 10:21:57', '2026-02-27 10:21:58', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(73, 17, 'tqR6xt3aq4DBAYJtAAAI', '2026-02-27 10:21:58', '2026-02-27 10:21:58', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
+(75, 18, 'xXbB8Tns72gByftgAAAL', '2026-02-27 10:22:24', '2026-02-27 10:22:24', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(77, 18, '-DLXZacAHvGp-vegAAAO', '2026-02-27 10:22:33', '2026-02-27 10:22:33', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(79, 17, 'Kx93HIcutCRrYVleAAAD', '2026-02-27 10:28:05', '2026-02-27 10:28:06', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
+(81, 18, 'bEaoR0x1vuUAO0bnAAAG', '2026-02-27 10:28:16', '2026-02-27 10:28:16', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(83, 18, 'uNVhFX3V4MfoTMHQAAAJ', '2026-02-27 10:29:28', '2026-02-27 10:29:28', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(85, 18, '8PUZrv8FnISP_NCHAAAG', '2026-02-27 10:40:57', '2026-02-27 10:40:57', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(86, 17, 'ltNWQa6bXE3_d8SEAAAJ', '2026-02-27 10:41:01', '2026-02-27 10:41:12', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
+(91, 17, '6etQPBIpHFjR6SHNAAAB', '2026-02-27 10:43:27', '2026-02-27 10:43:27', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
+(93, 18, 'pyhYOz9bbJ3iAdQUAAAD', '2026-02-27 10:43:29', '2026-02-27 10:43:29', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(95, 18, 'jiMWGzpYBDl71SunAAAB', '2026-02-27 10:46:52', '2026-02-27 10:46:52', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(97, 17, 'JUYF0dMisCFlInFdAAAD', '2026-02-27 10:46:52', '2026-02-27 10:46:52', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
+(99, 18, 'rAarmbNf0XPoxjhzAAAG', '2026-02-27 10:47:01', '2026-02-27 10:47:01', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(101, 17, 'Y4ufripzG-0VmyvOAAAJ', '2026-02-27 10:47:07', '2026-02-27 10:47:07', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
+(103, 18, 'h-S4L3yZ-3z9eRRGAAAM', '2026-02-27 10:48:26', '2026-02-27 10:48:26', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(105, 5, 'aoisovjZe56Jjc2aAAAB', '2026-02-27 11:40:46', '2026-02-27 11:40:46', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
+(106, 18, 'I-mgARRIltvClRhKAAAB', '2026-02-27 11:50:31', '2026-02-27 11:52:00', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::ffff:127.0.0.1'),
+(111, 18, 'GuUXqaUKf0yTdlkSAAAG', '2026-02-27 11:58:00', '2026-02-27 11:58:00', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
+(112, 17, 'wbHwZVBE7FQuMl_2AAAI', '2026-02-27 11:59:03', '2026-02-27 11:59:23', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
+(117, 5, 'LsiCjEbRupuiXcI6AAAM', '2026-02-27 13:05:02', '2026-02-27 13:05:02', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
+(118, 18, '_v3pwwE8udXrpoyoAAAP', '2026-02-27 13:06:03', '2026-02-27 13:06:03', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
+(120, 18, 'oSw7DV7G3UrEjuY1AAAS', '2026-02-27 13:07:56', '2026-02-27 13:07:56', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
+(122, 18, '-YgjspPLncV3cd3HAAAV', '2026-02-27 13:08:36', '2026-02-27 13:08:36', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
+(124, 18, 'rc9gAVHUct7fmgapAAAI', '2026-02-27 13:10:55', '2026-02-27 13:10:55', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
+(125, 18, 'KaliSCYEv4S16CBKAAAJ', '2026-02-27 13:14:43', '2026-02-27 13:14:43', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
+(126, 18, 'Y9NPPdxV74J3u9PaAAAM', '2026-02-27 13:15:32', '2026-02-27 13:15:32', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
+(128, 18, 'DIjTKngjs3WKJUnZAAAH', '2026-02-27 13:20:35', '2026-02-27 13:25:39', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
+(138, 18, 'Gy5iKZzTLk-QYWpUAAAO', '2026-02-27 14:50:29', '2026-02-27 14:50:29', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(140, 18, 'UK6-6d7mwTb6WfdtAAAY', '2026-02-27 15:32:08', '2026-02-27 15:32:08', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
+(142, 18, 'rKSaasXeSR9M6jhRAAAG', '2026-02-27 15:43:04', '2026-02-27 15:43:04', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
+(144, 18, '5Y8EyQf045rVz5ktAAAG', '2026-02-27 15:48:38', '2026-02-27 15:48:38', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
+(146, 18, 'vIOw8RZ9X1hdIJIpAAAJ', '2026-02-27 15:48:59', '2026-02-27 15:48:59', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
+(148, 18, 'm9fTOR7Is4eLOgucAAAK', '2026-02-27 16:17:28', '2026-02-27 16:17:28', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
+(149, 18, 'cTuRHw44TcZ1CkdTAAAB', '2026-02-27 16:25:46', '2026-02-27 16:25:47', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
+(151, 18, 'd18b9tKb3Ifwt9HhAAAH', '2026-02-27 16:31:25', '2026-02-27 16:31:59', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
+(155, 18, '5aBt0IZC77SZyPTfAAAP', '2026-02-27 16:38:05', '2026-02-27 16:38:26', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
+(159, 18, 'iQKxDaoYXONasElLAAAV', '2026-02-27 16:39:19', '2026-02-27 16:39:19', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
+(161, 18, 'esnmQHki5utb0UVbAAAr', '2026-02-27 17:00:40', '2026-02-27 17:00:40', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
+(163, 18, 'oJbjdP2qJjpwe2YQAAA3', '2026-02-27 17:10:19', '2026-02-27 17:38:53', 1, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
+(166, 17, 'RzcMSi1PHVD8Fvv1AABD', '2026-02-27 17:30:36', '2026-02-27 17:37:38', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(180, 17, 'ZDrY0lwVStpATJ5WAABG', '2026-02-27 17:40:19', '2026-02-27 17:40:19', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(182, 17, 'XyMUqkeb0nuCUWRMAAAJ', '2026-02-27 17:50:02', '2026-02-27 17:50:02', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(184, 17, 'RKQlh8TWosFZc4GZAAAM', '2026-02-27 17:50:24', '2026-02-27 17:50:24', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(186, 17, '_hwc_I_1TlgKJpyPAAAP', '2026-02-27 17:50:48', '2026-02-27 17:56:36', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(189, 5, 'uAijK1fmhO9LPX66AAAC', '2026-02-27 22:24:48', '2026-02-27 22:24:48', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(190, 17, 'JGtXb9_djqUvAs1bAAAF', '2026-02-27 22:25:44', '2026-02-27 22:26:12', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(195, 17, 'YGR-Ez40tNlwPbHyAAAJ', '2026-02-27 22:56:15', '2026-02-27 22:57:18', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(199, 17, '8QGtaheMwap6hnUUAAAO', '2026-02-27 22:58:19', '2026-02-27 22:58:19', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(201, 17, 'NRAUZFHx6VnKDIsvAAAU', '2026-02-27 23:00:45', '2026-02-27 23:00:45', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(203, 17, 'awJdBx9Ru9_bpVBJAAAB', '2026-02-27 23:08:20', '2026-02-27 23:08:20', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::ffff:127.0.0.1'),
+(205, 17, 'z-lL5ILyzDQtPszHAAAG', '2026-02-27 23:08:37', '2026-02-27 23:13:18', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(208, 17, 'vbadSsZCwEps6kIEAAAM', '2026-02-27 23:24:21', '2026-02-27 23:24:21', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(210, 17, 'KD0gfd90j0b5RM4oAAAO', '2026-02-27 23:41:05', '2026-02-27 23:42:33', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(215, 17, 'i6h1kkcplf7MOuKCAAAR', '2026-02-27 23:43:18', '2026-02-27 23:44:26', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(219, 17, 'L-3OE0sSggnpvlVmAAAU', '2026-02-27 23:44:37', '2026-02-27 23:44:37', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(221, 17, 'xLB2_G3G_p1qL_O1AAAX', '2026-02-27 23:45:17', '2026-02-27 23:45:17', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(223, 17, 'hUXBH75Lu5zq6FrIAAAa', '2026-02-27 23:45:26', '2026-02-27 23:50:37', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(230, 17, '46TlMCjuAiI98MkaAAAl', '2026-02-27 23:58:15', '2026-02-27 23:58:15', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(234, 17, 'M-b2Icq8G4ubD1MTAAAw', '2026-02-28 00:01:14', '2026-02-28 00:01:18', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(238, 17, 'ihouO-ozpoGZdMpEAAAz', '2026-02-28 00:03:48', '2026-02-28 00:03:48', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(240, 17, 'zq5yf4TxS9faZxFEAAA2', '2026-02-28 00:03:48', '2026-02-28 00:03:48', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(242, 17, 'SKLXJqfdM6C7syhWAAA5', '2026-02-28 00:04:00', '2026-02-28 00:04:04', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(246, 17, 'G_tXB9FIh75YbKVJAAA8', '2026-02-28 00:04:44', '2026-02-28 00:04:44', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(248, 17, 'Lwgv3BJaCamgUJcrAAAB', '2026-02-28 00:11:34', '2026-02-28 00:11:34', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(250, 17, 'SKvKoQt1oaZe_QnFAAAG', '2026-02-28 00:11:39', '2026-02-28 00:12:14', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(256, 17, '9TXUs7FWTXzQE7cHAAAJ', '2026-02-28 00:13:41', '2026-02-28 00:25:43', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(264, 17, 'zwWk2kOKE9DmcZovAAAB', '2026-02-28 00:30:03', '2026-02-28 00:30:03', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
+(266, 17, 'iH5d-mGrC7FZV0daAAAJ', '2026-02-28 00:43:03', '2026-02-28 00:43:03', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
+(267, 17, '7ilc10g7WkiTE4uGAAAJ', '2026-02-28 00:44:19', '2026-02-28 00:44:19', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
+(269, 17, 'W3R60ErQRQ-KIWbKAAAJ', '2026-02-28 00:53:26', '2026-02-28 00:53:26', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
+(271, 17, 'ziSW_XO64uQU_II2AAAN', '2026-02-28 00:54:43', '2026-02-28 00:54:43', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
+(273, 17, 'j8BG9HEIr98Dju92AAAQ', '2026-02-28 00:56:12', '2026-02-28 00:56:12', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
+(276, 17, 'QHwaycjoTGVvzWOnAAAG', '2026-02-28 01:00:35', '2026-02-28 01:00:35', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
+(277, 17, 'r0CbxIl9p_jJDMwpAAAM', '2026-02-28 01:01:51', '2026-02-28 01:01:51', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
+(279, 17, '0Cy34OuJ0waTEpDCAAAR', '2026-02-28 01:05:48', '2026-02-28 01:05:48', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
+(281, 17, '7uccVIB-bBuMKBYzAAAX', '2026-02-28 01:07:30', '2026-02-28 01:07:31', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
+(283, 17, 'Wxk9ASzRA0utIQzjAAAa', '2026-02-28 01:09:18', '2026-02-28 01:09:18', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(285, 17, 'JLZw67d-nIET2y2FAAAg', '2026-02-28 01:09:54', '2026-02-28 01:11:09', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(291, 5, '6-ZcN9CGuLjo8jkzAAAC', '2026-02-28 11:02:54', '2026-02-28 11:02:54', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(292, 17, 'yUfifw5dZGwPgYO8AAAF', '2026-02-28 11:03:02', '2026-02-28 11:03:02', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(294, 17, 'Dnu9HhNFgbY2nGTsAAAI', '2026-02-28 11:03:06', '2026-02-28 11:03:06', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(296, 17, 'vf6uGlHwUuQEu3U0AAAG', '2026-02-28 11:04:26', '2026-02-28 11:04:27', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
+(298, 17, 'kS1z4Ep_Uorx3hM0AAAB', '2026-02-28 13:27:17', '2026-02-28 13:27:17', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
+(300, 17, 'PTevjyXyHlm5fNI8AAAG', '2026-02-28 13:28:34', '2026-02-28 13:36:45', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(306, 17, 'QuOlyLBy21CTZj3bAAAL', '2026-02-28 14:05:20', '2026-02-28 14:05:21', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(308, 17, 'wDfIoCmfhUWrU-SBAAAK', '2026-02-28 14:47:21', '2026-02-28 14:53:08', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(325, 5, 'RSwlwuJDdsoXwHtIAAAB', '2026-02-28 16:33:30', '2026-02-28 16:33:30', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(326, 17, 'wqy7U_VYzMyueW8nAAAD', '2026-02-28 16:34:16', '2026-02-28 16:42:06', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(342, 17, '6xAg4xGE8cnKkWEEAAAJ', '2026-02-28 16:42:38', '2026-02-28 16:46:59', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(360, 17, 'mEWOcy265lIqRBkkAAAP', '2026-02-28 16:55:00', '2026-02-28 16:55:32', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(388, 17, '6_L1uJ1Pm_eca4D4AAAU', '2026-02-28 16:56:02', '2026-02-28 16:56:05', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(395, 17, 'p6f4HLFHa4wALd9FAAAY', '2026-02-28 17:00:28', '2026-02-28 17:00:37', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(412, 17, 'yee6qLVJN2JufupnAAAb', '2026-02-28 17:03:48', '2026-02-28 17:05:04', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(441, 17, 'WmwgtV1tpiskLcYWAAAe', '2026-02-28 17:05:22', '2026-02-28 17:05:37', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(469, 17, 'RBhBpTHeNc7A17bcAAAh', '2026-02-28 17:12:23', '2026-02-28 17:12:24', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(473, 17, '_j3uppGkS4b4X7UiAAAn', '2026-02-28 17:13:08', '2026-02-28 17:13:39', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(481, 17, 'vpyQSQyEAW7S_zrrAAAH', '2026-02-28 18:05:49', '2026-02-28 18:05:51', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(484, 17, 'WJrjT49Hst9bQNi3AAAK', '2026-02-28 18:06:00', '2026-02-28 18:06:03', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(491, 17, 'yIpRWx0NQAh8qntKAAAN', '2026-02-28 18:06:30', '2026-02-28 18:06:34', 1, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1');
 
 -- --------------------------------------------------------
 
@@ -1097,13 +1499,13 @@ CREATE TABLE `video_content_tbl` (
 --
 
 INSERT INTO `video_content_tbl` (`videoID`, `accID`, `videoTitle`, `videoCategoryID`, `videoURL`, `pubStatusID`, `createdAt`, `lastUpdated`, `isDeleted`) VALUES
-(1, 5, 'Dog Training 101: How to Train ANY DOG the Basics', 1, 'https://www.youtube.com/watch?v=jFMA5ggFsXU', 1, '2025-11-18 14:45:15', '2025-11-17 13:20:19', 0),
-(2, 5, 'How to Bathe your Cat that Hates Water (6 Step Tutorial) | The Cat Butler', 3, 'https://www.youtube.com/watch?v=ORtlZG_RU1s', 1, '2025-11-18 14:45:15', '2025-11-17 13:22:33', 0),
-(3, 5, 'Top 10 Best Foods for Dogs!!', 4, 'https://www.youtube.com/watch?v=qwKMf_5pU_Y', 1, '2025-11-18 14:45:15', '2025-11-17 13:23:24', 0),
-(4, 5, '10 Signs Your Cat is Sick And Needs Help (A Vet\'s Advice)', 2, 'https://www.youtube.com/watch?v=rR6aXt-bRGs', 1, '2025-11-18 14:45:15', '2025-11-17 13:23:24', 0),
-(5, 5, 'How To Stop Your Dog Barking - You Can Do This Right Now', 5, 'https://www.youtube.com/watch?v=pZkzdsjtWc0', 1, '2025-11-18 14:45:15', '2025-11-17 13:25:26', 0),
-(6, 5, 'How to Trim Dog Nails Safely', 3, 'https://www.youtube.com/watch?v=VnJafu_NMoQ', 2, '2025-11-18 14:45:15', '2025-11-17 13:25:26', 0),
-(7, 5, 'Cat Nutrition: The Food, The Bad & The Ugly: Part 1: Dry Food!', 4, 'https://www.youtube.com/watch?v=6cvxA1CMbMQ', 1, '2025-11-18 14:45:15', '2025-11-17 13:25:26', 0);
+(1, 5, 'Dog Training 101: How to Train ANY DOG the Basics', 1, 'https://www.youtube.com/watch?v=jFMA5ggFsXU', 3, '2025-11-18 14:45:15', '2026-02-28 00:12:41', 0),
+(2, 5, 'How to Bathe your Cat that Hates Water (6 Step Tutorial) | The Cat Butler', 3, 'https://www.youtube.com/watch?v=ORtlZG_RU1s', 3, '2025-11-18 14:45:15', '2026-02-28 00:12:27', 0),
+(3, 5, 'Top 10 Best Foods for Dogs!!', 4, 'https://www.youtube.com/watch?v=qwKMf_5pU_Y', 3, '2025-11-18 14:45:15', '2026-02-28 00:25:34', 0),
+(4, 5, '10 Signs Your Cat is Sick And Needs Help (A Vet\'s Advice)', 2, 'https://www.youtube.com/watch?v=rR6aXt-bRGs', 3, '2025-11-18 14:45:15', '2026-02-28 00:29:43', 0),
+(5, 5, 'How To Stop Your Dog Barking - You Can Do This Right Now', 5, 'https://www.youtube.com/watch?v=pZkzdsjtWc0', 2, '2025-11-18 14:45:15', '2026-02-28 13:36:33', 0),
+(6, 5, 'How to Trim Dog Nails Safely', 3, 'https://www.youtube.com/watch?v=VnJafu_NMoQ', 2, '2025-11-18 14:45:15', '2026-02-28 13:36:25', 0),
+(7, 5, 'Cat Nutrition: The Food, The Bad & The Ugly: Part 1: Dry Food!', 4, 'https://www.youtube.com/watch?v=6cvxA1CMbMQ', 3, '2025-11-18 14:45:15', '2026-02-28 00:44:41', 0);
 
 --
 -- Indexes for dumped tables
@@ -1370,7 +1772,7 @@ ALTER TABLE `appointment_status_tbl`
 -- AUTO_INCREMENT for table `appointment_tbl`
 --
 ALTER TABLE `appointment_tbl`
-  MODIFY `appointmentID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=129;
+  MODIFY `appointmentID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=130;
 
 --
 -- AUTO_INCREMENT for table `breed_tbl`
@@ -1406,13 +1808,13 @@ ALTER TABLE `feedbacks_tbl`
 -- AUTO_INCREMENT for table `forum_images_tbl`
 --
 ALTER TABLE `forum_images_tbl`
-  MODIFY `forumImageID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
+  MODIFY `forumImageID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=69;
 
 --
 -- AUTO_INCREMENT for table `forum_posts_tbl`
 --
 ALTER TABLE `forum_posts_tbl`
-  MODIFY `forumID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=42;
+  MODIFY `forumID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=53;
 
 --
 -- AUTO_INCREMENT for table `icon_tbl`
@@ -1430,7 +1832,7 @@ ALTER TABLE `labtype_tbl`
 -- AUTO_INCREMENT for table `notifications_tbl`
 --
 ALTER TABLE `notifications_tbl`
-  MODIFY `notificationID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
+  MODIFY `notificationID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=114;
 
 --
 -- AUTO_INCREMENT for table `notification_type_tbl`
@@ -1442,13 +1844,13 @@ ALTER TABLE `notification_type_tbl`
 -- AUTO_INCREMENT for table `petmedical_file_tbl`
 --
 ALTER TABLE `petmedical_file_tbl`
-  MODIFY `fileID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `fileID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT for table `petmedical_tbl`
 --
 ALTER TABLE `petmedical_tbl`
-  MODIFY `petMedicalID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `petMedicalID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 
 --
 -- AUTO_INCREMENT for table `pet_care_category_tbl`
@@ -1460,7 +1862,7 @@ ALTER TABLE `pet_care_category_tbl`
 -- AUTO_INCREMENT for table `pet_care_tips_content_tbl`
 --
 ALTER TABLE `pet_care_tips_content_tbl`
-  MODIFY `petCareID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `petCareID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT for table `pet_tbl`
@@ -1508,13 +1910,13 @@ ALTER TABLE `userpreference_tbl`
 -- AUTO_INCREMENT for table `user_notifications_tbl`
 --
 ALTER TABLE `user_notifications_tbl`
-  MODIFY `userNotifID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=65;
+  MODIFY `userNotifID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=197;
 
 --
 -- AUTO_INCREMENT for table `user_websocket_sessions_tbl`
 --
 ALTER TABLE `user_websocket_sessions_tbl`
-  MODIFY `sessionID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=45;
+  MODIFY `sessionID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=498;
 
 --
 -- AUTO_INCREMENT for table `vet_table`
