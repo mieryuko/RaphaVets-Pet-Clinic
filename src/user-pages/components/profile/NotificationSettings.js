@@ -5,8 +5,9 @@ function NotificationSettings() {
   const [notifications, setNotifications] = useState({
     appointments: false,
     health: false,
-    promotions: false,
-    clinicNews: false,
+    petTips: false,
+    petVideos: false,
+    forumPosts: false,
   });
 
   const userId = localStorage.getItem("userId"); // or however you store it
@@ -24,8 +25,9 @@ function NotificationSettings() {
         setNotifications({
           appointments: res.data.appointmentReminders === 1,
           health: res.data.petHealthUpd === 1,
-          promotions: res.data.promoEmail === 1,
-          clinicNews: res.data.clinicAnnouncement === 1,
+          petTips: res.data.petTips === 1,
+          petVideos: res.data.petVideos === 1,
+          forumPosts: res.data.forumPosts === 1,
         });
       } catch (err) {
         console.error("❌ Error loading preferences:", err);
@@ -46,8 +48,9 @@ function NotificationSettings() {
       const payload = {
         appointmentReminders: notifications.appointments ? 1 : 0,
         petHealthUpd: notifications.health ? 1 : 0,
-        promoEmail: notifications.promotions ? 1 : 0,
-        clinicAnnouncement: notifications.clinicNews ? 1 : 0,
+        petTips: notifications.petTips ? 1 : 0,
+        petVideos: notifications.petVideos ? 1 : 0,
+        forumPosts: notifications.forumPosts ? 1 : 0,
       };
 
       await api.put(`/users/${userId}/preferences`, payload, {
@@ -63,8 +66,9 @@ function NotificationSettings() {
   const notificationItems = [
     { label: "Appointment Reminders", key: "appointments" },
     { label: "Pet Health Updates", key: "health" },
-    { label: "Promotional Emails", key: "promotions" },
-    { label: "Clinic Announcements", key: "clinicNews" },
+    { label: "Pet Tips", key: "petTips" },
+    { label: "Pet Videos", key: "petVideos" },
+    { label: "Forum Posts", key: "forumPosts" },
   ];
 
   return (
@@ -102,7 +106,7 @@ function NotificationSettings() {
           onClick={handleSave}
           className="px-6 py-2 bg-[#5EE6FE] text-white rounded-lg font-semibold hover:bg-[#47c0d7] transition-all duration-300"
         >
-          Save Preferences
+          Save
         </button>
       </div>
     </div>
