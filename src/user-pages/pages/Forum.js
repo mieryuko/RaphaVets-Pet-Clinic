@@ -505,15 +505,15 @@ function Forum() {
           }`}
         >
           {/* Main Content */}
-          <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-4 sm:gap-5 md:gap-6 min-h-[calc(100vh-100px)]">
+          <div className="flex flex-col lg:grid lg:grid-cols-[2fr_1fr] gap-4 sm:gap-5 md:gap-6 min-h-[calc(100vh-100px)]">
             {/* LEFT COLUMN */}
-            <div className="flex flex-col gap-3 sm:gap-4 p-3 sm:p-4 bg-white rounded-lg sm:rounded-xl overflow-y-auto max-h-[calc(100vh-100px)]">
+            <div className="order-2 lg:order-1 flex flex-col gap-3 sm:gap-4 p-3 sm:p-4 bg-white rounded-lg sm:rounded-xl overflow-y-auto max-h-[calc(100vh-100px)]">
               {/* Header */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-2">
                 <h1 className="font-baloo text-xl sm:text-2xl md:text-3xl">
                   Lost Pets Board
                 </h1>
-                <p className="text-gray-500 text-xs sm:text-sm">
+                <p className="hidden sm:block text-gray-500 text-xs sm:text-sm">
                   Report missing pets or share details about pets you've found.
                 </p>
               </div>
@@ -624,7 +624,7 @@ function Forum() {
             </div>
 
             {/* RIGHT COLUMN - Sidebar */}
-            <div className="flex flex-col gap-3 sm:gap-4 p-3 sm:p-4 bg-white rounded-lg sm:rounded-xl max-h-[calc(100vh-100px)] overflow-y-auto sticky top-[100px]">
+            <div className="order-1 lg:order-2 flex flex-col gap-3 sm:gap-4 p-3 sm:p-4 bg-white rounded-lg sm:rounded-xl max-h-[calc(100vh-100px)] overflow-y-auto lg:sticky lg:top-[100px]">
               {/* Search Bar */}
               <div className="relative mt-1 sm:mt-2">
                 <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs sm:text-sm">
