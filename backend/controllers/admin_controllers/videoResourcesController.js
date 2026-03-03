@@ -1,6 +1,6 @@
 //VIDEOS
 import db from "../../config/db.js";
-import { createVideoNotification } from "../notificationController.js"; // Import notification function
+import { createVideoNotification, removeNotificationsByReference } from "../notificationController.js"; // Import notification function
 import { getIO } from "../../socket.js"; // Add this import
 
 // Helper function to extract YouTube video ID
@@ -400,6 +400,11 @@ export const updateVideo = async (req, res) => {
           await createVideoNotification(notifReq, notifRes);
           console.log('✅ [updateVideo] Publication notification triggered successfully');
         }
+
+        if (isUnpublished) {
+          const cleanupResult = await removeNotificationsByReference('video_content_tbl', parseInt(id));
+          console.log('🧹 [updateVideo] Notification cleanup result:', cleanupResult);
+        }
         
         // 🌐 WEBSOCKET EMISSION
         console.log('10. Getting IO instance...');
@@ -516,6 +521,9 @@ export const deleteVideo = async (req, res) => {
     // 🌐 WEBSOCKET EMISSION if it was published
     if (wasPublished) {
       try {
+        const cleanupResult = await removeNotificationsByReference('video_content_tbl', parseInt(id));
+        console.log('🧹 [deleteVideo] Notification cleanup result:', cleanupResult);
+
         const io = getIO();
         
         // Emit to users

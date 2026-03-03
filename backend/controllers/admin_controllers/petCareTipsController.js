@@ -1,5 +1,5 @@
 import db from "../../config/db.js";
-import { createPetTipsNotification } from "../notificationController.js";
+import { createPetTipsNotification, removeNotificationsByReference } from "../notificationController.js";
 import { getIO } from "../../socket.js"; 
 
 // Helper function to map icon keys to FontAwesome classes
@@ -434,6 +434,11 @@ export const updatePetCareTip = async (req, res) => {
 
           await createPetTipsNotification(notifReq, notifRes);
         }
+
+        if (isUnpublished) {
+          const cleanupResult = await removeNotificationsByReference('pet_care_tips_content_tbl', parseInt(id));
+          console.log('🧹 [updatePetCareTip] Notification cleanup result:', cleanupResult);
+        }
         
         // 🌐 WEBSOCKET EMISSION
         try {
@@ -546,6 +551,9 @@ export const deletePetCareTip = async (req, res) => {
     // Emit WebSocket for deletion if it was published
     if (wasPublished) {
       try {
+        const cleanupResult = await removeNotificationsByReference('pet_care_tips_content_tbl', parseInt(id));
+        console.log('🧹 [deletePetCareTip] Notification cleanup result:', cleanupResult);
+
         const io = getIO();
         io.emit('pet_care_tip_deleted', { id: parseInt(id) });
         io.to('admin-room').emit('admin_tip_deleted', {

@@ -110,6 +110,77 @@ const sendToOnlineUsers = async (userIds, notification, notifType) => {
     }
 };
 
+export const removeNotificationsByReference = async (referenceTable, referenceID) => {
+    try {
+        if (!referenceTable || !referenceID) {
+            return { success: false, removedCount: 0, message: 'Missing reference info' };
+        }
+
+        const [notifications] = await db.query(
+            `SELECT notificationID FROM notifications_tbl
+             WHERE referenceTable = ? AND referenceID = ?`,
+            [referenceTable, referenceID]
+        );
+
+        if (!notifications.length) {
+            return { success: true, removedCount: 0 };
+        }
+
+        const notificationIds = notifications.map(n => n.notificationID);
+
+        const [recipients] = await db.query(
+            `SELECT DISTINCT accID FROM user_notifications_tbl
+             WHERE notificationID IN (?) AND isDeleted = 0`,
+            [notificationIds]
+        );
+
+        await db.query(
+            `UPDATE user_notifications_tbl
+             SET isDeleted = 1
+             WHERE notificationID IN (?)`,
+            [notificationIds]
+        );
+
+        await db.query(
+            `UPDATE notifications_tbl
+             SET targetType = 'specific'
+             WHERE notificationID IN (?)`,
+            [notificationIds]
+        );
+
+        if (recipients.length > 0) {
+            const recipientIds = recipients.map(r => r.accID);
+
+            const [sessions] = await db.query(
+                `SELECT socketID FROM user_websocket_sessions_tbl
+                 WHERE accID IN (?) AND isActive = 1`,
+                [recipientIds]
+            );
+
+            if (sessions.length > 0) {
+                let io;
+                try {
+                    io = getIO();
+                } catch (socketError) {
+                    console.log('⚠️ [removeNotificationsByReference] Socket not initialized:', socketError.message);
+                    return { success: true, removedCount: notificationIds.length };
+                }
+
+                sessions.forEach(session => {
+                    notificationIds.forEach(notificationId => {
+                        io.to(session.socketID).emit('notification_deleted', { notificationId });
+                    });
+                });
+            }
+        }
+
+        return { success: true, removedCount: notificationIds.length, notificationIds };
+    } catch (error) {
+        console.error('❌ [removeNotificationsByReference] Error:', error);
+        return { success: false, removedCount: 0, error: error.message };
+    }
+};
+
 export const createForumPostNotification = async (req, res) => {
     console.log('🔍 [createForumPostNotification] Started');
     

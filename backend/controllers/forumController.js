@@ -5,7 +5,7 @@ import e from "express";
 import { em } from "framer-motion/client";
 import { log } from "console";
 
-import { createForumPostNotification } from "./notificationController.js";
+import { createForumPostNotification, removeNotificationsByReference } from "./notificationController.js";
 
 
 export const createPost = async (req, res) => {
@@ -500,6 +500,13 @@ export const deletePost = async (req, res) => {
             console.log(`📢 [deletePost] Real-time deletion emitted for post ID: ${forumID}`);
         } catch (socketError) {
             console.error('⚠️ [deletePost] Failed to emit real-time deletion:', socketError);
+        }
+
+        try {
+          const removalResult = await removeNotificationsByReference('forum_posts_tbl', parseInt(forumID));
+          console.log('🧹 [deletePost] Notification cleanup result:', removalResult);
+        } catch (notifCleanupError) {
+          console.error('⚠️ [deletePost] Failed notification cleanup:', notifCleanupError);
         }
 
         res.status(200).json({ message: "✅ Post deleted successfully." });

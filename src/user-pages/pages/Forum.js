@@ -67,6 +67,58 @@ function Forum() {
 
   const fetchedOnce = useRef(false);
 
+  const normalizeContactInput = (value = "") => {
+    const digits = value.replace(/\D/g, "");
+
+    if (!digits) return "";
+
+    if (digits.startsWith("63")) {
+      return digits.slice(2, 12);
+    }
+
+    if (digits.startsWith("0")) {
+      return digits.slice(1, 11);
+    }
+
+    return digits.slice(0, 10);
+  };
+
+  const validateForumInputs = () => {
+    if (!["Lost", "Found"].includes(newPost.type)) {
+      return "❌ Invalid post type.";
+    }
+
+    if (!newPost.desc?.trim()) {
+      return "❌ Please provide a description.";
+    }
+
+    const contactDigits = normalizeContactInput(newPost.contact || "");
+    const emailValue = (newPost.email || "").trim();
+
+    if (!contactDigits && !emailValue) {
+      return "❌ Please provide a contact number or email address.";
+    }
+
+    if (contactDigits && !/^9\d{9}$/.test(contactDigits)) {
+      return "❌ Contact number must be 10 digits and start with 9.";
+    }
+
+    if (emailValue && !/^[\w.-]+@[a-zA-Z\d.-]+\.[a-zA-Z]{2,}$/.test(emailValue)) {
+      return "❌ Invalid email format.";
+    }
+
+    const imageCount = newPost.images.filter(img => !img.removed).length;
+    if (imageCount < 1) {
+      return "❌ Please provide at least 1 image.";
+    }
+
+    if (imageCount > 5) {
+      return "❌ You can only upload up to 5 images.";
+    }
+
+    return null;
+  };
+
   const fetchPosts = async () => {
     try {
       const res = await api.get("/forum");
@@ -218,17 +270,16 @@ function Forum() {
   };
 
   const handleCreateOrUpdatePost = () => {
-    if (!newPost.desc.trim()){
-      setErrorMessage("❌ Please provide a description");
+    const validationError = validateForumInputs();
+    if (validationError) {
+      setErrorMessage(validationError);
       setShowErrorModal(true);
       return;
     }
-    const imageCount = newPost.images.filter(img => !img.removed).length;
-    if(imageCount > 5){
-      setErrorMessage("❌ You can only upload up to 5 images.");
-      setShowErrorModal(true);
-      return;
-    }
+
+    const normalizedContact = normalizeContactInput(newPost.contact || "");
+    const formattedContact = normalizedContact ? `+63${normalizedContact}` : "";
+    const normalizedEmail = (newPost.email || "").trim();
 
     // Check privacy consent for new posts
     if (!newPost.id && !validatePrivacyConsent()) {
@@ -240,8 +291,8 @@ function Forum() {
       const formData = new FormData();
       formData.append("postType", newPost.type);
       formData.append("description", newPost.desc);
-      formData.append("contact", newPost.contact);
-      formData.append("email", newPost.email);
+      formData.append("contact", formattedContact);
+      formData.append("email", normalizedEmail);
       formData.append("isAnonymous", newPost.anonymous ? "1" : "0");
 
       newPost.images.forEach((img) => {
@@ -280,10 +331,12 @@ function Forum() {
     }
     // Update existing post
     const updates = {};
+    const originalContact = normalizeContactInput(originalPost.contact || "");
+    const originalEmail = (originalPost.email || "").trim();
 
     if (newPost.desc !== originalPost.desc) updates.description = newPost.desc;
-    if (newPost.contact !== originalPost.contact) updates.contact = newPost.contact;
-    if (newPost.email !== originalPost.email) updates.email = newPost.email;
+    if (normalizedContact !== originalContact) updates.contact = formattedContact;
+    if (normalizedEmail !== originalEmail) updates.email = normalizedEmail;
     if ((newPost.anonymous || false) !== (originalPost.anonymous || false)) {
       updates.isAnonymous = newPost.anonymous ? "1" : "0";
     }
@@ -338,6 +391,8 @@ function Forum() {
 
   const handleEditPost = (post) => {
     const clone = structuredClone(post);
+    clone.contact = normalizeContactInput(clone.contact || "");
+    clone.email = (clone.email || "").trim();
     if (clone.images) {
       clone.images = clone.images.map(img => ({
         ...img,
@@ -956,15 +1011,23 @@ function Forum() {
                     <label className="block mb-1 sm:mb-2 text-xs sm:text-sm font-medium text-gray-700">
                       Contact
                     </label>
-                    <input
-                      type="text"
-                      value={newPost.contact}
-                      onChange={(e) =>
-                        setNewPost({ ...newPost, contact: e.target.value })
-                      }
-                      className="w-full border border-gray-300 rounded-lg p-1.5 sm:p-2 text-xs sm:text-sm text-gray-700 focus:ring-2 focus:ring-[#5EE6FE] outline-none"
-                      placeholder="Phone number or email"
-                    />
+                    <div className="flex items-center border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#5EE6FE]">
+                      <span className="px-2 sm:px-3 text-xs sm:text-sm text-gray-600 border-r border-gray-300">+63</span>
+                      <input
+                        type="text"
+                        value={normalizeContactInput(newPost.contact || "")}
+                        onChange={(e) =>
+                          setNewPost({ ...newPost, contact: normalizeContactInput(e.target.value) })
+                        }
+                        className="w-full p-1.5 sm:p-2 text-xs sm:text-sm text-gray-700 outline-none rounded-r-lg"
+                        placeholder="9XXXXXXXXX"
+                        inputMode="numeric"
+                        maxLength={10}
+                      />
+                    </div>
+                    <p className="mt-1 text-[10px] sm:text-xs text-gray-500">
+                      Enter 10 digits starting with 9 (e.g. 9123456789)
+                    </p>
                   </div>
 
                   <div>
