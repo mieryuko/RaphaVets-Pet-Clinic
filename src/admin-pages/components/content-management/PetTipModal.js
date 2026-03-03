@@ -44,6 +44,15 @@ const getStatusName = (statusId) => {
   return statusMap[statusId] || "Draft";
 };
 
+const isValidHttpUrl = (value = "") => {
+  try {
+    const parsed = new URL(value);
+    return parsed.protocol === "http:" || parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
+};
+
 const PetTipModal = ({ 
   item, 
   categories, 
@@ -296,6 +305,7 @@ const PetTipModal = ({
       title: formData.title.trim(),
       shortDescription: formData.shortDescription.trim(),
       detailedContent: formData.detailedContent.trim(),
+      learnMoreURL: formData.learnMoreURL.trim(),
       iconID: formData.iconID
     };
 
@@ -320,6 +330,17 @@ const PetTipModal = ({
         showError('Please select a category');
         return;
       }
+    }
+
+    const urlValue = formData.learnMoreURL.trim();
+    if (!urlValue) {
+      showError('Please provide a Learn More URL');
+      return;
+    }
+
+    if (!isValidHttpUrl(urlValue)) {
+      showError('Please provide a valid URL starting with http:// or https://');
+      return;
     }
 
     try {
@@ -358,7 +379,7 @@ const PetTipModal = ({
         title: formData.title.trim(),
         shortDescription: formData.shortDescription.trim(),
         detailedContent: formData.detailedContent.trim(),
-        learnMoreURL: formData.learnMoreURL.trim(),
+        learnMoreURL: urlValue,
         iconID: parseInt(formData.iconID),
         petCareCategoryID: parseInt(finalCategoryID),
         pubStatusID: parseInt(formData.pubStatusID)
@@ -684,8 +705,10 @@ const PetTipModal = ({
                     disabled={loading}
                     className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
                     placeholder="https://example.com/learn-more"
+                    required
                   />
                 </div>
+                <p className="text-xs text-gray-500">Must be a valid http:// or https:// link</p>
               </div>
             </div>
           </div>

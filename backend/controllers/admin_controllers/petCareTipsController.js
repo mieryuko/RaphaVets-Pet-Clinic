@@ -31,6 +31,15 @@ const formatTipForClient = (tip) => ({
   author: tip.author || `${tip.firstName || ''} ${tip.lastName || ''}`.trim()
 });
 
+const isValidHttpUrl = (value = '') => {
+  try {
+    const parsed = new URL(value);
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+  } catch {
+    return false;
+  }
+};
+
 export const getAllPetCareTips = async (req, res) => {
   try {
     const query = `
@@ -149,10 +158,17 @@ export const createPetCareTip = async (req, res) => {
       pubStatusID = 1
     } = req.body;
 
-    if (!title || !shortDescription || !detailedContent || !iconID || !petCareCategoryID) {
+    if (!title || !shortDescription || !detailedContent || !iconID || !petCareCategoryID || !learnMoreURL) {
       return res.status(400).json({
         success: false,
-        message: 'Missing required fields: title, shortDescription, detailedContent, iconID, petCareCategoryID'
+        message: 'Missing required fields: title, shortDescription, detailedContent, learnMoreURL, iconID, petCareCategoryID'
+      });
+    }
+
+    if (!isValidHttpUrl(learnMoreURL)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide a valid Learn More URL (http:// or https://)'
       });
     }
 
@@ -168,7 +184,7 @@ export const createPetCareTip = async (req, res) => {
       title,
       parseInt(petCareCategoryID),
       shortDescription,
-      learnMoreURL || '',
+      learnMoreURL,
       detailedContent,
       parseInt(pubStatusID)
     ]);
@@ -347,8 +363,22 @@ export const updatePetCareTip = async (req, res) => {
       params.push(detailedContent);
     }
     if (learnMoreURL !== undefined) {
+      if (!learnMoreURL || !learnMoreURL.trim()) {
+        return res.status(400).json({
+          success: false,
+          message: 'Learn More URL is required'
+        });
+      }
+
+      if (!isValidHttpUrl(learnMoreURL)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Please provide a valid Learn More URL (http:// or https://)'
+        });
+      }
+
       updates.push('learnMoreURL = ?');
-      params.push(learnMoreURL || '');
+      params.push(learnMoreURL.trim());
     }
     if (iconID !== undefined) {
       updates.push('iconID = ?');

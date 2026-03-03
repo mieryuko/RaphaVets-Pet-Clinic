@@ -2,6 +2,15 @@ import { useState, useEffect } from "react";
 import { X, Plus, Minus, Video, Globe, Eye, FileText, Archive } from "lucide-react";
 import api from "../../../api/axios";
 
+const isValidHttpUrl = (value = "") => {
+  try {
+    const parsed = new URL(value);
+    return parsed.protocol === "http:" || parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
+};
+
 const VideoModal = ({ 
   item, 
   categories, 
@@ -153,6 +162,12 @@ const VideoModal = ({
       return;
     }
 
+    const videoUrlValue = formData.videoURL.trim();
+    if (!isValidHttpUrl(videoUrlValue)) {
+      showError('Please provide a valid URL starting with http:// or https://');
+      return;
+    }
+
     // Category validation
     if (showNewCategory) {
       if (!formData.newCategory.trim()) {
@@ -194,7 +209,7 @@ const VideoModal = ({
       // Prepare data for backend
       const submitData = {
         videoTitle: formData.videoTitle.trim(),
-        videoURL: formData.videoURL.trim(),
+        videoURL: videoUrlValue,
         videoCategoryID: parseInt(finalCategoryID),
         pubStatusID: parseInt(formData.pubStatusID)
       };
@@ -400,6 +415,7 @@ const VideoModal = ({
                     disabled={loading}
                   />
                 </div>
+                <p className="text-xs text-gray-500">Must be a valid http:// or https:// link</p>
               </div>
             </div>
           </div>

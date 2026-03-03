@@ -331,6 +331,11 @@ function Header({ darkMode, setDarkMode, toggleMenu, isMenuOpen, animateIcon }) 
         );
       });
 
+      socket.on('unread_count_update', ({ unread }) => {
+        console.log('🔢 [Socket] Unread count update:', unread);
+        setUnreadCount(typeof unread === 'number' ? unread : 0);
+      });
+
       socket.on('connect', () => {
         console.log('✅ [Socket] Connected:', socket.id);
       });
@@ -351,6 +356,7 @@ function Header({ darkMode, setDarkMode, toggleMenu, isMenuOpen, animateIcon }) 
         socket.off('notification_read');
         socket.off('all_read');
         socket.off('notification_deleted');
+        socket.off('unread_count_update');
         socket.off('connect');
         socket.off('disconnect');
         socket.off('connect_error');

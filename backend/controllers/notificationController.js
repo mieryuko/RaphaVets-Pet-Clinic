@@ -110,6 +110,56 @@ const sendToOnlineUsers = async (userIds, notification, notifType) => {
     }
 };
 
+const emitUnreadCountForUsers = async (userIds) => {
+    try {
+        if (!userIds || userIds.length === 0) return;
+
+        const uniqueUserIds = [...new Set(userIds.map(id => parseInt(id)).filter(Boolean))];
+        if (uniqueUserIds.length === 0) return;
+
+        let io;
+        try {
+            io = getIO();
+        } catch (socketError) {
+            console.log('⚠️ [emitUnreadCountForUsers] Socket not initialized:', socketError.message);
+            return;
+        }
+
+        for (const userId of uniqueUserIds) {
+            const [result] = await db.query(
+                `SELECT 
+                    (SELECT COUNT(*) FROM user_notifications_tbl 
+                     WHERE accID = ? AND isRead = 0 AND isDeleted = 0) as specific_unread,
+                    (SELECT COUNT(*) FROM notifications_tbl n
+                     JOIN account_tbl a ON a.accId = ?
+                     WHERE n.targetType = 'all' 
+                     AND n.createdAt > DATE_SUB(NOW(), INTERVAL 30 DAY)
+                     AND n.createdAt >= a.createdAt
+                     AND NOT EXISTS (
+                         SELECT 1 FROM user_notifications_tbl un
+                         WHERE un.notificationID = n.notificationID 
+                         AND un.accID = ?
+                     )) as global_unread`,
+                [userId, userId, userId]
+            );
+
+            const unread = (result[0]?.specific_unread || 0) + (result[0]?.global_unread || 0);
+
+            const [sessions] = await db.query(
+                `SELECT socketID FROM user_websocket_sessions_tbl
+                 WHERE accID = ? AND isActive = 1`,
+                [userId]
+            );
+
+            sessions.forEach(session => {
+                io.to(session.socketID).emit('unread_count_update', { unread });
+            });
+        }
+    } catch (error) {
+        console.error('❌ [emitUnreadCountForUsers] Error:', error);
+    }
+};
+
 export const removeNotificationsByReference = async (referenceTable, referenceID) => {
     try {
         if (!referenceTable || !referenceID) {
@@ -173,6 +223,8 @@ export const removeNotificationsByReference = async (referenceTable, referenceID
                 });
             }
         }
+
+        await emitUnreadCountForUsers(recipients.map(r => r.accID));
 
         return { success: true, removedCount: notificationIds.length, notificationIds };
     } catch (error) {
@@ -1015,6 +1067,8 @@ export const deleteNotification = async (req, res) => {
         sessions.forEach(session => {
             io.to(session.socketID).emit('notification_deleted', { notificationId });
         });
+
+        await emitUnreadCountForUsers([userId]);
 
         console.log('✅ [deleteNotification] Completed');
         res.json({ success: true, message: 'Notification deleted' });
