@@ -353,27 +353,61 @@ async function getPetsReport(startDate, endDate) {
  * Get Visits/Appointments Trend Data
  */
 async function getVisitsReport(startDate, endDate) {
-    // Rebuild date filter without alias
+    // Date filter based on actual visit date (visitDateTime for walk-ins, appointmentDate for scheduled)
     let dateFilter = '';
     const params = [];
-    
+
     if (startDate && endDate) {
-        dateFilter = ` AND appointmentDate BETWEEN ? AND ?`;
+        dateFilter = ` AND DATE(COALESCE(visitDateTime, appointmentDate)) BETWEEN ? AND ?`;
         params.push(startDate, endDate);
+    } else {
+        dateFilter = ` AND DATE(COALESCE(visitDateTime, appointmentDate)) >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)`;
     }
+
+    // Total visits = all completed appointments/visits (all-time, no month/date filter)
+    const [totalCompletedResult] = await db.query(
+        `SELECT COUNT(*) as total
+         FROM appointment_tbl
+         WHERE isDeleted = 0 AND statusID = 6`
+    );
     
-    // Monthly trend
-    const [monthlyTrend] = await db.query(
+    // Daily trend by weekday (Monday to Sunday)
+    const [dailyTrend] = await db.query(
         `SELECT 
-            DATE_FORMAT(appointmentDate, '%b %Y') as month,
-            DATE_FORMAT(appointmentDate, '%Y-%m') as monthKey,
+            DAYNAME(DATE(COALESCE(visitDateTime, appointmentDate))) as day,
+            CASE DAYOFWEEK(DATE(COALESCE(visitDateTime, appointmentDate)))
+                WHEN 2 THEN 1
+                WHEN 3 THEN 2
+                WHEN 4 THEN 3
+                WHEN 5 THEN 4
+                WHEN 6 THEN 5
+                WHEN 7 THEN 6
+                WHEN 1 THEN 7
+            END as dayOrder,
             COUNT(*) as count
          FROM appointment_tbl
-         WHERE isDeleted = 0 ${dateFilter}
-         GROUP BY DATE_FORMAT(appointmentDate, '%Y-%m')
-         ORDER BY monthKey DESC
-         LIMIT 12`,
+         WHERE isDeleted = 0 AND statusID = 6 ${dateFilter}
+         GROUP BY DAYNAME(DATE(COALESCE(visitDateTime, appointmentDate))), DAYOFWEEK(DATE(COALESCE(visitDateTime, appointmentDate)))
+         ORDER BY dayOrder ASC`,
         params
+    );
+
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    const formattedToday = `${year}-${month}-${day}`;
+
+    const [todayResult] = await db.query(
+        `SELECT COUNT(*) as today
+         FROM appointment_tbl
+         WHERE isDeleted = 0
+         AND statusID = 6
+         AND (
+            appointmentDate = ?
+            OR DATE(visitDateTime) = ?
+         )`,
+        [formattedToday, formattedToday]
     );
 
     // Visit types distribution
@@ -382,7 +416,7 @@ async function getVisitsReport(startDate, endDate) {
             visitType,
             COUNT(*) as count
          FROM appointment_tbl
-         WHERE isDeleted = 0 ${dateFilter}
+         WHERE isDeleted = 0 AND statusID = 6 ${dateFilter}
          GROUP BY visitType`,
         params
     );
@@ -395,7 +429,7 @@ async function getVisitsReport(startDate, endDate) {
             COUNT(*) as count
          FROM appointment_tbl at
          JOIN service_tbl s ON at.serviceID = s.serviceID
-         WHERE at.isDeleted = 0 ${dateFilter}
+         WHERE at.isDeleted = 0 AND at.statusID = 6 ${dateFilter.replace(/COALESCE\(visitDateTime, appointmentDate\)/g, 'COALESCE(at.visitDateTime, at.appointmentDate)')}
          GROUP BY at.serviceID, s.service
          ORDER BY count DESC
          LIMIT 5`,
@@ -408,11 +442,11 @@ async function getVisitsReport(startDate, endDate) {
             AVG(daily_count) as dailyAverage
          FROM (
             SELECT 
-                appointmentDate,
+                DATE(COALESCE(visitDateTime, appointmentDate)) as visitDate,
                 COUNT(*) as daily_count
             FROM appointment_tbl
-            WHERE isDeleted = 0 ${dateFilter}
-            GROUP BY appointmentDate
+            WHERE isDeleted = 0 AND statusID = 6 ${dateFilter}
+            GROUP BY DATE(COALESCE(visitDateTime, appointmentDate))
          ) as daily`,
         params
     );
@@ -420,21 +454,25 @@ async function getVisitsReport(startDate, endDate) {
     // Most popular day of week
     const [popularDay] = await db.query(
         `SELECT 
-            DAYNAME(appointmentDate) as dayName,
+            DAYNAME(DATE(COALESCE(visitDateTime, appointmentDate))) as dayName,
             COUNT(*) as count
          FROM appointment_tbl
-         WHERE isDeleted = 0 ${dateFilter}
-         GROUP BY DAYNAME(appointmentDate)
+         WHERE isDeleted = 0 AND statusID = 6 ${dateFilter}
+         GROUP BY DAYNAME(DATE(COALESCE(visitDateTime, appointmentDate)))
          ORDER BY count DESC
          LIMIT 1`,
         params
     );
 
     return {
-        monthlyTrend,
+        kpi: {
+            total: totalCompletedResult[0]?.total || 0
+        },
+        dailyTrend,
         visitTypes,
         topServices,
         insights: {
+            today: todayResult[0]?.today || 0,
             dailyAverage: Math.round(dailyAvg[0]?.dailyAverage || 0),
             mostPopularDay: popularDay[0]?.dayName || 'N/A',
             mostPopularDayCount: popularDay[0]?.count || 0

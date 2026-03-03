@@ -1,7 +1,65 @@
+import { useEffect, useState } from "react";
 import { Line, Bar } from "react-chartjs-2";
 import StatsCard from "./StatsCard";
+import api from "../../../api/axios";
 
-const VisitsReport = () => {
+const VisitsReport = ({ dateRange }) => {
+  const [visitsData, setVisitsData] = useState(null);
+
+  useEffect(() => {
+    const fetchVisitsData = async () => {
+      try {
+        const params = {};
+        if (dateRange?.start && dateRange?.end) {
+          params.startDate = dateRange.start.toISOString().split("T")[0];
+          params.endDate = dateRange.end.toISOString().split("T")[0];
+        }
+
+        const response = await api.get("/admin/reports", { params });
+        if (response.data?.success) {
+          setVisitsData(response.data.data?.visits || null);
+        }
+      } catch (error) {
+        console.error("Error fetching visits report data:", error);
+      }
+    };
+
+    fetchVisitsData();
+  }, [dateRange]);
+
+  const formatNumber = (num) =>
+    num?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") || "0";
+
+  const totalVisits = visitsData?.kpi?.total;
+
+  const weekdayLabels = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+  const weekdayShortLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+  const trendLabels = weekdayShortLabels;
+  const trendValues = weekdayLabels.map((day) => {
+    const match = visitsData?.dailyTrend?.find((item) => item.day === day);
+    return match ? match.count : 0;
+  });
+
+  const serviceLabels = visitsData?.topServices?.map((item) => item.service) || ["Consultation", "Vaccination", "Grooming", "Surgery"];
+  const serviceValues = visitsData?.topServices?.map((item) => item.count) || [220, 300, 180, 90];
+
+  const rangeTotal = trendValues.reduce((sum, val) => sum + (val || 0), 0);
+  const totalChangePercent = totalVisits > 0 ? Math.round((rangeTotal / totalVisits) * 100) : 0;
+
+  const avgPerDay = visitsData?.insights?.dailyAverage || 0;
+  const todayVisits = visitsData?.insights?.today || 0;
+  const todayVsAvgPercent = avgPerDay > 0 ? Math.round(((todayVisits - avgPerDay) / avgPerDay) * 100) : 0;
+  const todayChangeLabel = avgPerDay > 0
+    ? `${todayVsAvgPercent >= 0 ? '+' : ''}${todayVsAvgPercent}% vs avg`
+    : 'No baseline';
+
+  const yesterdayVisits = trendValues.length > 1 ? trendValues[trendValues.length - 2] : 0;
+  const avgVsYesterdayPercent = yesterdayVisits > 0 ? Math.round(((avgPerDay - yesterdayVisits) / yesterdayVisits) * 100) : 0;
+  const avgChangeLabel = yesterdayVisits > 0
+    ? `${avgVsYesterdayPercent >= 0 ? '+' : ''}${avgVsYesterdayPercent}% vs yesterday`
+    : 'No baseline';
+
   return (
     <section className="space-y-4">
       <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200">
@@ -9,10 +67,10 @@ const VisitsReport = () => {
       </h2>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatsCard title="Total Visits" value="5,421" change="+14%" />
-        <StatsCard title="Today" value="86" change="Active" />
-        <StatsCard title="Peak Day" value="Saturday" change="↗" />
-        <StatsCard title="Avg / Day" value="124" change="+6%" />
+        <StatsCard title="Total Visits" value={formatNumber(totalVisits)} change={`${totalChangePercent}% in range`} />
+        <StatsCard title="Today" value={formatNumber(todayVisits)} change={todayChangeLabel} />
+        <StatsCard title="Peak Day" value={visitsData?.insights?.mostPopularDay || "N/A"} change={formatNumber(visitsData?.insights?.mostPopularDayCount || 0)} />
+        <StatsCard title="Avg / Day" value={formatNumber(avgPerDay)} change={avgChangeLabel} />
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">
@@ -21,10 +79,10 @@ const VisitsReport = () => {
           <div className="h-[260px]">
             <Line
               data={{
-                labels:["Mon","Tue","Wed","Thu","Fri","Sat","Sun"],
+                labels: trendLabels,
                 datasets:[
                   { 
-                    data:[90,110,130,125,140,180,160],
+                    data: trendValues,
                     borderColor: '#3b82f6',
                     backgroundColor: 'rgba(59, 130, 246, 0.1)',
                     tension: 0.4,
@@ -47,10 +105,10 @@ const VisitsReport = () => {
           <div className="h-[260px]">
             <Bar
               data={{
-                labels:["Consultation","Vaccination","Grooming","Surgery"],
+                labels: serviceLabels,
                 datasets:[
                   { 
-                    data:[220,300,180,90],
+                    data: serviceValues,
                     backgroundColor: ['#3b82f6', '#8b5cf6', '#ec4899', '#f97316'],
                     borderRadius: 6
                   }

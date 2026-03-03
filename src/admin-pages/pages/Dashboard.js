@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Sidebar from "../template/Sidebar";
 import Header from "../template/Header";
 import {
@@ -19,6 +20,7 @@ import {
 import api from "../../api/axios";
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const [stats, setStats] = useState({
     adminName: "Admin",
     totalOwners: 0,
@@ -122,25 +124,30 @@ const Dashboard = () => {
                   title: "Add Pet",
                   icon: <PlusCircle size={18} />,
                   color: "from-[#D6F6FF] to-[#E5FBFF]",
+                  path: "/admin-pages/pet-management",
                 },
                 {
                   title: "Appointments",
                   icon: <CalendarPlus size={18} />,
                   color: "from-[#E0F8D8] to-[#EAFCE3]",
+                  path: "/admin-pages/appointments",
                 },
                 {
                   title: "Post Tip",
                   icon: <MessageSquarePlus size={18} />,
                   color: "from-[#FFF0D2] to-[#FFF9E5]",
+                  path: "/admin-pages/content-manager",
                 },
                 {
                   title: "Reports",
                   icon: <Cpu size={18} />,
                   color: "from-[#FFDDEE] to-[#FFE6F5]",
+                  path: "/admin-pages/reports",
                 },
               ].map((action, i) => (
                 <div
                   key={i}
+                  onClick={() => navigate(action.path)}
                   className={`bg-gradient-to-br ${action.color} dark:from-[#1B1B1B] dark:to-[#222] 
                     rounded-xl p-3 flex items-center justify-center gap-2 text-gray-700 dark:text-gray-200 
                     cursor-pointer hover:brightness-105 hover:scale-101 transition duration-200`}
