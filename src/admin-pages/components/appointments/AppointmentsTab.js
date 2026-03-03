@@ -1,5 +1,14 @@
 import { Search, Plus, Eye, Trash2 } from "lucide-react";
 
+const formatDate = (date) => {
+  if (!date) return "";
+  return new Date(date).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+  });
+};
+
 const AppointmentsTab = ({
   appointments,
   searchQuery,
@@ -172,7 +181,7 @@ const AppointmentsTab = ({
                     <td className="p-2 text-sm">{item.id}</td>
                     <td className="p-2 text-sm">{item.petName}</td>
                     <td className="p-2 text-sm">{item.owner}</td>
-                    <td className="p-2 text-sm">{item.date}</td>
+                    <td className="p-2 text-sm">{formatDate(item.date)}</td>
                     <td className="p-2 text-sm">{item.time}</td>
                     <td className="p-2 text-sm">
                       {isEditable ? (

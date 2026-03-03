@@ -5,6 +5,7 @@ const statusColors = {
   Upcoming: "bg-pink-300 text-pink-800",   
   Completed: "bg-green-300 text-green-800",
   Cancelled: "bg-red-300 text-red-800",
+  Missed: "bg-gray-300 text-gray-800",
 };
 
 const visitTypeColors = {

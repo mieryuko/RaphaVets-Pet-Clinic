@@ -6,6 +6,8 @@ const cancelPastPendingAppointments = async () => {
     const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
     
     // Assuming statusID 1 is "Pending" and statusID 4 is "Cancelled"
+    //‼️Would it be better to look up statusID for "Pending" and "Cancelled"
+    //⚠️from the database instead of hardcoding?
     const [result] = await db.query(
       `UPDATE appointment_tbl 
        SET statusID = 4 

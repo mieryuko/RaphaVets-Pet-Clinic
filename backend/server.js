@@ -23,6 +23,7 @@ import breedDetectRoute from './routes/ml_routes/breedDetectRoute.js';
 import dotenv from "dotenv";
 import supportRoute from './routes/supportRoute.js';
 import notificationRoute from './routes/notificationRoute.js';
+import "./cron/appointmentCron.js";
 import reportRoute from './routes/admin_routes/reportRoute.js';
 
 dotenv.config();

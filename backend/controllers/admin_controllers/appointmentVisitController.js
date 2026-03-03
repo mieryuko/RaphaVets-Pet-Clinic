@@ -2,6 +2,8 @@ import { fi } from "date-fns/locale";
 import db from "../../config/db.js";
 import { createAppointmentNotification } from "../notificationController.js"; // Import notification function
 
+
+
 export const assignAppointment = async (req, res) => {
   try {
     const { userID, petID, serviceID, date, time } = req.body;
@@ -126,14 +128,26 @@ export const getAppointmentAndVisits = async (req, res) => {
          SELECT
             a.*,
             p.petName,
+            CONCAT(
+                TIMESTAMPDIFF(YEAR, p.dateOfBirth, CURDATE()), 'y ',
+                TIMESTAMPDIFF(MONTH, p.dateOfBirth, CURDATE()) % 12, 'm'
+            ) AS petAge,
+            p.petGender AS petSex,
+            p.weight_kg AS weight,
+            b.breedName,
             CONCAT(ac.firstName, ' ', ac.lastName) as ownerName,
             sc.scheduleTime,
-            s.statusName
+            s.statusName,
+            ac.email,
+            sv.service,
+            sv.description
          FROM appointment_tbl a
          JOIN appointment_status_tbl s ON s.statusID = a.statusID
          JOIN pet_tbl p ON p.petID = a.petID
          JOIN account_tbl ac ON ac.accID = a.accID
          JOIN scheduletime_tbl sc on sc.scheduledTimeID = a.scheduledTimeID
+         JOIN service_tbl sv ON sv.serviceID = a.serviceID
+         JOIN breed_tbl b ON b.breedID = p.breedID
          WHERE a.visitType = "Scheduled"
             AND a.isDeleted = FALSE
          ORDER BY a.appointmentDate DESC, a.scheduledTimeID DESC
@@ -158,12 +172,13 @@ export const getAppointmentAndVisits = async (req, res) => {
     const cleanedAppointments = appointments.map((apt) => ({
       id: apt.appointmentID,
       petName: apt.petName,
+      petAge: apt.petAge,
+      petSex: apt.petSex,
+      weight: apt.weight,
+      breedName: apt.breedName,
       owner: apt.ownerName,
-      date: new Date(apt.appointmentDate).toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "numeric",
-        day: "numeric",
-      }),
+      email: apt.email,
+      date: apt.appointmentDate,
       time: new Date(`1970-01-01T${apt.scheduleTime}`).toLocaleTimeString(
         "en-US",
         {
@@ -174,6 +189,8 @@ export const getAppointmentAndVisits = async (req, res) => {
       ),
       status: apt.statusName,
       visitType: apt.visitType,
+      serviceType: apt.service,
+      description: apt.description,
       accID: apt.accID, // Include for notification reference
     }));
 

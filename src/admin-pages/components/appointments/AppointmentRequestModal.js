@@ -1,6 +1,14 @@
 import { useState } from "react";
 import SuccessToast from "../../../template/SuccessToast";
-import api from "../../../api/axios";
+
+const formatDate = (date) => {
+  if (!date) return "";
+  return new Date(date).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+  });
+};
 
 const AppointmentRequestModal = ({ isOpen, onClose, appointment, onUpdateStatus }) => {
   const [loading, setLoading] = useState(false);
@@ -92,19 +100,19 @@ const AppointmentRequestModal = ({ isOpen, onClose, appointment, onUpdateStatus 
                       <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-2 text-sm">
                         <div>
                           <span className="text-gray-500">Breed:</span>
-                          <p className="font-medium text-gray-700">Chihuahua</p>
+                          <p className="font-medium text-gray-700">{appointment.breedName}</p>
                         </div>
                         <div>
                           <span className="text-gray-500">Age:</span>
-                          <p className="font-medium text-gray-700">3 years</p>
+                          <p className="font-medium text-gray-700">{appointment.petAge}</p>
                         </div>
                         <div>
                           <span className="text-gray-500">Sex:</span>
-                          <p className="font-medium text-gray-700">Male</p>
+                          <p className="font-medium text-gray-700">{appointment.petSex}</p>
                         </div>
                         <div>
                           <span className="text-gray-500">Weight:</span>
-                          <p className="font-medium text-gray-700">8 kg</p>
+                          <p className="font-medium text-gray-700">{appointment.weight} kg</p>
                         </div>
                       </div>
                     </div>
@@ -121,11 +129,11 @@ const AppointmentRequestModal = ({ isOpen, onClose, appointment, onUpdateStatus 
                     </div>
                     <div>
                       <span className="text-gray-500">Phone:</span>
-                      <p className="font-medium text-gray-700">096609182898</p>
+                      <p className="font-medium text-gray-700">TABLES HAVE NO PHONE COLUMN</p>
                     </div>
                     <div>
                       <span className="text-gray-500">Email:</span>
-                      <p className="font-medium text-gray-700">shdjak@gmail.com</p>
+                      <p className="font-medium text-gray-700">{appointment.email}</p>
                     </div>
                   </div>
                 </div>
@@ -139,11 +147,11 @@ const AppointmentRequestModal = ({ isOpen, onClose, appointment, onUpdateStatus 
                   <div className="space-y-2 text-sm">
                     <div>
                       <span className="text-gray-500">Service Type:</span>
-                      <p className="font-medium text-gray-700">Consultation</p>
+                      <p className="font-medium text-gray-700">{appointment.serviceType}</p>
                     </div>
                     <div>
                       <span className="text-gray-500">Description:</span>
-                      <p className="font-medium text-gray-700">General checkup and consultation</p>
+                      <p className="font-medium text-gray-700">{appointment.description}</p>
                     </div>
                   </div>
                 </div>
@@ -154,7 +162,7 @@ const AppointmentRequestModal = ({ isOpen, onClose, appointment, onUpdateStatus 
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-gray-500">Date:</span>
-                      <span className="font-medium text-gray-700">{appointment.date}</span>
+                      <span className="font-medium text-gray-700">{formatDate(appointment.date)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-500">Time:</span>

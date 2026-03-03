@@ -47,6 +47,7 @@ const statusColors = {
   Upcoming: "bg-pink-300 text-pink-800",   
   Completed: "bg-green-300 text-green-800",
   Cancelled: "bg-red-300 text-red-800",
+  Missed: "bg-gray-300 text-gray-800",
 };
 
 const visitTypeColors = {
@@ -58,8 +59,8 @@ const AppointmentsVisits = () => {
   const [activeTab, setActiveTab] = useState("Calendar");
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [appointments, setAppointments] = useState([]);
-  const [visits, setVisits] = useState([]);
+  const [appointments, setAppointments] = useState(sampleAppointments);
+  const [visits, setVisits] = useState(sampleVisits);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [visitTypeFilter, setVisitTypeFilter] = useState("All");

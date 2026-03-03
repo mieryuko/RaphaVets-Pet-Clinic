@@ -1,3 +1,12 @@
+const formatDate = (date) => {
+  if (!date) return "";
+  return new Date(date).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+  });
+};
+
 const RequestsTab = ({ filteredRequests, handleViewRequest }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2 pr-2 pb-2 overflow-y-auto">
@@ -13,7 +22,7 @@ const RequestsTab = ({ filteredRequests, handleViewRequest }) => {
               <div className="flex flex-col gap-1">
                 <p className="font-semibold text-gray-700 dark:text-gray-200 text-sm">{req.petName}</p>
                 <p className="text-gray-500 dark:text-gray-400 text-xs">Owner: {req.owner}</p>
-                <p className="text-gray-400 dark:text-gray-500 text-xs">{req.date} • {req.time}</p>
+                <p className="text-gray-400 dark:text-gray-500 text-xs">{formatDate(req.date)} • {req.time}</p>
               </div>
               <span className="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800 shadow-sm">
                 Pending
