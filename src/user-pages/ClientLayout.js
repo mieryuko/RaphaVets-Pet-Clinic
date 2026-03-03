@@ -6,8 +6,8 @@ import FloatingChatBox from "./components/FloatingChatBox";
 
 function ClientLayout({ children }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false); 
-  const [sidebarAnimate, setSidebarAnimate] = useState(true); // controls sidebar + content transition
-  const [shouldAnimateIcon, setShouldAnimateIcon] = useState(false); // header hamburger animation flag
+  const [sidebarAnimate, setSidebarAnimate] = useState(true);
+  const [shouldAnimateIcon, setShouldAnimateIcon] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [chatType, setChatType] = useState(null);
   const navigate = useNavigate();
@@ -27,17 +27,14 @@ function ClientLayout({ children }) {
 
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth < 768 && isMenuOpen) {
-        setIsMenuOpen(false);
-      }
-      if (window.innerWidth >= 768 && !isMenuOpen) {
-        setIsMenuOpen(true);
+      if (window.innerWidth >= 768) {
+        setIsMenuOpen(false); 
       }
     };
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [isMenuOpen]);
+  }, []);
 
   useEffect(() => {
     if (darkMode) {
@@ -49,25 +46,19 @@ function ClientLayout({ children }) {
     }
   }, [darkMode]);
 
-  // called from Header when hamburger is clicked
   const handleToggleMenu = () => {
-    setShouldAnimateIcon(true); // allow icon to rotate
-
-    // give the icon a moment to start its rotation before updating layout
+    setShouldAnimateIcon(true);
     const nextState = !isMenuOpen;
     setTimeout(() => {
-      setSidebarAnimate(true);    // enable animation for sidebar & content
+      setSidebarAnimate(true);
       setIsMenuOpen(nextState);
-    }, 100); // 100ms delay keeps motion feeling sequential
+    }, 100);
   };
 
-  // used when a sidebar link is clicked (or other programmatic closes)
-  // animations are suppressed so that the menu disappears immediately
   const closeMenuImmediate = () => {
     setSidebarAnimate(false);
-    setShouldAnimateIcon(false); // icon should not animate when closing this way
+    setShouldAnimateIcon(false);
     setIsMenuOpen(false);
-    // re-enable animation state for future toggles
     setTimeout(() => setSidebarAnimate(true), 0);
   };
 
@@ -93,9 +84,8 @@ function ClientLayout({ children }) {
         {/* Main content area */}
         <div className={`
           flex flex-col gap-5 rounded-none md:rounded-xl p-4 sm:p-5 w-full
-          ${sidebarAnimate ? 'transition-all duration-300' : ''}
-          ${isMenuOpen ? 'md:w-[calc(100%-250px)]' : 'md:w-full'}
-          ${isMenuOpen ? 'opacity-50 md:opacity-100 pointer-events-none md:pointer-events-auto' : ''}
+          transition-all duration-300 ease-in-out
+          md:w-[calc(100%-250px)]
         `}>
           {children}
         </div>
@@ -113,7 +103,7 @@ function ClientLayout({ children }) {
       
       {isMenuOpen && (
         <div 
-          className="fixed inset-0 z-40 md:hidden"
+          className="fixed inset-0 z-40 md:hidden bg-black/50 backdrop-blur-sm transition-opacity duration-300"
           onClick={() => setIsMenuOpen(false)}
         />
       )}

@@ -1,9 +1,9 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { 
-  Plus, Edit2, Trash2, Search, Filter, Eye, RefreshCw, Info
+  Plus, Edit2, Trash2, Search, RefreshCw
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import socket from "../../../socket"; // Import your existing socket instance
+import socket from "../../../socket";
 
 import DeleteModal from "./DeleteTipModal";
 
@@ -12,12 +12,15 @@ const PetTipsSection = ({
   onAdd, 
   onEdit, 
   onDelete, 
-  onRefresh, // Add this prop for refreshing data
+  onRefresh,
   loading, 
   allCategories = [], 
   allStatuses = [],
-  currentAdminId, // Pass the current admin's ID
-  currentAdminName // Pass the current admin's name
+  currentAdminId,
+  currentAdminName,
+  showConfirm,
+  showSuccess,
+  showError
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
@@ -28,22 +31,14 @@ const PetTipsSection = ({
   // Real-time collaboration states
   const [lastUpdate, setLastUpdate] = useState(null);
   const [showUpdateIndicator, setShowUpdateIndicator] = useState(false);
-  const [activeCollaborators, setActiveCollaborators] = useState([]);
-  // ===========================================
-  // WEBSOCKET SETUP USING EXISTING SOCKET
-  // ===========================================
+
+  // WebSocket setup
   useEffect(() => {
-    // Connect socket if not already connected
     if (!socket.connected) {
       socket.connect();
     }
 
-
-    // Listen for new tips from other admins
     const onAdminTipCreated = (data) => {
-      console.log('📨 Another admin created a tip:', data);
-      
-      // Show update indicator
       setShowUpdateIndicator(true);
       setLastUpdate({
         action: 'created',
@@ -52,17 +47,13 @@ const PetTipsSection = ({
         timestamp: new Date().toLocaleTimeString()
       });
       
-      // Refresh data after 1 second
       setTimeout(() => {
         if (onRefresh) onRefresh();
         setShowUpdateIndicator(false);
       }, 1000);
     };
 
-    // Listen for updated tips from other admins
     const onAdminTipUpdated = (data) => {
-      console.log('📨 Another admin updated a tip:', data);
-      
       setShowUpdateIndicator(true);
       setLastUpdate({
         action: 'updated',
@@ -71,21 +62,13 @@ const PetTipsSection = ({
         timestamp: new Date().toLocaleTimeString()
       });
       
-      // If the updated tip is currently in delete modal, show a warning
-      if (tipToDelete?.id === data.tip.id) {
-        console.log('⚠️ This tip was updated by another admin');
-      }
-      
       setTimeout(() => {
         if (onRefresh) onRefresh();
         setShowUpdateIndicator(false);
       }, 1000);
     };
 
-    // Listen for deleted tips from other admins
     const onAdminTipDeleted = (data) => {
-      console.log('📨 Another admin deleted a tip:', data);
-      
       setShowUpdateIndicator(true);
       setLastUpdate({
         action: 'deleted',
@@ -94,7 +77,6 @@ const PetTipsSection = ({
         timestamp: new Date().toLocaleTimeString()
       });
       
-      // If the deleted tip is in the modal, close it
       if (tipToDelete?.id === data.tipId) {
         setDeleteModalOpen(false);
         setTipToDelete(null);
@@ -106,55 +88,39 @@ const PetTipsSection = ({
       }, 1000);
     };
 
-    // Listen for active collaborators
-    const onAdminPresence = (data) => {
-      setActiveCollaborators(data.activeAdmins || []);
-    };
-
-    // Register event listeners
     socket.on('admin_tip_created', onAdminTipCreated);
     socket.on('admin_tip_updated', onAdminTipUpdated);
     socket.on('admin_tip_deleted', onAdminTipDeleted);
-    socket.on('admin_presence', onAdminPresence);
 
-    // If already connected, join admin room immediately
     if (socket.connected) {
       socket.emit('join_admin_room', {
         adminId: currentAdminId,
-        adminName: currentAdminName || localStorage.getItem('adminName') || 'Unknown Admin'
+        adminName: currentAdminName
       });
     }
 
-    // Cleanup on unmount
     return () => {
       socket.off('admin_tip_created', onAdminTipCreated);
       socket.off('admin_tip_updated', onAdminTipUpdated);
       socket.off('admin_tip_deleted', onAdminTipDeleted);
-      socket.off('admin_presence', onAdminPresence);
-      
-      // Don't disconnect here - let other components use the socket
     };
   }, [currentAdminId, currentAdminName, onRefresh, tipToDelete]);
 
-  // Get categories - use allCategories from database if provided, otherwise extract from petTips
   const categories = ["All", ...(allCategories.length > 0 
     ? allCategories.map(cat => cat.name || cat.categoryName) 
     : [...new Set(petTips.map(tip => tip.category).filter(Boolean))]
   )];
 
-  // Get statuses - use allStatuses from database if provided, otherwise extract from petTips
   const statuses = ["All", ...(allStatuses.length > 0 
     ? allStatuses.map(status => status.name || status.pubStatus) 
     : [...new Set(petTips.map(tip => tip.status).filter(Boolean))]
   )];
 
-  // Count tips per category for display
   const getCategoryCount = (categoryName) => {
     if (categoryName === "All") return petTips.length;
     return petTips.filter(tip => tip.category === categoryName).length;
   };
 
-  // Count tips per status for display
   const getStatusCount = (statusName) => {
     if (statusName === "All") return petTips.length;
     return petTips.filter(tip => tip.status === statusName).length;
@@ -193,8 +159,18 @@ const PetTipsSection = ({
   };
 
   const handleDeleteClick = (tip) => {
-    setTipToDelete(tip);
-    setDeleteModalOpen(true);
+    showConfirm(
+      'Are you sure you want to delete this pet tip? This action cannot be undone.',
+      () => {
+        setTipToDelete(tip);
+        setDeleteModalOpen(true);
+      },
+      {
+        title: 'Delete Pet Tip',
+        confirmText: 'Delete',
+        cancelText: 'Cancel'
+      }
+    );
   };
 
   const handleConfirmDelete = () => {
@@ -202,12 +178,6 @@ const PetTipsSection = ({
       onDelete(tipToDelete.id);
       setDeleteModalOpen(false);
       setTipToDelete(null);
-    }
-  };
-
-  const handleManualRefresh = () => {
-    if (onRefresh) {
-      onRefresh();
     }
   };
 

@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { 
-  Plus, Edit2, Trash2, Search, Video, Eye, RefreshCw, Info
+  Plus, Edit2, Trash2, Search, Video, RefreshCw
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import socket from "../../../socket";
@@ -12,12 +12,15 @@ const VideosSection = ({
   onAdd, 
   onEdit, 
   onDelete, 
-  onRefresh, // Add this prop
+  onRefresh,
   loading, 
   allCategories = [], 
   allStatuses = [],
-  currentAdminId, // Add this prop
-  currentAdminName // Add this prop
+  currentAdminId,
+  currentAdminName,
+  showConfirm,
+  showSuccess,
+  showError
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
@@ -28,20 +31,14 @@ const VideosSection = ({
   // Real-time collaboration states
   const [lastUpdate, setLastUpdate] = useState(null);
   const [showUpdateIndicator, setShowUpdateIndicator] = useState(false);
-  const [activeCollaborators, setActiveCollaborators] = useState([]);
-  // ===========================================
-  // WEBSOCKET SETUP FOR REAL-TIME COLLABORATION
-  // ===========================================
+
+  // WebSocket setup
   useEffect(() => {
-    // Connect socket if not already connected
     if (!socket.connected) {
       socket.connect();
     }
 
-    // Listen for new videos from other admins
     const onAdminVideoCreated = (data) => {
-      console.log('📨 Another admin created a video:', data);
-      
       setShowUpdateIndicator(true);
       setLastUpdate({
         action: 'created',
@@ -50,17 +47,13 @@ const VideosSection = ({
         timestamp: new Date().toLocaleTimeString()
       });
       
-      // Refresh data after 1 second
       setTimeout(() => {
         if (onRefresh) onRefresh();
         setShowUpdateIndicator(false);
       }, 1000);
     };
 
-    // Listen for updated videos from other admins
     const onAdminVideoUpdated = (data) => {
-      console.log('📨 Another admin updated a video:', data);
-      
       setShowUpdateIndicator(true);
       setLastUpdate({
         action: 'updated',
@@ -69,9 +62,24 @@ const VideosSection = ({
         timestamp: new Date().toLocaleTimeString()
       });
       
-      // If the updated video is currently in delete modal, show a warning
-      if (videoToDelete?.id === data.video.id) {
-        console.log('⚠️ This video was updated by another admin');
+      setTimeout(() => {
+        if (onRefresh) onRefresh();
+        setShowUpdateIndicator(false);
+      }, 1000);
+    };
+
+    const onAdminVideoDeleted = (data) => {
+      setShowUpdateIndicator(true);
+      setLastUpdate({
+        action: 'deleted',
+        videoTitle: data.videoTitle,
+        adminName: data.adminName,
+        timestamp: new Date().toLocaleTimeString()
+      });
+      
+      if (videoToDelete?.id === data.videoId) {
+        setDeleteModalOpen(false);
+        setVideoToDelete(null);
       }
       
       setTimeout(() => {
@@ -80,77 +88,39 @@ const VideosSection = ({
       }, 1000);
     };
 
-    // Listen for deleted videos from other admins
-    const onAdminVideoDeleted = (data) => {
-    console.log('📨 Another admin deleted a video:', data);
-    
-    setShowUpdateIndicator(true);
-    setLastUpdate({
-      action: 'deleted',
-      videoTitle: data.videoTitle, 
-      adminName: data.adminName,
-      timestamp: new Date().toLocaleTimeString()
-    });
-    
-    // If the deleted video is in the modal, close it - use videoId
-    if (videoToDelete?.id === data.videoId) {
-      setDeleteModalOpen(false);
-      setVideoToDelete(null);
-    }
-    
-    setTimeout(() => {
-      if (onRefresh) onRefresh();
-      setShowUpdateIndicator(false);
-    }, 1000);
-  };
-
-    // Listen for active collaborators
-    const onAdminPresence = (data) => {
-      setActiveCollaborators(data.activeAdmins || []);
-    };
-
-    // Register event listeners
     socket.on('admin_video_created', onAdminVideoCreated);
     socket.on('admin_video_updated', onAdminVideoUpdated);
     socket.on('admin_video_deleted', onAdminVideoDeleted);
-    socket.on('admin_presence', onAdminPresence);
 
-    // If already connected, join admin room immediately
     if (socket.connected) {
       socket.emit('join_admin_room', {
         adminId: currentAdminId,
-        adminName: currentAdminName || localStorage.getItem('adminName') || 'Unknown Admin'
+        adminName: currentAdminName
       });
     }
 
-    // Cleanup on unmount
     return () => {
       socket.off('admin_video_created', onAdminVideoCreated);
       socket.off('admin_video_updated', onAdminVideoUpdated);
       socket.off('admin_video_deleted', onAdminVideoDeleted);
-      socket.off('admin_presence', onAdminPresence);
     };
   }, [currentAdminId, currentAdminName, onRefresh, videoToDelete]);
 
-  // Get categories - use allCategories from database if provided, otherwise extract from videos
   const categories = ["All", ...(allCategories.length > 0 
     ? allCategories.map(cat => cat.name || cat.videoCategory) 
     : [...new Set(videos.map(video => video.category).filter(Boolean))]
   )];
 
-  // Get statuses - use allStatuses from database if provided, otherwise extract from videos
   const statuses = ["All", ...(allStatuses.length > 0 
     ? allStatuses.map(status => status.name || status.pubStatus) 
     : [...new Set(videos.map(video => video.status).filter(Boolean))]
   )];
 
-  // Count videos per category for display
   const getCategoryCount = (categoryName) => {
     if (categoryName === "All") return videos.length;
     return videos.filter(video => video.category === categoryName).length;
   };
 
-  // Count videos per status for display
   const getStatusCount = (statusName) => {
     if (statusName === "All") return videos.length;
     return videos.filter(video => video.status === statusName).length;
@@ -189,8 +159,18 @@ const VideosSection = ({
   };
 
   const handleDeleteClick = (video) => {
-    setVideoToDelete(video);
-    setDeleteModalOpen(true);
+    showConfirm(
+      'Are you sure you want to delete this video? This action cannot be undone.',
+      () => {
+        setVideoToDelete(video);
+        setDeleteModalOpen(true);
+      },
+      {
+        title: 'Delete Video',
+        confirmText: 'Delete',
+        cancelText: 'Cancel'
+      }
+    );
   };
 
   const handleConfirmDelete = () => {
@@ -198,12 +178,6 @@ const VideosSection = ({
       onDelete(videoToDelete.id);
       setDeleteModalOpen(false);
       setVideoToDelete(null);
-    }
-  };
-
-  const handleManualRefresh = () => {
-    if (onRefresh) {
-      onRefresh();
     }
   };
 

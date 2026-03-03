@@ -104,10 +104,11 @@ function SideBar({ isMenuOpen, closeMenuImmediate, animationEnabled, refreshTrig
       {/* Sidebar */}
       <div className={`
         w-[250px] h-screen md:h-full bg-[#FBFBFB] shadow-xl md:shadow-none flex-shrink-0 flex flex-col p-5 overflow-y-auto
-        ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}
-        ${animationEnabled ? 'transition-transform duration-300' : ''}
         fixed top-0 left-0 z-50 md:relative md:z-auto md:top-auto md:left-auto
-        ${isMenuOpen ? 'pointer-events-auto' : 'pointer-events-none'}
+        transition-transform duration-300 ease-in-out md:transition-none
+        ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}
+        md:translate-x-0
+        ${isMenuOpen ? 'pointer-events-auto' : 'pointer-events-none md:pointer-events-auto'}
       `}>
         {/* Your Pets Section */}
         <div className="pb-4 flex flex-col border-b-[1px] border-[#A6E3E9]">

@@ -40,6 +40,9 @@ import VetLayout from "./vet-pages/VetLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import MobileBlockPage from "./MobileBlockPage"; 
 
+/* guest */
+import PublicForum from "./guest-pages/PublicForum";
+
 const ScreenSizeGuard = ({ children }) => {
   const [isLargeScreen, setIsLargeScreen] = useState(window.innerWidth >= 1024);
 
@@ -95,6 +98,7 @@ function App() {
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/home" element={<HomePage />} />
         <Route path="/change-password" element={<ChangePassword />} />
+        <Route path="/publicforum" element={<PublicForum />} />
 
         {/*user*/}
         <Route path="/user-home" element={<ProtectedRoute><Home /></ProtectedRoute>} />

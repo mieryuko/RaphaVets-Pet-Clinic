@@ -1,13 +1,18 @@
-// ForumPostsSection.js
 import { useState } from "react";
 import { 
   Search, Filter, Trash2, Phone, Mail, Calendar,
-  Image as ImageIcon, User, Archive, ArchiveRestore,
-  Eye, ChevronDown, X, MapPin, Clock, AlertCircle,
-  CheckCircle, MessageCircle, Share2, MoreVertical
+  Image as ImageIcon, Archive, ArchiveRestore,
+  Eye, ChevronDown, X, AlertCircle, CheckCircle,
+  MessageCircle
 } from "lucide-react";
 
-const ForumPostsSection = ({ posts, onDelete, onArchive }) => {
+const ForumPostsSection = ({ 
+  posts, 
+  onDelete, 
+  onArchive,
+  showConfirm,
+  showSuccess 
+}) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
@@ -97,7 +102,7 @@ const ForumPostsSection = ({ posts, onDelete, onArchive }) => {
             </button>
           </div>
 
-          {/* Modal Content - Vertical Scroll */}
+          {/* Modal Content */}
           <div className="overflow-y-auto max-h-[calc(85vh-140px)] p-6">
             <div className="space-y-6">
               {/* Title */}
@@ -149,7 +154,6 @@ const ForumPostsSection = ({ posts, onDelete, onArchive }) => {
               {/* Contact Information */}
               <div className="space-y-2">
                 <h3 className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                  <User className="h-4 w-4 text-[#5EE6FE]" />
                   Contact Information
                 </h3>
                 <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
@@ -211,13 +215,14 @@ const ForumPostsSection = ({ posts, onDelete, onArchive }) => {
             </div>
           </div>
 
-          {/* Modal Footer with Actions */}
+          {/* Modal Footer */}
           <div className="sticky bottom-0 bg-white border-t border-gray-200 px-6 py-3">
             <div className="flex justify-end gap-2">
               <button
                 onClick={() => {
                   onArchive(post.id, post.status === "archived" ? "active" : "archived");
                   onClose();
+                  showSuccess(`Post ${post.status === 'archived' ? 'restored' : 'archived'} successfully!`);
                 }}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium ${
                   post.status === "archived" 
@@ -239,10 +244,19 @@ const ForumPostsSection = ({ posts, onDelete, onArchive }) => {
               </button>
               <button
                 onClick={() => {
-                  if (window.confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
-                    onDelete(post.id);
-                    onClose();
-                  }
+                  showConfirm(
+                    'Are you sure you want to delete this post? This action cannot be undone.',
+                    () => {
+                      onDelete(post.id);
+                      onClose();
+                      showSuccess('Post deleted successfully!');
+                    },
+                    {
+                      title: 'Delete Forum Post',
+                      confirmText: 'Delete',
+                      cancelText: 'Cancel'
+                    }
+                  );
                 }}
                 className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all duration-200 text-sm font-medium"
               >
@@ -260,7 +274,7 @@ const ForumPostsSection = ({ posts, onDelete, onArchive }) => {
     <div className="space-y-6">
       {/* Modern Search & Filter Section */}
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        {/* Search Bar - Full Width */}
+        {/* Search Bar */}
         <div className="p-3">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -274,7 +288,7 @@ const ForumPostsSection = ({ posts, onDelete, onArchive }) => {
           </div>
         </div>
 
-        {/* Filter Toggle and Options */}
+        {/* Filter Toggle */}
         <div className="border-t border-gray-100">
           <button
             onClick={() => setShowFilters(!showFilters)}
@@ -416,7 +430,9 @@ const ForumPostsSection = ({ posts, onDelete, onArchive }) => {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        onArchive(post?.id, post?.status === "archived" ? "active" : "archived");
+                        const newStatus = post?.status === "archived" ? "active" : "archived";
+                        onArchive(post?.id, newStatus);
+                        showSuccess(`Post ${newStatus === 'active' ? 'restored' : 'archived'} successfully!`);
                       }}
                       className={`p-1.5 rounded-lg transition-colors ${
                         post?.status === "archived" 
@@ -433,9 +449,18 @@ const ForumPostsSection = ({ posts, onDelete, onArchive }) => {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        if (window.confirm('Are you sure you want to delete this post?')) {
-                          onDelete(post?.id);
-                        }
+                        showConfirm(
+                          'Are you sure you want to delete this forum post? This action cannot be undone.',
+                          () => {
+                            onDelete(post?.id);
+                            showSuccess('Post deleted successfully!');
+                          },
+                          {
+                            title: 'Delete Forum Post',
+                            confirmText: 'Delete',
+                            cancelText: 'Cancel'
+                          }
+                        );
                       }}
                       className="p-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
                     >

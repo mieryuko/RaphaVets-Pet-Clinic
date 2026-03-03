@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import Header from "../template/Header";
 import { Video, FileText, MessageSquare, Archive, ChevronDown, ChevronUp } from "lucide-react";
 import api from "../../api/axios";
+import { useAlert } from "../hooks/useAlert";
 
 // Import components from organized structure
 import {
@@ -13,6 +14,7 @@ import {
 import ForumPostsSection from "../components/content-management/ForumPostsSection";
 
 const ContentManagement = () => {
+  const { showSuccess, showError, showConfirm, showToast, AlertComponent } = useAlert();
   const [activeTab, setActiveTab] = useState("pet-tips");
   const [showPetTipModal, setShowPetTipModal] = useState(false);
   const [showVideoModal, setShowVideoModal] = useState(false);
@@ -31,36 +33,6 @@ const ContentManagement = () => {
   // Get current admin info from localStorage or auth context
   const currentAdminId = localStorage.getItem('userId') || 'unknown';
   const currentAdminName = localStorage.getItem('userName') || 'Admin';
-
-  // Handle new video category creation
-  const handleNewVideoCategoryCreated = async (newCategory) => {
-    console.log('New video category created:', newCategory);
-    await fetchVideoCategories(); // Refresh the video categories list
-  };
-
-  // Fetch videos
-  const fetchVideos = async () => {
-    try {
-      setLoading(true);
-      const response = await api.get("/admin/content/videos/videos/");
-      setVideos(response.data.data);
-    } catch (error) {
-      console.error('Error fetching videos:', error);
-      alert('Failed to fetch videos');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Fetch video categories
-  const fetchVideoCategories = async () => {
-    try {
-      const response = await api.get("/admin/content/videos/categories");
-      setVideoCategories(response.data.data);
-    } catch (error) {
-      console.error('Error fetching video categories:', error);
-    }
-  };
 
   // Mock data for forum posts (not from backend)
   const [forumPosts, setForumPosts] = useState([
@@ -110,20 +82,45 @@ const ContentManagement = () => {
     forumPosts: 0
   });
 
-  // Fetch all data on component mount (except forum posts)
-  useEffect(() => {
-    fetchPetCareTips();
-    fetchVideos(); 
-    fetchCategories();
-    fetchVideoCategories(); 
-    fetchIcons();
-    fetchPublicationStatuses();
-  }, []);
+  // Handle new video category creation
+  const handleNewVideoCategoryCreated = async (newCategory) => {
+    console.log('New video category created:', newCategory);
+    await fetchVideoCategories();
+    showToast('Video category created successfully!', 'success');
+  };
 
-  // Update stats when data changes
-  useEffect(() => {
-    updateStats();
-  }, [petTips, videos, forumPosts]);
+  // Handle new category creation
+  const handleNewCategoryCreated = (newCategory) => {
+    console.log('New category created:', newCategory);
+    setCategories(prev => [...prev, newCategory]);
+    showToast('Category created successfully!', 'success');
+  };
+
+  // Fetch videos
+  const fetchVideos = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get("/admin/content/videos/videos/");
+      setVideos(response.data.data);
+    } catch (error) {
+      console.error('Error fetching videos:', error);
+      showError('Failed to fetch videos. Please try again.', {
+        title: 'Fetch Error'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch video categories
+  const fetchVideoCategories = async () => {
+    try {
+      const response = await api.get("/admin/content/videos/categories");
+      setVideoCategories(response.data.data);
+    } catch (error) {
+      console.error('Error fetching video categories:', error);
+    }
+  };
 
   // Fetch pet care tips
   const fetchPetCareTips = async () => {
@@ -133,7 +130,9 @@ const ContentManagement = () => {
       setPetTips(response.data.data);
     } catch (error) {
       console.error('Error fetching pet care tips:', error);
-      alert('Failed to fetch pet care tips');
+      showError('Failed to fetch pet care tips', {
+        title: 'Fetch Error'
+      });
     } finally {
       setLoading(false);
     }
@@ -169,11 +168,20 @@ const ContentManagement = () => {
     }
   };
 
-  // Handle new category creation
-  const handleNewCategoryCreated = (newCategory) => {
-    console.log('New category created:', newCategory);
-    setCategories(prev => [...prev, newCategory]);
-  };
+  // Fetch all data on component mount
+  useEffect(() => {
+    fetchPetCareTips();
+    fetchVideos(); 
+    fetchCategories();
+    fetchVideoCategories(); 
+    fetchIcons();
+    fetchPublicationStatuses();
+  }, []);
+
+  // Update stats when data changes
+  useEffect(() => {
+    updateStats();
+  }, [petTips, videos, forumPosts]);
 
   // Update stats
   const updateStats = () => {
@@ -205,87 +213,76 @@ const ContentManagement = () => {
         pubStatusID: data.pubStatusID || 1
       };
 
-      console.log('Final request data to backend:', requestData);
-
       let response;
       
       if (editingItem) {
-        console.log('Updating existing tip with ID:', editingItem.id);
         response = await api.put(`/admin/content/pet-care-tips/updatePetCare/${editingItem.id}`, requestData);
       } else {
-        console.log('Creating new tip');
         response = await api.post("/admin/content/pet-care-tips/createPetCare", requestData);
       }
-
-      console.log('Backend response:', response.data);
 
       if (response.data.success) {
         await fetchPetCareTips();
         setShowPetTipModal(false);
         setEditingItem(null);
+        showSuccess(response.data.message || 'Pet tip saved successfully!', {
+          title: 'Success'
+        });
       } else {
-        alert(response.data.message || 'Failed to save pet tip');
+        showError(response.data.message || 'Failed to save pet tip', {
+          title: 'Save Failed'
+        });
       }
     } catch (error) {
       console.error('Error saving pet tip:', error);
-      console.error('Error details:', error.response?.data);
-      alert(error.response?.data?.message || 'Failed to save pet tip');
+      showError(error.response?.data?.message || 'Failed to save pet tip', {
+        title: 'Error'
+      });
     } finally {
       setLoading(false);
     }
   };
 
   // Handle delete pet tip
-  const handleDeletePetTip = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this pet tip?')) {
-      return;
-    }
+  const handleDeletePetTip = (id) => {
+    showConfirm(
+      'Are you sure you want to delete this pet tip? This action cannot be undone.',
+      async () => {
+        try {
+          setLoading(true);
+          const response = await api.delete(`/admin/content/pet-care-tips/deletePetCare/${id}`);
 
-    try {
-      setLoading(true);
-      const response = await api.delete(`/admin/content/pet-care-tips/deletePetCare/${id}`);
-
-      if (response.data.success) {
-        await fetchPetCareTips();
-      } else {
-        alert(response.data.message || 'Failed to delete pet tip');
+          if (response.data.success) {
+            await fetchPetCareTips();
+            showSuccess('Pet tip deleted successfully!', {
+              title: 'Deleted'
+            });
+          } else {
+            showError(response.data.message || 'Failed to delete pet tip', {
+              title: 'Delete Failed'
+            });
+          }
+        } catch (error) {
+          console.error('Error deleting pet tip:', error);
+          showError(error.response?.data?.message || 'Failed to delete pet tip', {
+            title: 'Error'
+          });
+        } finally {
+          setLoading(false);
+        }
+      },
+      {
+        title: 'Delete Pet Tip',
+        confirmText: 'Delete',
+        cancelText: 'Cancel'
       }
-    } catch (error) {
-      console.error('Error deleting pet tip:', error);
-      alert(error.response?.data?.message || 'Failed to delete pet tip');
-    } finally {
-      setLoading(false);
-    }
+    );
   };
 
   // Handle edit pet tip
   const handleEditPetTip = (item) => {
-    console.log('Editing item data:', {
-      id: item.id,
-      title: item.title,
-      pubStatusID: item.pubStatusID,
-      status: item.status,
-      iconID: item.iconID,
-      petCareCategoryID: item.petCareCategoryID
-    });
-    
     setEditingItem(item);
     setShowPetTipModal(true);
-  };
-
-  // Handle edit video
-  const handleEditVideo = (item) => {
-    console.log('Editing video data:', {
-      id: item.id,
-      videoTitle: item.title,
-      videoURL: item.videoURL,
-      videoCategoryID: item.videoCategoryID,
-      pubStatusID: item.pubStatusID,
-      status: item.status
-    });
-    
-    setEditingItem(item);
-    setShowVideoModal(true);
   };
 
   // Handle add/edit video
@@ -312,45 +309,82 @@ const ContentManagement = () => {
         await fetchVideos();
         setShowVideoModal(false);
         setEditingItem(null);
+        showSuccess(response.data.message || 'Video saved successfully!', {
+          title: 'Success'
+        });
       } else {
-        alert(response.data.message || 'Failed to save video');
+        showError(response.data.message || 'Failed to save video', {
+          title: 'Save Failed'
+        });
       }
     } catch (error) {
       console.error('Error saving video:', error);
-      alert(error.response?.data?.message || 'Failed to save video');
+      showError(error.response?.data?.message || 'Failed to save video', {
+        title: 'Error'
+      });
     } finally {
       setLoading(false);
     }
   };
 
   // Handle delete video
-  const handleDeleteVideo = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this video?')) {
-      return;
-    }
+  const handleDeleteVideo = (id) => {
+    showConfirm(
+      'Are you sure you want to delete this video? This action cannot be undone.',
+      async () => {
+        try {
+          setLoading(true);
+          const response = await api.delete(`/admin/content/videos/delete/${id}`);
 
-    try {
-      setLoading(true);
-      const response = await api.delete(`/admin/content/videos/delete/${id}`);
-
-      if (response.data.success) {
-        await fetchVideos();
-      } else {
-        alert(response.data.message || 'Failed to delete video');
+          if (response.data.success) {
+            await fetchVideos();
+            showSuccess('Video deleted successfully!', {
+              title: 'Deleted'
+            });
+          } else {
+            showError(response.data.message || 'Failed to delete video', {
+              title: 'Delete Failed'
+            });
+          }
+        } catch (error) {
+          console.error('Error deleting video:', error);
+          showError(error.response?.data?.message || 'Failed to delete video', {
+            title: 'Error'
+          });
+        } finally {
+          setLoading(false);
+        }
+      },
+      {
+        title: 'Delete Video',
+        confirmText: 'Delete',
+        cancelText: 'Cancel'
       }
-    } catch (error) {
-      console.error('Error deleting video:', error);
-      alert(error.response?.data?.message || 'Failed to delete video');
-    } finally {
-      setLoading(false);
-    }
+    );
   };
 
-  // Forum post handlers - using mock data only
+  // Handle edit video
+  const handleEditVideo = (item) => {
+    setEditingItem(item);
+    setShowVideoModal(true);
+  };
+
+  // Forum post handlers
   const handleDeleteForumPost = (id) => {
-    if (window.confirm('Are you sure you want to delete this forum post?')) {
-      setForumPosts(prevPosts => prevPosts.filter(post => post.id !== id));
-    }
+    showConfirm(
+      'Are you sure you want to delete this forum post? This action cannot be undone.',
+      () => {
+        setForumPosts(prevPosts => prevPosts.filter(post => post.id !== id));
+        showSuccess('Forum post deleted successfully!', {
+          title: 'Deleted'
+        });
+      },
+      {
+        title: 'Delete Forum Post',
+        confirmText: 'Delete',
+        cancelText: 'Cancel'
+      }
+    );
   };
 
   const handleArchiveForumPost = (id, newStatus) => {
@@ -359,16 +393,23 @@ const ContentManagement = () => {
         post.id === id ? { ...post, status: newStatus } : post
       )
     );
+    showToast(`Post ${newStatus === 'active' ? 'restored' : 'archived'} successfully!`, 'success');
   };
 
   return (
     <div className="flex flex-col h-screen bg-[#FBFBFB] p-6 gap-1 font-sans">
       <Header title=" Content Management" />
+      
+      {/* Add Alert Component */}
+      <AlertComponent />
 
       {/* Loading overlay */}
       {loading && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-4 rounded-lg">Loading...</div>
+          <div className="bg-white p-4 rounded-lg shadow-xl flex items-center gap-3">
+            <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+            <span className="text-gray-700">Loading...</span>
+          </div>
         </div>
       )}
 
@@ -485,12 +526,15 @@ const ContentManagement = () => {
             onAdd={() => setShowPetTipModal(true)}
             onEdit={handleEditPetTip}
             onDelete={handleDeletePetTip}
-            onRefresh={fetchPetCareTips} // Add this for WebSocket refresh
+            onRefresh={fetchPetCareTips}
             loading={loading}
             allCategories={categories}
             allStatuses={publicationStatuses}
-            currentAdminId={currentAdminId} // Add current admin ID
-            currentAdminName={currentAdminName} // Add current admin name
+            currentAdminId={currentAdminId}
+            currentAdminName={currentAdminName}
+            showConfirm={showConfirm}
+            showSuccess={showSuccess}
+            showError={showError}
           />
         )}
 
@@ -501,12 +545,15 @@ const ContentManagement = () => {
             onAdd={() => setShowVideoModal(true)}
             onEdit={handleEditVideo}
             onDelete={handleDeleteVideo}
-            onRefresh={fetchVideos}  // Add this
+            onRefresh={fetchVideos}
             loading={loading}
             allCategories={videoCategories}
             allStatuses={publicationStatuses}
-            currentAdminId={currentAdminId}  // Add this
-            currentAdminName={currentAdminName}  // Add this
+            currentAdminId={currentAdminId}
+            currentAdminName={currentAdminName}
+            showConfirm={showConfirm}
+            showSuccess={showSuccess}
+            showError={showError}
           />
         )}
 
@@ -516,6 +563,8 @@ const ContentManagement = () => {
             posts={forumPosts}
             onDelete={handleDeleteForumPost}
             onArchive={handleArchiveForumPost}
+            showConfirm={showConfirm}
+            showSuccess={showSuccess}
           />
         )}
       </div>
@@ -534,6 +583,8 @@ const ContentManagement = () => {
           onSave={handleAddPetTip}
           loading={loading}
           onNewCategoryCreated={handleNewCategoryCreated}
+          showSuccess={showSuccess}
+          showError={showError}
         />
       )}
 
@@ -549,6 +600,8 @@ const ContentManagement = () => {
           onSave={handleAddVideo}
           loading={loading}
           onNewCategoryCreated={handleNewVideoCategoryCreated}
+          showSuccess={showSuccess}
+          showError={showError}
         />
       )}
     </div>

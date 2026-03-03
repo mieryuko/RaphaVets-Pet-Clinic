@@ -44,7 +44,18 @@ const getStatusName = (statusId) => {
   return statusMap[statusId] || "Draft";
 };
 
-const PetTipModal = ({ item, categories, icons, publicationStatuses, onClose, onSave, loading, onNewCategoryCreated }) => {
+const PetTipModal = ({ 
+  item, 
+  categories, 
+  icons, 
+  publicationStatuses, 
+  onClose, 
+  onSave, 
+  loading, 
+  onNewCategoryCreated,
+  showSuccess,
+  showError 
+}) => {
   const [formData, setFormData] = useState({
     title: "",
     shortDescription: "",
@@ -256,6 +267,7 @@ const PetTipModal = ({ item, categories, icons, publicationStatuses, onClose, on
         if (onNewCategoryCreated) {
           onNewCategoryCreated(response.data.data);
         }
+        showSuccess('Category created successfully!');
         return response.data.data;
       } else {
         throw new Error(response.data.message || 'Failed to create category');
@@ -263,6 +275,7 @@ const PetTipModal = ({ item, categories, icons, publicationStatuses, onClose, on
     } catch (error) {
       console.error('Error creating category:', error);
       console.error('Error response:', error.response?.data);
+      showError(error.response?.data?.message || 'Failed to create category');
       throw error;
     } finally {
       setCategoryLoading(false);
@@ -286,27 +299,27 @@ const PetTipModal = ({ item, categories, icons, publicationStatuses, onClose, on
       iconID: formData.iconID
     };
 
-    // Category validation depends on mode
-    if (showNewCategory) {
-      if (!formData.newCategory.trim()) {
-        alert('Please enter a new category name');
-        return;
-      }
-    } else {
-      if (!formData.petCareCategoryID) {
-        alert('Please select a category');
-        return;
-      }
-    }
-
     // Check for empty required fields
     const missingFields = Object.entries(requiredFields)
       .filter(([key, value]) => !value)
       .map(([key]) => key);
 
     if (missingFields.length > 0) {
-      alert(`Please fill in the following required fields: ${missingFields.join(', ')}`);
+      showError(`Please fill in the following required fields: ${missingFields.join(', ')}`);
       return;
+    }
+
+    // Category validation depends on mode
+    if (showNewCategory) {
+      if (!formData.newCategory.trim()) {
+        showError('Please enter a new category name');
+        return;
+      }
+    } else {
+      if (!formData.petCareCategoryID) {
+        showError('Please select a category');
+        return;
+      }
     }
 
     try {
@@ -336,7 +349,7 @@ const PetTipModal = ({ item, categories, icons, publicationStatuses, onClose, on
       // Validate finalCategoryID
       if (!finalCategoryID || isNaN(parseInt(finalCategoryID))) {
         console.error('Invalid category ID:', finalCategoryID);
-        alert('Invalid category ID. Please try again.');
+        showError('Invalid category ID. Please try again.');
         return;
       }
 
@@ -369,7 +382,7 @@ const PetTipModal = ({ item, categories, icons, publicationStatuses, onClose, on
 
     } catch (error) {
       console.error('Error in form submission:', error);
-      alert(error.response?.data?.message || error.message || 'Failed to save. Please try again.');
+      showError(error.response?.data?.message || error.message || 'Failed to save. Please try again.');
     }
   };
 

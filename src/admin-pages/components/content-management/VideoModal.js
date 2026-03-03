@@ -2,7 +2,17 @@ import { useState, useEffect } from "react";
 import { X, Plus, Minus, Video, Globe, Eye, FileText, Archive } from "lucide-react";
 import api from "../../../api/axios";
 
-const VideoModal = ({ item, categories, publicationStatuses, onClose, onSave, loading, onNewCategoryCreated }) => {
+const VideoModal = ({ 
+  item, 
+  categories, 
+  publicationStatuses, 
+  onClose, 
+  onSave, 
+  loading, 
+  onNewCategoryCreated,
+  showSuccess,
+  showError 
+}) => {
   const [formData, setFormData] = useState({
     videoTitle: "",
     videoURL: "",
@@ -111,12 +121,14 @@ const VideoModal = ({ item, categories, publicationStatuses, onClose, onSave, lo
         if (onNewCategoryCreated) {
           onNewCategoryCreated(response.data.data);
         }
+        showSuccess('Video category created successfully!');
         return response.data.data;
       } else {
         throw new Error(response.data.message || 'Failed to create video category');
       }
     } catch (error) {
       console.error('Error creating video category:', error);
+      showError(error.response?.data?.message || 'Failed to create video category');
       throw error;
     } finally {
       setCategoryLoading(false);
@@ -132,24 +144,24 @@ const VideoModal = ({ item, categories, publicationStatuses, onClose, onSave, lo
 
     // Validate required fields
     if (!formData.videoTitle.trim()) {
-      alert('Please enter a video title');
+      showError('Please enter a video title');
       return;
     }
 
     if (!formData.videoURL.trim()) {
-      alert('Please enter a YouTube URL');
+      showError('Please enter a YouTube URL');
       return;
     }
 
     // Category validation
     if (showNewCategory) {
       if (!formData.newCategory.trim()) {
-        alert('Please enter a new category name');
+        showError('Please enter a new category name');
         return;
       }
     } else {
       if (!formData.videoCategoryID) {
-        alert('Please select a category');
+        showError('Please select a category');
         return;
       }
     }
@@ -175,7 +187,7 @@ const VideoModal = ({ item, categories, publicationStatuses, onClose, onSave, lo
 
       // Validate finalCategoryID
       if (!finalCategoryID || isNaN(parseInt(finalCategoryID))) {
-        alert('Invalid category ID. Please try again.');
+        showError('Invalid category ID. Please try again.');
         return;
       }
 
@@ -192,7 +204,7 @@ const VideoModal = ({ item, categories, publicationStatuses, onClose, onSave, lo
 
     } catch (error) {
       console.error('Error in video form submission:', error);
-      alert(error.response?.data?.message || error.message || 'Failed to save video.');
+      showError(error.response?.data?.message || error.message || 'Failed to save video.');
     }
   };
 
@@ -227,7 +239,7 @@ const VideoModal = ({ item, categories, publicationStatuses, onClose, onSave, lo
   // Get current status name for display
   const currentStatus = getStatusName(formData.pubStatusID);
 
-  // Category rendering with toggle (similar to PetTipModal)
+  // Category rendering with toggle
   const renderCategorySelect = () => {
     return (
       <div className="flex space-x-2">

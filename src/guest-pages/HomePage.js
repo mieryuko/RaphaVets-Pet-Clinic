@@ -11,6 +11,7 @@ import TestimonialsSection from "./components/home/TestimonialsSection";
 import LocationSection from "./components/home/LocationSection";
 import FAQSection from "./components/home/FAQSection";
 import ContactSection from "./components/home/ContactSection";
+// import ForumPreviewSection from "./components/home/ForumPreviewSection"; 
 import Footer from "./components/home/FooterSection";
 
 const HomePage = () => {
@@ -53,9 +54,10 @@ const HomePage = () => {
       <main>
         <HeroSection />
         <ServicesSection />
-        <AboutSection />
         <PetTipsSection />
+        {/* <ForumPreviewSection /> */} 
         <NextStepSection />
+        <AboutSection />
         <TestimonialsSection />
         <LocationSection />
         <FAQSection />

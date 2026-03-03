@@ -11,6 +11,29 @@ function Header({ darkMode, setDarkMode, toggleMenu, isMenuOpen, animateIcon }) 
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const notificationRef = useRef(null);
+  
+  // Scroll hide/show functionality
+  const [prevScrollPos, setPrevScrollPos] = useState(0);
+  const [visible, setVisible] = useState(true);
+
+  // Handle scroll hide/show
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollPos = window.scrollY;
+      
+      // Show header if scrolling up or at top
+      const isVisible = prevScrollPos > currentScrollPos || currentScrollPos < 10;
+      
+      setVisible(isVisible);
+      setPrevScrollPos(currentScrollPos);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [prevScrollPos]);
 
   // Format time based on how recent
   const formatNotificationTime = (timestamp) => {
@@ -439,12 +462,16 @@ function Header({ darkMode, setDarkMode, toggleMenu, isMenuOpen, animateIcon }) 
   };
 
   return (
-    <div className="pt-5 pb-2 px-4 sm:px-6 md:px-10 flex flex-row justify-between items-center relative z-40 fixed top-0 left-0 right-0 bg-transparent">
+    <div 
+      className={`pt-5 pb-2 px-4 sm:px-6 md:px-10 flex flex-row justify-between items-center relative z-40 fixed top-0 left-0 right-0 bg-transparent transition-transform duration-300 ${
+        visible ? 'translate-y-0' : '-translate-y-full'
+      }`}
+    >
       {/* Left side - Menu, Logo */}
       <div className="flex flex-row items-center gap-2 sm:gap-3 flex-shrink-0">
         <motion.button
           onClick={toggleMenu}
-          className={`text-2xl sm:text-3xl text-gray-700 focus:outline-none flex-shrink-0 ${
+          className={`md:hidden text-2xl sm:text-3xl text-gray-700 focus:outline-none flex-shrink-0 ${
             animateIcon ? 'transition-transform duration-300' : ''
           }`}
           whileHover={{ scale: 1.1 }}
@@ -453,6 +480,7 @@ function Header({ darkMode, setDarkMode, toggleMenu, isMenuOpen, animateIcon }) 
         >
           ☰
         </motion.button>
+        
         <img
           src="/images/logo.png"
           className="w-[30px] sm:w-[40px] md:w-[60px] lg:w-[80px] flex-shrink-0"

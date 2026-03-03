@@ -9,12 +9,17 @@ const Header = ({ showNavbar }) => {
   const location = useLocation();
 
   const handleNavClick = (href) => {
-    const id = href && href.startsWith("#") ? href.slice(1) : href;
     setMobileOpen(false);
 
-    if (!id) return;
+    if (!href) return;
 
-    // The guest homepage lives at "/home" instead of the root
+    if (href.startsWith('/')) {
+      navigate(href);
+      return;
+    }
+
+    const id = href.startsWith("#") ? href.slice(1) : href;
+
     if (location.pathname === "/home") {
       const el = document.getElementById(id);
       if (el) {
@@ -37,6 +42,7 @@ const Header = ({ showNavbar }) => {
     { name: "Home", href: "#home" },
     { name: "Services", href: "#services" },
     { name: "Pet Tips", href: "#pettips" },
+    { name: "Lost & Found", href: "/publicforum" },
     { name: "About", href: "#aboutus" },
     { name: "FAQ", href: "#faq" },
   ];
