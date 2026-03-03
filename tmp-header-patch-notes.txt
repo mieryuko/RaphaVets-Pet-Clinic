@@ -1,0 +1,15 @@
+This file is a temporary note of changes applied to Header.js and HomePage.js:
+
+Header.js
+- Imported useLocation
+- Added handleNavClick(href) which:
+  - resolves id from href
+  - if already on '/', scrolls the element into view smoothly
+  - otherwise navigates to '/' with state { scrollTo: id }
+- Replaced desktop and mobile nav anchor elements with buttons using the handler
+
+HomePage.js
+- Imported useLocation and useNavigate
+- Added useEffect that checks location.state.scrollTo and scrolls to the element after navigation then clears the state
+
+If something needs tweaking (offset for fixed header), we can add an offset scroll calculation.

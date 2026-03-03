@@ -1,11 +1,29 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 
 const Header = ({ showNavbar }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleNavClick = (href) => {
+    const id = href && href.startsWith("#") ? href.slice(1) : href;
+    setMobileOpen(false);
+
+    if (!id) return;
+
+    // The guest homepage lives at "/home" instead of the root
+    if (location.pathname === "/home") {
+      const el = document.getElementById(id);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    } else {
+      navigate("/home", { state: { scrollTo: id } });
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -24,7 +42,7 @@ const Header = ({ showNavbar }) => {
   ];
 
   const handleGetStarted = () => {
-    navigate("/login");
+    navigate("/");
   };
 
   return (
@@ -54,7 +72,7 @@ const Header = ({ showNavbar }) => {
                 className="h-12 w-auto"
               />
               <span className="text-xl font-semibold text-[#5EE6FE] hidden sm:block">
-                RaphaVets
+                RVCare
               </span>
             </Link>
           </motion.div>
@@ -62,13 +80,14 @@ const Header = ({ showNavbar }) => {
           {/* Desktop Navigation */}
           <div className="hidden md:flex md:items-center md:space-x-8">
             {navItems.map((item, index) => (
-              <motion.a
+              <motion.button
                 key={item.name}
-                href={item.href}
+                type="button"
+                onClick={() => handleNavClick(item.href)}
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="relative group"
+                className="relative group text-left"
               >
                 <span className="text-[#5E6C7A] hover:text-[#5EE6FE] transition-colors duration-300 font-medium">
                   {item.name}
@@ -79,7 +98,7 @@ const Header = ({ showNavbar }) => {
                   whileHover={{ width: "100%" }}
                   transition={{ duration: 0.3 }}
                 />
-              </motion.a>
+              </motion.button>
             ))}
           </div>
 
@@ -145,17 +164,17 @@ const Header = ({ showNavbar }) => {
             >
               <div className="px-4 py-6 space-y-3">
                 {navItems.map((item, index) => (
-                  <motion.a
+                  <motion.button
                     key={item.name}
-                    href={item.href}
+                    type="button"
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.1 }}
-                    onClick={() => setMobileOpen(false)}
-                    className="block px-4 py-3 text-gray-600 hover:text-[#5EE6FE] hover:bg-gray-50 rounded-lg transition-colors duration-300 font-medium"
+                    onClick={() => { setMobileOpen(false); handleNavClick(item.href); }}
+                    className="w-full text-left block px-4 py-3 text-gray-600 hover:text-[#5EE6FE] hover:bg-gray-50 rounded-lg transition-colors duration-300 font-medium"
                   >
                     {item.name}
-                  </motion.a>
+                  </motion.button>
                 ))}
                 
                 {/* Mobile Get Started Button */}

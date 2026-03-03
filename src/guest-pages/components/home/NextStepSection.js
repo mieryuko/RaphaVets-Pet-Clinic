@@ -6,18 +6,18 @@ const NextStepSection = () => {
   const tools = [
     {
       title: "Cat & Dog Breed Detector",
-      icon: "/images/pet-scanner-img.png",
-      link: "#breed-detector"
+      icon: "fa-paw", 
+      link: "/"
     },
     {
       title: "AI Chatbot",
-      icon: "/images/chat-bot-icon.png",
-      link: "#chatbot"
+      icon: "fa-robot", 
+      link: "/"
     },
     {
       title: "Schedule a Visit",
-      icon: "/images/schedule-visit-icon.png",
-      link: "#schedule"
+      icon: "fa-calendar-check", 
+      link: "/"
     }
   ];
 
@@ -86,14 +86,13 @@ const NextStepSection = () => {
               key={index}
               variants={itemVariants}
               whileHover={{ y: -5 }}
-              className="group relative bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-gray-200 p-6"
+              className="group relative bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-gray-200 p-6 cursor-pointer"
+              onClick={() => window.location.href = tool.link}
             >
-              <div className="w-20 h-20 mx-auto mb-4">
-                <img
-                  src={tool.icon}
-                  alt={tool.title}
-                  className="w-full h-full object-contain"
-                />
+              <div className="w-20 h-20 mx-auto mb-4 flex items-center justify-center">
+                <div className="w-16 h-16 bg-[#5EE6FE]/10 rounded-2xl flex items-center justify-center group-hover:bg-[#5EE6FE] transition-colors duration-300">
+                  <i className={`fas ${tool.icon} text-3xl text-[#5EE6FE] group-hover:text-white transition-colors duration-300`} />
+                </div>
               </div>
               
               <h3 className="text-lg font-semibold text-center mb-2 text-gray-800">
@@ -105,6 +104,15 @@ const NextStepSection = () => {
                 {index === 1 && "Get instant answers to your pet care questions 24/7"}
                 {index === 2 && "Book appointments easily with our online scheduling system"}
               </p>
+
+              {/* Subtle arrow indicator on hover */}
+              <motion.div 
+                className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity"
+                animate={{ x: [0, 5, 0] }}
+                transition={{ duration: 1, repeat: Infinity }}
+              >
+                <i className="fas fa-arrow-right text-[#5EE6FE] text-sm" />
+              </motion.div>
             </motion.div>
           ))}
         </motion.div>

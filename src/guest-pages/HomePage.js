@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Header from "./components/Header";
+import { useLocation, useNavigate } from "react-router-dom";
 import HeroSection from "./components/home/HeroSection";
 import ServicesSection from "./components/home/ServicesSection";
 import AboutSection from "./components/home/AboutSection";
@@ -26,6 +27,24 @@ const HomePage = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScrollY]);
+
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (location.state && location.state.scrollTo) {
+      const id = location.state.scrollTo;
+      // small delay to ensure DOM has rendered
+      setTimeout(() => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+        // clear the navigation state so repeated mounts don't re-scroll
+        navigate(location.pathname, { replace: true, state: {} });
+      }, 70);
+    }
+  }, [location, navigate]);
 
   return (
     <div className="relative min-h-screen bg-white">

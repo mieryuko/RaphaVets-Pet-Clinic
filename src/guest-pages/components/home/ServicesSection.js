@@ -29,7 +29,7 @@ const servicesData = [
   {
     id: 3,
     name: "Surgery",
-    icon: "fa-scalpel",
+    icon: "fa-syringe",
     description: "Safe and professional surgical procedures",
     details: [
       { name: "Basic Soft Tissue Surgery", price: "Varies", description: "Lump removal, wound repair, and minor surgeries" },
@@ -199,7 +199,7 @@ const ServicesSection = () => {
           >
             <div className="flex flex-col items-center text-center h-full justify-center">
               <div className="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center text-white text-2xl mb-3 group-hover:scale-110 transition-transform">
-                <i className="fas fa-grid-2" />
+                <i className="fa-border-all" />
               </div>
               <h3 className="font-semibold text-white">See All Services</h3>
               <p className="text-white/80 text-sm mt-1">View details & pricing</p>
@@ -216,7 +216,7 @@ const ServicesSection = () => {
           className="text-center mt-12"
         >
           <a
-            href="#schedule"
+            href="/"
             className="inline-flex items-center gap-2 bg-[#5EE6FE] text-white px-8 py-4 rounded-full font-medium shadow-sm hover:shadow-md transition-colors duration-300"
           >
             Schedule a Visit

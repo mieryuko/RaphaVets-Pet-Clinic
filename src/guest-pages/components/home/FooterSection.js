@@ -1,9 +1,26 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Footer = () => {
-  const linkClasses = "text-gray-400 hover:text-[#5EE6FE] transition-colors duration-300";
+  const navigate = useNavigate();
+  
+  const linkClasses = "text-gray-400 hover:text-[#5EE6FE] transition-colors duration-300 cursor-pointer";
+  const serviceLinkClasses = "text-gray-400 hover:text-[#5EE6FE] transition-colors duration-300 cursor-default";
+
+  // Handle quick link clicks for smooth scrolling
+  const handleQuickLinkClick = (e, href) => {
+    e.preventDefault();
+    
+    if (href === "/home") {
+      navigate("/home");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } else {
+      // For anchor links (#services, #about, etc.)
+      const id = href.replace("#", "");
+      navigate("/home", { state: { scrollTo: id } });
+    }
+  };
 
   return (
     <footer className="relative bg-gray-800 text-white">
@@ -30,7 +47,7 @@ const Footer = () => {
             </p>
           </motion.div>
 
-          {/* Quick Links */}
+          {/* Quick Links - Now Working */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -39,15 +56,55 @@ const Footer = () => {
           >
             <h4 className="text-lg font-bold mb-4">Quick Links</h4>
             <ul className="space-y-2">
-              <li><Link to="/" className={linkClasses}>Home</Link></li>
-              <li><Link to="/services" className={linkClasses}>Services</Link></li>
-              <li><Link to="/about" className={linkClasses}>About Us</Link></li>
-              <li><Link to="/contact" className={linkClasses}>Contact</Link></li>
-              <li><Link to="/faq" className={linkClasses}>FAQ</Link></li>
+              <li>
+                <a 
+                  href="/home" 
+                  onClick={(e) => handleQuickLinkClick(e, "/home")}
+                  className={linkClasses}
+                >
+                  Home
+                </a>
+              </li>
+              <li>
+                <a 
+                  href="#services" 
+                  onClick={(e) => handleQuickLinkClick(e, "#services")}
+                  className={linkClasses}
+                >
+                  Services
+                </a>
+              </li>
+              <li>
+                <a 
+                  href="#aboutus" 
+                  onClick={(e) => handleQuickLinkClick(e, "#aboutus")}
+                  className={linkClasses}
+                >
+                  About Us
+                </a>
+              </li>
+              <li>
+                <a 
+                  href="#contact" 
+                  onClick={(e) => handleQuickLinkClick(e, "#contact")}
+                  className={linkClasses}
+                >
+                  Contact
+                </a>
+              </li>
+              <li>
+                <a 
+                  href="#faq" 
+                  onClick={(e) => handleQuickLinkClick(e, "#faq")}
+                  className={linkClasses}
+                >
+                  FAQ
+                </a>
+              </li>
             </ul>
           </motion.div>
 
-          {/* Services */}
+          {/* Services - Not clickable but can hover */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -56,15 +113,15 @@ const Footer = () => {
           >
             <h4 className="text-lg font-bold mb-4">Services</h4>
             <ul className="space-y-2">
-              <li><Link to="/consultation" className={linkClasses}>Consultation</Link></li>
-              <li><Link to="/vaccination" className={linkClasses}>Vaccination</Link></li>
-              <li><Link to="/surgery" className={linkClasses}>Surgery</Link></li>
-              <li><Link to="/laboratory" className={linkClasses}>Laboratory</Link></li>
-              <li><Link to="/dental" className={linkClasses}>Dental Care</Link></li>
+              <li><span className={serviceLinkClasses}>Consultation</span></li>
+              <li><span className={serviceLinkClasses}>Vaccination</span></li>
+              <li><span className={serviceLinkClasses}>Surgery</span></li>
+              <li><span className={serviceLinkClasses}>Laboratory</span></li>
+              <li><span className={serviceLinkClasses}>Dental Care</span></li>
             </ul>
           </motion.div>
 
-          {/* Social Media */}
+          {/* Social Media - Icons now white */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -74,17 +131,21 @@ const Footer = () => {
             <h4 className="text-lg font-bold mb-4">Connect With Us</h4>
             <div className="space-y-3">
               <a
-                href="#"
+                href="https://www.facebook.com/RaphaVets/"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="flex items-center gap-3 text-gray-400 hover:text-[#5EE6FE] transition-colors"
               >
-                <img src="/images/fb-icon.png" alt="Facebook" className="w-5 h-5" />
+                <i className="fab fa-facebook-f text-white text-lg w-5" />
                 <span>RaphaVets Pet Clinic</span>
               </a>
               <a
-                href="#"
+                href="https://www.instagram.com/explore/locations/106483752003308/raphavets-pet-clinic"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="flex items-center gap-3 text-gray-400 hover:text-[#5EE6FE] transition-colors"
               >
-                <img src="/images/ig-icon.png" alt="Instagram" className="w-5 h-5" />
+                <i className="fab fa-instagram text-white text-lg w-5" />
                 <span>raphavetspetclinic</span>
               </a>
             </div>

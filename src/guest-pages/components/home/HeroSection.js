@@ -67,19 +67,13 @@ const HeroSection = () => {
 
             <motion.div variants={itemVariants} className="flex flex-wrap gap-4 justify-center lg:justify-start">
               <Link
-                to="/schedule"
+                to="/"
                 className="inline-flex items-center gap-2 bg-[#5EE6FE] text-white px-8 py-4 rounded-full font-medium hover:bg-[#5cdffd] transition-colors duration-300"
               >
                 Schedule a visit
                 <span className="group-hover:translate-x-1 transition-transform">→</span>
               </Link>
               
-              <Link
-                to="/services"
-                className="inline-flex items-center gap-2 border-2 border-[#5EE6FE] text-[#5EE6FE] px-8 py-4 rounded-full font-medium hover:bg-[#5EE6FE] hover:text-white transition-colors duration-300"
-              >
-                Our Services
-              </Link>
             </motion.div>
           </motion.div>
 
