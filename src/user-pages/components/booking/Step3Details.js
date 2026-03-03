@@ -70,8 +70,11 @@ export default function Step3Details({ goToStep, selectedPet, setSelectedPet }) 
                               ${isActive ? "border-[#5EE6FE] bg-[#E8FBFF]" : "border-[#D6F0F3] bg-white"}`}
                 >
                   <img
-                    src={`http://localhost:5000${pet.image}` || "/images/dog-profile.png"}
+                    src={`http://localhost:5000${pet.image}`}
                     alt={pet.name}
+                    onError={(e) => {
+                          e.target.src = "/images/dog-profile.png";
+                        }}
                     className="w-14 h-14 sm:w-16 md:w-20 sm:h-16 md:h-20 rounded-full border-4 border-[#5EE6FE] object-cover shadow-sm flex-shrink-0"
                   />
                   <div className="min-w-0 flex-1">

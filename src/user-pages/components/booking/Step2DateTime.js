@@ -17,6 +17,8 @@ export default function Step2DateTime({
 }) {
   const [timeSlots, setTimeSlots] = useState([]);
   const [bookedSlots, setBookedSlots] = useState([]);
+  const [pastSlots, setPastSlots] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   // Fetch time slots from backend
   useEffect(() => {
@@ -41,30 +43,48 @@ export default function Step2DateTime({
     const fetchBookedSlots = async () => {
       if (!selectedDate) return;
       
+      setLoading(true);
       try {
         const formattedDate = format(selectedDate, 'yyyy-MM-dd');
         const res = await api.get(`/appointment/booked-slots?date=${formattedDate}`);
         
-        setBookedSlots(res.data);
+        // Handle the new response structure
+        setBookedSlots(res.data.bookedSlots || []);
+        setPastSlots(res.data.pastSlots || []);
+        
+        // Clear selected time if it's now unavailable
+        if (selectedTime) {
+          if (res.data.bookedSlots.includes(selectedTime) || 
+              res.data.pastSlots.includes(selectedTime)) {
+            setSelectedTime("");
+          }
+        }
       } catch (err) {
         console.error("❌ Failed to fetch booked slots:", err);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchBookedSlots();
-  }, [selectedDate]);
+  }, [selectedDate, selectedTime, setSelectedTime]);
 
   const formatTime = (timeStr) => {
-    const [hour, minute, second] = timeStr.split(":").map(Number);
+    const [hour, minute] = timeStr.split(":").map(Number);
     const date = new Date();
     date.setHours(hour);
     date.setMinutes(minute);
-    date.setSeconds(second || 0);
     return date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
   };
 
-  const isTimeBooked = (rawTime) => {
-    return bookedSlots.includes(rawTime);
+  const isTimeSlotAvailable = (rawTime) => {
+    return !bookedSlots.includes(rawTime) && !pastSlots.includes(rawTime);
+  };
+
+  const getTimeSlotStatus = (rawTime) => {
+    if (bookedSlots.includes(rawTime)) return 'booked';
+    if (pastSlots.includes(rawTime)) return 'past';
+    return 'available';
   };
 
   return (
@@ -132,41 +152,61 @@ export default function Step2DateTime({
             <div className="text-[10px] sm:text-xs text-gray-500 mb-2 truncate">
               {format(selectedDate, "EEEE, MMM d")}
             </div>
-            <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
-              {timeSlots.length === 0 ? (
-                <div className="col-span-2 text-gray-400 text-xs sm:text-sm py-2 text-center">No time slots available</div>
-              ) : (
-                timeSlots.map((slot) => {
-                  const active = selectedTime === slot.raw;
-                  const isBooked = isTimeBooked(slot.raw);
-                  
-                  return (
-                    <button
-                      key={slot.raw}
-                      onClick={() => !isBooked && setSelectedTime(slot.raw)}
-                      disabled={isBooked}
-                      className={`text-xs sm:text-sm rounded-lg py-1.5 sm:py-2 px-1 sm:px-2 transition ${
-                        active
-                          ? "bg-[#5EE6FE] text-white shadow-md"
-                          : isBooked
-                          ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                          : "bg-white border border-gray-100 hover:bg-[#EEF8FA]"
-                      }`}
-                    >
-                      <span className="block text-center">{slot.formatted}</span>
-                      {isBooked && <span className="block text-[8px] sm:text-[10px]">(Booked)</span>}
-                    </button>
-                  );
-                })
-              )}
-            </div>
+            
+            {loading ? (
+              <div className="text-center py-4">
+                <div className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-[#5EE6FE] border-r-transparent"></div>
+                <div className="text-xs text-gray-400 mt-2">Loading slots...</div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
+                {timeSlots.length === 0 ? (
+                  <div className="col-span-2 text-gray-400 text-xs sm:text-sm py-2 text-center">No time slots available</div>
+                ) : (
+                  timeSlots.map((slot) => {
+                    const status = getTimeSlotStatus(slot.raw);
+                    const active = selectedTime === slot.raw;
+                    const isDisabled = status !== 'available';
+                    
+                    let buttonClass = "text-xs sm:text-sm rounded-lg py-1.5 sm:py-2 px-1 sm:px-2 transition ";
+                    
+                    if (active) {
+                      buttonClass += "bg-[#5EE6FE] text-white shadow-md";
+                    } else if (status === 'booked') {
+                      buttonClass += "bg-gray-100 text-gray-400 cursor-not-allowed";
+                    } else if (status === 'past') {
+                      buttonClass += "bg-gray-100 text-gray-400 cursor-not-allowed";
+                    } else {
+                      buttonClass += "bg-white border border-gray-100 hover:bg-[#EEF8FA] cursor-pointer";
+                    }
+                    
+                    return (
+                      <button
+                        key={slot.raw}
+                        onClick={() => !isDisabled && setSelectedTime(slot.raw)}
+                        disabled={isDisabled}
+                        className={buttonClass}
+                      >
+                        <span className="block text-center">{slot.formatted}</span>
+                        {status === 'booked' && (
+                          <span className="block text-[8px] sm:text-[10px] text-red-400"></span>
+                        )}
+                        {status === 'past' && (
+                          <span className="block text-[8px] sm:text-[10px] text-gray-400"></span>
+                        )}
+                      </button>
+                    );
+                  })
+                )}
+              </div>
+            )}
 
             <div className="mt-3 sm:mt-4">
               <button
-                disabled={!selectedTime}
+                disabled={!selectedTime || loading}
                 onClick={() => goToStep(3)}
                 className={`w-full py-2 sm:py-3 rounded-lg font-semibold text-xs sm:text-sm transition ${
-                  selectedTime
+                  selectedTime && !loading
                     ? "bg-[#5EE6FE] text-white hover:bg-[#3ecbe0]"
                     : "bg-gray-100 text-gray-400 cursor-not-allowed"
                 }`}

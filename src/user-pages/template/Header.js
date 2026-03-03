@@ -35,17 +35,36 @@ function Header({ darkMode, setDarkMode, toggleMenu, isMenuOpen, animateIcon }) 
     });
   };
 
-  // Map notification type to icon and color
-  const getNotificationStyle = (type) => {
-    const styles = {
+  // Map notification type and appointment status to icon and color
+  const getNotificationStyle = (type, notificationData = {}) => {
+    // Base styles for non-appointment notifications
+    const baseStyles = {
       forum_update: { icon: 'fa-paw', color: 'text-orange-500' },
       pet_tips_update: { icon: 'fa-lightbulb', color: 'text-yellow-500' },
       video_update: { icon: 'fa-video', color: 'text-purple-500' },
-      appointment_update: { icon: 'fa-calendar-check', color: 'text-green-500' },
       medical_record_update: { icon: 'fa-notes-medical', color: 'text-red-500' },
       lab_record_update: { icon: 'fa-flask', color: 'text-blue-500' }
     };
-    return styles[type] || { icon: 'fa-bell', color: 'text-gray-500' };
+
+    // Handle appointment notifications with status-specific icons
+    if (type === 'appointment_update') {
+      const status = notificationData.status || '';
+      
+      // Status icons based on your appointment_status_tbl
+      const appointmentStyles = {
+        'Pending': { icon: 'fa-clock', color: 'text-yellow-500' },      // StatusID 1
+        'Upcoming': { icon: 'fa-calendar-check', color: 'text-cyan-500' }, // StatusID 2
+        'Rejected': { icon: 'fa-times-circle', color: 'text-red-500' }, // StatusID 3
+        'Cancelled': { icon: 'fa-ban', color: 'text-orange-500' },      // StatusID 4
+        'No Show': { icon: 'fa-user-slash', color: 'text-gray-500' },   // StatusID 5
+        'Completed': { icon: 'fa-check-double', color: 'text-green-500' } // StatusID 6
+      };
+
+      // Return status-specific style or default appointment style
+      return appointmentStyles[status] || { icon: 'fa-calendar-alt', color: 'text-blue-500' };
+    }
+
+    return baseStyles[type] || { icon: 'fa-bell', color: 'text-gray-500' };
   };
 
   // ===========================================
@@ -82,6 +101,32 @@ function Header({ darkMode, setDarkMode, toggleMenu, isMenuOpen, animateIcon }) 
     }
   };
 
+  // Get status badge color for appointment notifications
+  const getStatusBadgeColor = (status) => {
+    const colors = {
+      'Pending': 'bg-yellow-100 text-yellow-700',        // StatusID 1
+      'Upcoming': 'bg-cyan-100 text-cyan-700',           // StatusID 2
+      'Rejected': 'bg-red-100 text-red-700',             // StatusID 3
+      'Cancelled': 'bg-orange-100 text-orange-700',      // StatusID 4
+      'No Show': 'bg-gray-100 text-gray-700',            // StatusID 5
+      'Completed': 'bg-green-100 text-green-700'         // StatusID 6
+    };
+    return colors[status] || 'bg-gray-100 text-gray-700';
+  };
+
+  // Get icon for status badge
+  const getStatusIcon = (status) => {
+    const icons = {
+      'Pending': 'fa-clock',
+      'Upcoming': 'fa-calendar-check',
+      'Rejected': 'fa-times-circle',
+      'Cancelled': 'fa-ban',
+      'No Show': 'fa-user-slash',
+      'Completed': 'fa-check-double'
+    };
+    return icons[status] || 'fa-bell';
+  };
+
   // Fetch notifications from API
   const fetchNotifications = async () => {
     setLoading(true);
@@ -105,8 +150,6 @@ function Header({ darkMode, setDarkMode, toggleMenu, isMenuOpen, animateIcon }) 
             return true;
           })
           .map(notif => {
-            const style = getNotificationStyle(notif.typeName);
-            
             // Parse any metadata from the notification
             let notificationData = {};
             try {
@@ -118,6 +161,8 @@ function Header({ darkMode, setDarkMode, toggleMenu, isMenuOpen, animateIcon }) 
             } catch (e) {
               console.error('Error parsing notification data:', e);
             }
+            
+            const style = getNotificationStyle(notif.typeName, notificationData);
             
             return {
               id: notif.notificationID,
@@ -132,7 +177,9 @@ function Header({ darkMode, setDarkMode, toggleMenu, isMenuOpen, animateIcon }) 
               link: getNotificationLink(notif.typeName, notificationData),
               createdBy: notif.createdBy,
               data: notificationData,
-              petName: notificationData.petName // Extract petName if available
+              petName: notificationData.petName, // Extract petName if available
+              status: notificationData.status, // Extract status for appointment notifications
+              statusBadgeColor: getStatusBadgeColor(notificationData.status)
             };
           });
         
@@ -196,7 +243,8 @@ function Header({ darkMode, setDarkMode, toggleMenu, isMenuOpen, animateIcon }) 
         }
         
         // Transform the backend notification to frontend format
-        const style = getNotificationStyle(notification.type);
+        const notificationData = notification.data || {};
+        const style = getNotificationStyle(notification.type, notificationData);
         
         const formattedNotification = {
           id: notification.notificationId || Date.now(),
@@ -208,10 +256,12 @@ function Header({ darkMode, setDarkMode, toggleMenu, isMenuOpen, animateIcon }) 
           type: notification.type || 'forum_update',
           icon: style.icon,
           color: style.color,
-          link: getNotificationLink(notification.type, notification.data || {}),
+          link: getNotificationLink(notification.type, notificationData),
           createdBy: notification.createdBy,
-          data: notification.data || {},
-          petName: notification.data?.petName // Extract petName if available
+          data: notificationData,
+          petName: notificationData.petName,
+          status: notificationData.status,
+          statusBadgeColor: getStatusBadgeColor(notificationData.status)
         };
         
         console.log('📨 [Socket] Adding notification to state:', formattedNotification);
@@ -397,7 +447,6 @@ function Header({ darkMode, setDarkMode, toggleMenu, isMenuOpen, animateIcon }) 
           className={`text-2xl sm:text-3xl text-gray-700 focus:outline-none flex-shrink-0 ${
             animateIcon ? 'transition-transform duration-300' : ''
           }`}
-          //style={{ transform: isMenuOpen ? 'rotate(90deg)' : 'rotate(0deg)' }}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
           transition={{ type: "spring", stiffness: 400, damping: 17 }}

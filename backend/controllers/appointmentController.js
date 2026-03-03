@@ -77,22 +77,47 @@ export const getBookedSlots = async (req, res) => {
     // Auto-cancel past pending appointments first
     await cancelPastPendingAppointments();
 
-    const [rows] = await db.query(
+    // Get all booked slots for the date
+    const [bookedRows] = await db.query(
       `SELECT st.scheduleTime 
        FROM appointment_tbl a
        JOIN scheduleTime_tbl st ON a.scheduledTimeID = st.scheduledTimeID
        WHERE a.appointmentDate = ? 
-       AND a.statusID != 4`, // statusID 4 is 'Cancelled'
+       AND a.statusID != 4 and a.statusID != 3`,
       [date]
     );
 
-    console.log('Database booked slots:', rows);
-
-    // Return the raw time format from database (e.g., "08:00:00")
-    const bookedSlots = rows.map(row => row.scheduleTime);
+    const bookedSlots = bookedRows.map(row => row.scheduleTime);
+    
+    // Check if the requested date is today
+    const today = new Date().toISOString().split('T')[0];
+    const isToday = date === today;
+    
+    let pastSlots = [];
+    
+    if (isToday) {
+      // Get current time in Philippines time (UTC+8)
+      const now = new Date();
+      const phTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Manila' }));
+      const currentHour = phTime.getHours();
+      const currentMinute = phTime.getMinutes();
+      const currentTimeStr = `${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}:00`;
+      
+      // Get all time slots and filter those that are in the past
+      const [allTimeSlots] = await db.query("SELECT scheduleTime FROM scheduleTime_tbl");
+      
+      pastSlots = allTimeSlots
+        .map(slot => slot.scheduleTime)
+        .filter(time => time < currentTimeStr);
+    }
     
     console.log('Returning booked slots:', bookedSlots);
-    res.json(bookedSlots);
+    console.log('Past slots for today:', pastSlots);
+    
+    res.json({
+      bookedSlots,
+      pastSlots: isToday ? pastSlots : [] // Only return past slots if it's today
+    });
   } catch (err) {
     console.error("❌ Failed to fetch booked slots:", err);
     res.status(500).json({ message: "Server error" });

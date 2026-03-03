@@ -48,8 +48,11 @@ export default function AppointmentSummary({
             <div className="text-[10px] sm:text-xs text-gray-400 mb-1 sm:mb-2">Pet Details</div>
             <div className="flex items-center gap-2 sm:gap-3">
               <img
-                src={`http://localhost:5000${selectedPet.image}` || "/images/dog-profile.png"}
+                src={`http://localhost:5000${selectedPet.image}`}
                 alt={selectedPet.name}
+                onError={(e) => {
+                          e.target.src = "/images/dog-profile.png";
+                        }}
                 className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border border-[#5EE6FE] object-cover flex-shrink-0"
               />
               <div className="min-w-0 flex-1">

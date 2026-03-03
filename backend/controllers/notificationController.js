@@ -395,6 +395,33 @@ export const createAppointmentNotification = async (req, res) => {
         );
         console.log('🔍 [createAppointmentNotification] Status:', status[0]);
 
+        // Get appointment details including pet name
+        console.log('🔍 [createAppointmentNotification] Fetching appointment details...');
+        const [appointmentDetails] = await db.query(
+            `SELECT a.*, p.petName, s.service
+             FROM appointment_tbl a
+             JOIN pet_tbl p ON a.petID = p.petID
+             JOIN service_tbl s ON a.serviceID = s.serviceID
+             WHERE a.appointmentID = ?`,
+            [appointmentID]
+        );
+
+        if (!appointmentDetails.length) {
+            console.log('❌ [createAppointmentNotification] Appointment not found');
+            return res.status(404).json({ success: false, message: 'Appointment not found' });
+        }
+
+        const appointment = appointmentDetails[0];
+        console.log(appointment);
+        const formattedDate = new Date(appointmentDate).toLocaleDateString('en-US', {
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric'
+        });
+
+        // Format status for display (lowercase)
+        const statusDisplay = status[0]?.statusName.toLowerCase();
+
         // Check if user wants appointment notifications
         const shouldNotify = await shouldNotifyUser(accID, 'appointment');
         
@@ -415,11 +442,14 @@ export const createAppointmentNotification = async (req, res) => {
             [
                 4, // appointment_update
                 `Appointment ${status[0]?.statusName}`,
-                `Your appointment for ${new Date(appointmentDate).toLocaleDateString()} is now ${status[0]?.statusName}`,
+                `Your appointment for ${appointment.petName} on ${formattedDate} has been updated to ${statusDisplay}`,
                 JSON.stringify({ 
                     appointmentId: appointmentID, 
+                    petName: appointment.petName,
+                    service: appointment.service,
                     status: status[0]?.statusName,
-                    date: appointmentDate 
+                    date: appointmentDate,
+                    formattedDate: formattedDate
                 }),
                 appointmentID,
                 'appointment_tbl',
@@ -444,8 +474,15 @@ export const createAppointmentNotification = async (req, res) => {
             notificationId,
             type: 'appointment_update',
             title: `Appointment ${status[0]?.statusName}`,
-            message: `Your appointment for ${new Date(appointmentDate).toLocaleDateString()} is now ${status[0]?.statusName}`,
-            data: { appointmentId: appointmentID, status: status[0]?.statusName },
+            message: `Your appointment for ${appointment.petName} on ${formattedDate} has been ${statusDisplay}`,
+            data: { 
+                appointmentId: appointmentID, 
+                petName: appointment.petName,
+                service: appointment.service,
+                status: status[0]?.statusName,
+                date: appointmentDate,
+                formattedDate: formattedDate
+            },
             createdAt: new Date()
         }, 'appointment');
 
