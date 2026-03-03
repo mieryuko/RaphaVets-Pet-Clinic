@@ -41,6 +41,7 @@ function PetDetails() {
   // Modal and toast states
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null); // 👈 ADDED: Store file for later upload
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
@@ -167,12 +168,11 @@ function PetDetails() {
       socket.off('medical_record_updated');
       socket.off('medical_record_deleted');
     };
-  }, [id, medicalRecords, labRecords]); // Add dependencies
+  }, [id, medicalRecords, labRecords]);
 
   // Simple notification function
   const showNotification = (title, message) => {
     console.log(`🔔 ${title}: ${message}`);
-    // You can implement a toast notification here
     setToastMessage(`${title}: ${message}`);
     setShowSuccessToast(true);
   };
@@ -300,10 +300,39 @@ function PetDetails() {
     }
   };
 
-  const handleImageUpload = async (file) => {
+  // 👇 ADDED: Handle image selection - preview only, no upload, with file type validation
+  const handleImageSelect = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Check file type
+      const fileType = file.type.toLowerCase();
+      if (fileType !== 'image/jpeg' && fileType !== 'image/jpg' && fileType !== 'image/png') {
+        setToastMessage("Only JPG and PNG files are allowed!");
+        setShowSuccessToast(true);
+        // Clear the input
+        e.target.value = '';
+        return;
+      }
+
+      const previewUrl = URL.createObjectURL(file);
+      setPreviewImage(previewUrl);
+      setSelectedFile(file); // Store file for later upload
+      setToastMessage("Image selected. Click Save to update.");
+      setShowSuccessToast(true);
+    }
+  };
+
+  // 👇 MODIFIED: Upload function now uses the stored file
+  const handleImageUpload = async () => {
+    if (!selectedFile) {
+      setToastMessage("No image selected.");
+      setShowSuccessToast(true);
+      return;
+    }
+
     try {
       const formData = new FormData();
-      formData.append("petImage", file);
+      formData.append("petImage", selectedFile);
 
       const token = localStorage.getItem("token");
       const res = await api.post(`/pets/${id}/upload`, formData, {
@@ -320,7 +349,9 @@ function PetDetails() {
         image: res.data.imageUrl
       }));
 
+      // Clear preview and selected file
       setPreviewImage(null);
+      setSelectedFile(null);
 
       localStorage.removeItem('cachedPets');
       localStorage.removeItem('petsCacheTimestamp');
@@ -464,10 +495,19 @@ function PetDetails() {
     setSelectedAppointment(null);
   };
 
-  const handleSaveChanges = () => {
+  // 👇 MODIFIED: Now calls handleImageUpload when Save is clicked
+  const handleSaveChanges = async () => {
+    if (selectedFile) {
+      await handleImageUpload();
+    }
     setShowEditModal(false);
-    setToastMessage("Profile picture updated successfully!");
-    setShowSuccessToast(true);
+  };
+
+  // 👇 ADDED: Handle cancel in edit modal
+  const handleCancelEdit = () => {
+    setPreviewImage(null);
+    setSelectedFile(null);
+    setShowEditModal(false);
   };
 
   // Animation variants
@@ -622,7 +662,7 @@ function PetDetails() {
             <div className="relative">
               <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-full overflow-hidden border-4 border-[#00B8D4] bg-gray-200 flex items-center justify-center">
                 <img
-                  src={previewImage || `http://localhost:5000${pet.image}`}
+                  src={`http://localhost:5000${pet.image}`}
                   alt={pet.name || "Pet"}
                   className="w-full h-full object-cover"
                   onError={(e) => {
@@ -762,7 +802,7 @@ function PetDetails() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => setShowEditModal(false)}
+              onClick={handleCancelEdit} // 👈 UPDATED: Use handleCancelEdit
             />
             <motion.div
               className="relative z-50 w-full max-w-[90%] sm:max-w-sm"
@@ -773,7 +813,7 @@ function PetDetails() {
             >
               <div className="bg-white rounded-xl p-4 sm:p-5 w-full shadow-2xl max-h-[80vh] overflow-y-auto">
                 <motion.button 
-                  onClick={() => setShowEditModal(false)} 
+                  onClick={handleCancelEdit} // 👈 UPDATED: Use handleCancelEdit
                   className="absolute top-2 sm:top-3 right-3 sm:right-4 text-gray-400 hover:text-gray-600 text-lg sm:text-xl"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
@@ -800,16 +840,9 @@ function PetDetails() {
                     <input 
                       type="file" 
                       id="profile-upload"
-                      accept="image/*"
+                      accept=".jpg,.jpeg,.png,image/jpeg,image/png" // 👈 UPDATED: Restrict file types
                       className="hidden"
-                      onChange={async (e) => {
-                        const file = e.target.files[0];
-                        if (file) {
-                          const previewUrl = URL.createObjectURL(file);
-                          setPreviewImage(previewUrl);
-                          await handleImageUpload(file);
-                        }
-                      }}
+                      onChange={handleImageSelect} // 👈 UPDATED: Use handleImageSelect
                     />
 
                     <motion.label 
@@ -821,7 +854,7 @@ function PetDetails() {
                       <i className="fa-solid fa-camera text-[10px] sm:text-xs"></i>
                     </motion.label>
                   </div>
-                  <p className="text-[10px] sm:text-xs text-gray-500">Click camera to change photo</p>
+                  <p className="text-[10px] sm:text-xs text-gray-500">Click camera to select photo (JPG/PNG only)</p>
                 </div>
 
                 {/* Read-only Information */}
@@ -851,7 +884,7 @@ function PetDetails() {
 
                 <div className="flex gap-2">
                   <motion.button 
-                    onClick={() => setShowEditModal(false)}
+                    onClick={handleCancelEdit} // 👈 UPDATED: Use handleCancelEdit
                     className="flex-1 border border-gray-300 text-gray-700 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
@@ -860,11 +893,16 @@ function PetDetails() {
                   </motion.button>
                   <motion.button 
                     onClick={handleSaveChanges}
-                    className="flex-1 bg-[#5EE6FE] text-white py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    className={`flex-1 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium ${
+                      selectedFile 
+                        ? "bg-[#5EE6FE] text-white" 
+                        : "bg-gray-200 text-gray-500 cursor-not-allowed"
+                    }`}
+                    whileHover={selectedFile ? { scale: 1.02 } : {}}
+                    whileTap={selectedFile ? { scale: 0.98 } : {}}
+                    disabled={!selectedFile}
                   >
-                    Save Changes
+                    {selectedFile ? "Save Changes" : "No Changes"}
                   </motion.button>
                 </div>
 
