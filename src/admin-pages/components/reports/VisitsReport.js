@@ -2,22 +2,39 @@ import { useEffect, useState } from "react";
 import { Line, Bar } from "react-chartjs-2";
 import StatsCard from "./StatsCard";
 import api from "../../../api/axios";
+import { formatPercentChange, getPreviousDateRange, hasSelectedDateRange, toApiDate } from './reportComparison';
 
 const VisitsReport = ({ dateRange }) => {
   const [visitsData, setVisitsData] = useState(null);
+  const [previousData, setPreviousData] = useState(null);
 
   useEffect(() => {
     const fetchVisitsData = async () => {
       try {
-        const params = {};
-        if (dateRange?.start && dateRange?.end) {
-          params.startDate = dateRange.start.toISOString().split("T")[0];
-          params.endDate = dateRange.end.toISOString().split("T")[0];
+        const currentParams = {};
+        const previousRange = getPreviousDateRange(dateRange);
+        if (hasSelectedDateRange(dateRange)) {
+          currentParams.startDate = toApiDate(dateRange.start);
+          currentParams.endDate = toApiDate(dateRange.end);
         }
 
-        const response = await api.get("/admin/reports", { params });
-        if (response.data?.success) {
-          setVisitsData(response.data.data?.visits || null);
+        const previousParams = previousRange
+          ? {
+              startDate: toApiDate(previousRange.start),
+              endDate: toApiDate(previousRange.end),
+            }
+          : null;
+
+        const [currentResponse, previousResponse] = await Promise.all([
+          api.get('/admin/reports', { params: currentParams }),
+          previousParams
+            ? api.get('/admin/reports', { params: previousParams })
+            : Promise.resolve(null),
+        ]);
+
+        if (currentResponse.data?.success) {
+          setVisitsData(currentResponse.data.data?.visits || null);
+          setPreviousData(previousResponse?.data?.success ? previousResponse.data.data?.visits || null : null);
         }
       } catch (error) {
         console.error("Error fetching visits report data:", error);
@@ -46,6 +63,7 @@ const VisitsReport = ({ dateRange }) => {
 
   const rangeTotal = trendValues.reduce((sum, val) => sum + (val || 0), 0);
   const totalChangePercent = totalVisits > 0 ? Math.round((rangeTotal / totalVisits) * 100) : 0;
+  const previousRangeTotal = (previousData?.dailyTrend || []).reduce((sum, item) => sum + (item.count || 0), 0);
 
   const avgPerDay = visitsData?.insights?.dailyAverage || 0;
   const todayVisits = visitsData?.insights?.today || 0;
@@ -67,7 +85,13 @@ const VisitsReport = ({ dateRange }) => {
       </h2>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatsCard title="Total Visits" value={formatNumber(totalVisits)} change={`${totalChangePercent}% in range`} />
+        <StatsCard
+          title="Total Visits"
+          value={formatNumber(totalVisits)}
+          change={hasSelectedDateRange(dateRange)
+            ? formatPercentChange(rangeTotal, previousRangeTotal, dateRange)
+            : `${totalChangePercent}% in range`}
+        />
         <StatsCard title="Today" value={formatNumber(todayVisits)} change={todayChangeLabel} />
         <StatsCard title="Peak Day" value={visitsData?.insights?.mostPopularDay || "N/A"} change={formatNumber(visitsData?.insights?.mostPopularDayCount || 0)} />
         <StatsCard title="Avg / Day" value={formatNumber(avgPerDay)} change={avgChangeLabel} />

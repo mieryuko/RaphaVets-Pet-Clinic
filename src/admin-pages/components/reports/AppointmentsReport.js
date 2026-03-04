@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react';
 import { Line, Doughnut, Bar } from "react-chartjs-2";
 import api from "../../../api/axios";
 import StatsCard from "./StatsCard";
+import { formatPercentChange, getPreviousDateRange, hasSelectedDateRange, toApiDate } from './reportComparison';
 
 const AppointmentsReport = ({ dateRange }) => {
   const [data, setData] = useState(null);
+  const [previousData, setPreviousData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -15,17 +17,30 @@ const AppointmentsReport = ({ dateRange }) => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const params = {};
-      if (dateRange?.start && dateRange?.end) {
-        params.startDate = dateRange.start.toISOString().split('T')[0];
-        params.endDate = dateRange.end.toISOString().split('T')[0];
+      const currentParams = {};
+      const previousRange = getPreviousDateRange(dateRange);
+      if (hasSelectedDateRange(dateRange)) {
+        currentParams.startDate = toApiDate(dateRange.start);
+        currentParams.endDate = toApiDate(dateRange.end);
       }
-      
-      // Using your custom api instance instead of axios
-      const response = await api.get('/admin/reports', { params });
-      
-      if (response.data.success) {
-        setData(response.data.data.appointments);
+
+      const previousParams = previousRange
+        ? {
+            startDate: toApiDate(previousRange.start),
+            endDate: toApiDate(previousRange.end),
+          }
+        : null;
+
+      const [currentResponse, previousResponse] = await Promise.all([
+        api.get('/admin/reports', { params: currentParams }),
+        previousParams
+          ? api.get('/admin/reports', { params: previousParams })
+          : Promise.resolve(null),
+      ]);
+
+      if (currentResponse.data.success) {
+        setData(currentResponse.data.data.appointments);
+        setPreviousData(previousResponse?.data?.success ? previousResponse.data.data.appointments : null);
       }
     } catch (err) {
       console.error('Error fetching appointments data:', err);
@@ -123,17 +138,25 @@ const AppointmentsReport = ({ dateRange }) => {
         <StatsCard 
           title="Total Appointments" 
           value={formatNumber(data.kpi?.total || 0)} 
-          change={`+${Math.round((data.kpi?.completionRate || 0) / 100 * (data.kpi?.total || 1))}%`} 
+          change={hasSelectedDateRange(dateRange)
+            ? formatPercentChange(data.kpi?.total || 0, previousData?.kpi?.total || 0, dateRange)
+            : `${data.kpi?.completionRate || 0}% completion`} 
         />
         <StatsCard 
           title="Completion Rate" 
           value={`${data.kpi?.completionRate || 0}%`} 
-          change={data.kpi?.completionRate > 70 ? 'High' : 'Medium'} 
+          change={hasSelectedDateRange(dateRange)
+            ? formatPercentChange(data.kpi?.completionRate || 0, previousData?.kpi?.completionRate || 0, dateRange)
+            : data.kpi?.completionRate > 70 ? 'High' : 'Medium'} 
         />
         <StatsCard 
           title="Cancelled" 
           value={formatNumber(data.kpi?.cancelled || 0)} 
-          change={`-${Math.round((data.kpi?.cancelled / (data.kpi?.total || 1)) * 100)}%`} 
+          change={hasSelectedDateRange(dateRange)
+            ? formatPercentChange(data.kpi?.cancelled || 0, previousData?.kpi?.cancelled || 0, dateRange)
+            : data.kpi?.cancelled === 0
+              ? '0%'
+              : `-${Math.round((data.kpi?.cancelled / (data.kpi?.total || 1)) * 100)}%`} 
         />
         <StatsCard 
           title="Today" 

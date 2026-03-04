@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react';
 import { Line, Doughnut } from "react-chartjs-2";
 import api from "../../../api/axios";
 import StatsCard from "./StatsCard";
+import { formatPercentChange, getPreviousDateRange, hasSelectedDateRange, toApiDate } from './reportComparison';
 
 const LostPetsReport = ({ dateRange }) => {
   const [data, setData] = useState(null);
+  const [previousData, setPreviousData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -15,15 +17,30 @@ const LostPetsReport = ({ dateRange }) => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const params = {};
-      if (dateRange?.start && dateRange?.end) {
-        params.startDate = dateRange.start.toISOString().split('T')[0];
-        params.endDate = dateRange.end.toISOString().split('T')[0];
+      const currentParams = {};
+      const previousRange = getPreviousDateRange(dateRange);
+      if (hasSelectedDateRange(dateRange)) {
+        currentParams.startDate = toApiDate(dateRange.start);
+        currentParams.endDate = toApiDate(dateRange.end);
       }
-      
-      const response = await api.get('/admin/reports', { params });
-      if (response.data.success) {
-        setData(response.data.data.lostPets);
+
+      const previousParams = previousRange
+        ? {
+            startDate: toApiDate(previousRange.start),
+            endDate: toApiDate(previousRange.end),
+          }
+        : null;
+
+      const [currentResponse, previousResponse] = await Promise.all([
+        api.get('/admin/reports', { params: currentParams }),
+        previousParams
+          ? api.get('/admin/reports', { params: previousParams })
+          : Promise.resolve(null),
+      ]);
+
+      if (currentResponse.data.success) {
+        setData(currentResponse.data.data.lostPets);
+        setPreviousData(previousResponse?.data?.success ? previousResponse.data.data.lostPets : null);
       }
     } catch (err) {
       console.error('Error fetching lost pets data:', err);
@@ -70,6 +87,9 @@ const LostPetsReport = ({ dateRange }) => {
   const foundCount = data.kpi?.found || 0;
   const successRate = data.kpi?.successRate || 0;
   const activeCases = totalReports - foundCount;
+  const previousLost = previousData?.kpi?.lost || 0;
+  const previousFound = previousData?.kpi?.found || 0;
+  const previousTotalReports = previousLost + previousFound;
 
   // Calculate percentages for doughnut chart
   const foundPercent = totalReports > 0 ? Math.round((foundCount / totalReports) * 100) : 0;
@@ -113,17 +133,23 @@ const LostPetsReport = ({ dateRange }) => {
         <StatsCard 
           title="Total Reports" 
           value={formatNumber(totalReports)} 
-          change={`+${Math.round((totalReports - (data.monthlyTrend?.[0]?.total || 0)) / (totalReports || 1) * 100)}%`} 
+          change={hasSelectedDateRange(dateRange)
+            ? formatPercentChange(totalReports, previousTotalReports, dateRange)
+            : `+${Math.round((totalReports - (data.monthlyTrend?.[0]?.total || 0)) / (totalReports || 1) * 100)}%`} 
         />
         <StatsCard 
           title="Found" 
           value={formatNumber(foundCount)} 
-          change={`+${Math.round((foundCount / (totalReports || 1)) * 100)}%`} 
+          change={hasSelectedDateRange(dateRange)
+            ? formatPercentChange(foundCount, previousFound, dateRange)
+            : `+${Math.round((foundCount / (totalReports || 1)) * 100)}%`} 
         />
         <StatsCard 
           title="Active Cases" 
           value={formatNumber(activeCases)} 
-          change={`-${Math.round((activeCases / (totalReports || 1)) * 100)}%`} 
+          change={hasSelectedDateRange(dateRange)
+            ? formatPercentChange(activeCases, Math.max(previousTotalReports - previousFound, 0), dateRange)
+            : `-${Math.round((activeCases / (totalReports || 1)) * 100)}%`} 
         />
         <StatsCard 
           title="Found Rate" 

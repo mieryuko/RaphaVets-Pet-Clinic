@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react';
 import { Doughnut, Bar } from "react-chartjs-2";
 import api from "../../../api/axios";
 import StatsCard from "./StatsCard";
+import { formatPercentChange, getPreviousDateRange, hasSelectedDateRange, toApiDate } from './reportComparison';
 
 const PetsReport = ({ dateRange }) => {
   const [data, setData] = useState(null);
+  const [previousData, setPreviousData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -15,15 +17,30 @@ const PetsReport = ({ dateRange }) => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const params = {};
-      if (dateRange?.start && dateRange?.end) {
-        params.startDate = dateRange.start.toISOString().split('T')[0];
-        params.endDate = dateRange.end.toISOString().split('T')[0];
+      const currentParams = {};
+      const previousRange = getPreviousDateRange(dateRange);
+      if (hasSelectedDateRange(dateRange)) {
+        currentParams.startDate = toApiDate(dateRange.start);
+        currentParams.endDate = toApiDate(dateRange.end);
       }
-      
-      const response = await api.get('/admin/reports', { params });
-      if (response.data.success) {
-        setData(response.data.data.pets);
+
+      const previousParams = previousRange
+        ? {
+            startDate: toApiDate(previousRange.start),
+            endDate: toApiDate(previousRange.end),
+          }
+        : null;
+
+      const [currentResponse, previousResponse] = await Promise.all([
+        api.get('/admin/reports', { params: currentParams }),
+        previousParams
+          ? api.get('/admin/reports', { params: previousParams })
+          : Promise.resolve(null),
+      ]);
+
+      if (currentResponse.data.success) {
+        setData(currentResponse.data.data.pets);
+        setPreviousData(previousResponse?.data?.success ? previousResponse.data.data.pets : null);
       }
     } catch (err) {
       console.error('Error fetching pets data:', err);
@@ -67,6 +84,8 @@ const PetsReport = ({ dateRange }) => {
   // Get counts by species
   const dogCount = data.bySpecies?.find(s => s.species === 'Dog')?.count || 0;
   const catCount = data.bySpecies?.find(s => s.species === 'Cat')?.count || 0;
+  const previousDogCount = previousData?.bySpecies?.find(s => s.species === 'Dog')?.count || 0;
+  const previousCatCount = previousData?.bySpecies?.find(s => s.species === 'Cat')?.count || 0;
   const totalPets = data.kpi?.total || 0;
 
   // Calculate percentages for doughnut chart
@@ -108,22 +127,30 @@ const PetsReport = ({ dateRange }) => {
         <StatsCard 
           title="Total Pets" 
           value={formatNumber(totalPets)} 
-          change={`+${Math.round((data.kpi?.new || 0) / (totalPets || 1) * 100)}%`} 
+          change={hasSelectedDateRange(dateRange)
+            ? formatPercentChange(data.kpi?.new || 0, previousData?.kpi?.new || 0, dateRange)
+            : `+${Math.round((data.kpi?.new || 0) / (totalPets || 1) * 100)}%`} 
         />
         <StatsCard 
           title="Dogs" 
           value={formatNumber(dogCount)} 
-          change={`${dogPercentage}%`} 
+          change={hasSelectedDateRange(dateRange)
+            ? formatPercentChange(dogCount, previousDogCount, dateRange)
+            : `${dogPercentage}%`} 
         />
         <StatsCard 
           title="Cats" 
           value={formatNumber(catCount)} 
-          change={`${catPercentage}%`} 
+          change={hasSelectedDateRange(dateRange)
+            ? formatPercentChange(catCount, previousCatCount, dateRange)
+            : `${catPercentage}%`} 
         />
         <StatsCard 
           title="New Registered" 
           value={formatNumber(data.kpi?.new || 0)} 
-          change={`+${Math.round((data.kpi?.new || 0) / (totalPets || 1) * 100)}%`} 
+          change={hasSelectedDateRange(dateRange)
+            ? formatPercentChange(data.kpi?.new || 0, previousData?.kpi?.new || 0, dateRange)
+            : `+${Math.round((data.kpi?.new || 0) / (totalPets || 1) * 100)}%`} 
         />
       </div>
 

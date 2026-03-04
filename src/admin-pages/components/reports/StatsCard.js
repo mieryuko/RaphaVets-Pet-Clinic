@@ -1,6 +1,12 @@
 const StatsCard = ({ title, value, change }) => {
   // Determine change color based on content
   const getChangeColor = () => {
+    const numericValue = Number(String(value ?? '').replace(/,/g, ''));
+
+    if (title?.toLowerCase().includes('cancelled') && numericValue === 0) {
+      return 'text-green-500';
+    }
+
     if (!change) return 'text-gray-500';
     if (change.includes('+') || change.includes('High') || change.includes('Good') || change.includes('↗')) {
       return 'text-green-500';

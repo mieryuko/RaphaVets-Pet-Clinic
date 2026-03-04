@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react';
 import { Doughnut, Line } from "react-chartjs-2";
 import api from "../../../api/axios";
 import StatsCard from "./StatsCard";
+import { formatPercentChange, getPreviousDateRange, hasSelectedDateRange, toApiDate } from './reportComparison';
 
 const FeedbacksReport = ({ dateRange }) => {
   const [data, setData] = useState(null);
+  const [previousData, setPreviousData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -15,15 +17,30 @@ const FeedbacksReport = ({ dateRange }) => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const params = {};
-      if (dateRange?.start && dateRange?.end) {
-        params.startDate = dateRange.start.toISOString().split('T')[0];
-        params.endDate = dateRange.end.toISOString().split('T')[0];
+      const currentParams = {};
+      const previousRange = getPreviousDateRange(dateRange);
+      if (hasSelectedDateRange(dateRange)) {
+        currentParams.startDate = toApiDate(dateRange.start);
+        currentParams.endDate = toApiDate(dateRange.end);
       }
-      
-      const response = await api.get('/admin/reports', { params });
-      if (response.data.success) {
-        setData(response.data.data.feedbacks);
+
+      const previousParams = previousRange
+        ? {
+            startDate: toApiDate(previousRange.start),
+            endDate: toApiDate(previousRange.end),
+          }
+        : null;
+
+      const [currentResponse, previousResponse] = await Promise.all([
+        api.get('/admin/reports', { params: currentParams }),
+        previousParams
+          ? api.get('/admin/reports', { params: previousParams })
+          : Promise.resolve(null),
+      ]);
+
+      if (currentResponse.data.success) {
+        setData(currentResponse.data.data.feedbacks);
+        setPreviousData(previousResponse?.data?.success ? previousResponse.data.data.feedbacks : null);
       }
     } catch (err) {
       console.error('Error fetching feedbacks data:', err);
@@ -73,6 +90,8 @@ const FeedbacksReport = ({ dateRange }) => {
   
   const totalFeedbacks = data.kpi?.total || 0;
   const avgRating = data.kpi?.avgRating || 0;
+  const currentTrendTotal = (data.trend || []).reduce((sum, item) => sum + (item.count || 0), 0);
+  const previousTrendTotal = (previousData?.trend || []).reduce((sum, item) => sum + (item.count || 0), 0);
 
   // Calculate percentages for doughnut chart
   const rating5Percent = totalFeedbacks > 0 ? Math.round((rating5 / totalFeedbacks) * 100) : 0;
@@ -139,12 +158,16 @@ const FeedbacksReport = ({ dateRange }) => {
         <StatsCard 
           title="Total Reviews" 
           value={formatNumber(totalFeedbacks)} 
-          change={`+${Math.round((rating5 + rating4) / (totalFeedbacks || 1) * 100)}% positive`} 
+          change={hasSelectedDateRange(dateRange)
+            ? formatPercentChange(currentTrendTotal, previousTrendTotal, dateRange)
+            : `+${Math.round((rating5 + rating4) / (totalFeedbacks || 1) * 100)}% positive`} 
         />
         <StatsCard 
           title="Avg Rating" 
           value={avgRating} 
-          change={avgRating >= 4.5 ? 'Excellent' : avgRating >= 4 ? 'Good' : 'Average'} 
+          change={hasSelectedDateRange(dateRange)
+            ? formatPercentChange(Number(avgRating), Number(previousData?.kpi?.avgRating || 0), dateRange)
+            : avgRating >= 4.5 ? 'Excellent' : avgRating >= 4 ? 'Good' : 'Average'} 
         />
         <StatsCard 
           title="5★ Reviews" 

@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react';
 import { Line, Doughnut } from "react-chartjs-2";
 import StatsCard from "./StatsCard";
 import api from "../../../api/axios";
+import { formatPercentChange, getPreviousDateRange, hasSelectedDateRange, toApiDate } from './reportComparison';
 
 
 const UsersReport = ({ dateRange }) => {
   const [data, setData] = useState(null);
+  const [previousData, setPreviousData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -16,15 +18,30 @@ const UsersReport = ({ dateRange }) => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const params = {};
-      if (dateRange?.start && dateRange?.end) {
-        params.startDate = dateRange.start.toISOString().split('T')[0];
-        params.endDate = dateRange.end.toISOString().split('T')[0];
+      const currentParams = {};
+      const previousRange = getPreviousDateRange(dateRange);
+      if (hasSelectedDateRange(dateRange)) {
+        currentParams.startDate = toApiDate(dateRange.start);
+        currentParams.endDate = toApiDate(dateRange.end);
       }
-      
-      const response = await api.get('/admin/reports', { params });
-      if (response.data.success) {
-        setData(response.data.data.users);
+
+      const previousParams = previousRange
+        ? {
+            startDate: toApiDate(previousRange.start),
+            endDate: toApiDate(previousRange.end),
+          }
+        : null;
+
+      const [currentResponse, previousResponse] = await Promise.all([
+        api.get('/admin/reports', { params: currentParams }),
+        previousParams
+          ? api.get('/admin/reports', { params: previousParams })
+          : Promise.resolve(null),
+      ]);
+
+      if (currentResponse.data.success) {
+        setData(currentResponse.data.data.users);
+        setPreviousData(previousResponse?.data?.success ? previousResponse.data.data.users : null);
       }
     } catch (err) {
       console.error('Error fetching users data:', err);
@@ -116,17 +133,23 @@ const UsersReport = ({ dateRange }) => {
         <StatsCard 
           title="Total Clients" 
           value={formatNumber(data.kpi?.total || 0)} 
-          change={`+${newUserPercentage}%`} 
+          change={hasSelectedDateRange(dateRange)
+            ? formatPercentChange(data.kpi?.new || 0, previousData?.kpi?.new || 0, dateRange)
+            : `+${newUserPercentage}%`} 
         />
         <StatsCard 
           title="New This Month" 
           value={formatNumber(data.kpi?.new || 0)} 
-          change={`+${newUserPercentage}%`} 
+          change={hasSelectedDateRange(dateRange)
+            ? formatPercentChange(data.kpi?.new || 0, previousData?.kpi?.new || 0, dateRange)
+            : `+${newUserPercentage}%`} 
         />
         <StatsCard 
           title="Active Now" 
           value={formatNumber(data.kpi?.active || 0)} 
-          change={`${activePercentage}% of clients`} 
+          change={hasSelectedDateRange(dateRange)
+            ? formatPercentChange(data.kpi?.active || 0, previousData?.kpi?.active || 0, dateRange)
+            : `${activePercentage}% of clients`} 
         />
         <StatsCard 
           title="Admins" 
