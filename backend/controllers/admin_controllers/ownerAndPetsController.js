@@ -219,7 +219,11 @@ const emailTransporter = nodemailer.createTransport({
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS
-  }
+  },
+  connectionTimeout: Number(process.env.SMTP_CONNECTION_TIMEOUT || 7000),
+  greetingTimeout: Number(process.env.SMTP_GREETING_TIMEOUT || 7000),
+  socketTimeout: Number(process.env.SMTP_SOCKET_TIMEOUT || 10000),
+  dnsTimeout: Number(process.env.SMTP_DNS_TIMEOUT || 7000)
 });
 
 export const createOwner = async (req, res) => {

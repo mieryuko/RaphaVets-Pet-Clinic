@@ -202,8 +202,8 @@ async function getUsersReport(startDate, endDate) {
     // Get user registration trend (last 6 months or date range)
     let registrationTrendQuery = `
         SELECT 
-            DATE_FORMAT(createdAt, '%b') as month,
-            DATE_FORMAT(createdAt, '%Y-%m') as monthKey,
+            DATE_FORMAT(MIN(createdAt), '%b') as month,
+            DATE_FORMAT(MIN(createdAt), '%Y-%m') as monthKey,
             COUNT(*) as count
          FROM account_tbl
          WHERE isDeleted = 0
@@ -313,8 +313,8 @@ async function getPetsReport(startDate, endDate) {
     // Get pet registration trend (last 6 months or date range)
     let petRegistrationTrendQuery = `
         SELECT 
-            DATE_FORMAT(pt.createdAt, '%b') as month,
-            DATE_FORMAT(pt.createdAt, '%Y-%m') as monthKey,
+            DATE_FORMAT(MIN(pt.createdAt), '%b') as month,
+            DATE_FORMAT(MIN(pt.createdAt), '%Y-%m') as monthKey,
             COUNT(*) as count
         FROM pet_tbl pt
         JOIN account_tbl acc ON pt.accID = acc.accId
@@ -533,8 +533,8 @@ async function getFeedbacksReport(startDate, endDate) {
     // Feedback trend over time (last 6 months)
     let feedbackTrendQuery = `
         SELECT 
-            DATE_FORMAT(createdAt, '%b') as month,
-            DATE_FORMAT(createdAt, '%Y-%m') as monthKey,
+            DATE_FORMAT(MIN(createdAt), '%b') as month,
+            DATE_FORMAT(MIN(createdAt), '%Y-%m') as monthKey,
             COUNT(*) as count,
             AVG(rating) as avgRating
          FROM feedbacks_tbl
@@ -624,8 +624,8 @@ async function getLostPetsReport(startDate, endDate) {
     // Monthly trend
     const [monthlyTrend] = await db.query(
         `SELECT 
-            DATE_FORMAT(fp.createdAt, '%b %Y') as month,
-            DATE_FORMAT(fp.createdAt, '%Y-%m') as monthKey,
+            DATE_FORMAT(MIN(fp.createdAt), '%b %Y') as month,
+            DATE_FORMAT(MIN(fp.createdAt), '%Y-%m') as monthKey,
             SUM(CASE WHEN fp.postType = 'Lost' THEN 1 ELSE 0 END) as lost,
             SUM(CASE WHEN fp.postType = 'Found' THEN 1 ELSE 0 END) as found,
             COUNT(*) as total

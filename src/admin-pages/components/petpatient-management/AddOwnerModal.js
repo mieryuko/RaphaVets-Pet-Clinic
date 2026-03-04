@@ -316,13 +316,8 @@ const AddOwnerModal = ({ isOpen, onClose, onSave, initialData }) => {
         // Editing - just close the modal after success
         handleClose();
       } else {
-        // Creating new owner - show success state only (no credentials displayed)
-        setStep("success");
-        
-        // Auto-close after 3 seconds to let user see the credentials
-        setTimeout(() => {
-          handleClose();
-        }, 3000);
+        // Creating new owner - close immediately after successful save
+        handleClose();
       }
       
     } catch (error) {

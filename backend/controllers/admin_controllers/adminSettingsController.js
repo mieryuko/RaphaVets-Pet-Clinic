@@ -27,6 +27,10 @@ const getTransporter = () => {
     port: Number(process.env.SMTP_PORT || 587),
     secure: false,
     auth: { user, pass },
+    connectionTimeout: Number(process.env.SMTP_CONNECTION_TIMEOUT || 7000),
+    greetingTimeout: Number(process.env.SMTP_GREETING_TIMEOUT || 7000),
+    socketTimeout: Number(process.env.SMTP_SOCKET_TIMEOUT || 10000),
+    dnsTimeout: Number(process.env.SMTP_DNS_TIMEOUT || 7000),
   });
 };
 
@@ -231,23 +235,25 @@ export const createAdminSettingsUser = async (req, res) => {
     const transporter = getTransporter();
 
     if (transporter) {
-      try {
-        await transporter.sendMail({
-          from: process.env.SMTP_FROM || process.env.SMTP_USER,
-          to: safeEmail,
-          subject: 'RaphaVets Account Credentials',
-          html: `
-            <p>Hello ${safeFirstName},</p>
-            <p>Your ${normalizedType} account has been created.</p>
-            <p><strong>Email:</strong> ${safeEmail}</p>
-            <p><strong>Temporary Password:</strong> ${plainPassword}</p>
-            <p>Please change your password after your first login.</p>
-          `,
-        });
-        emailSent = true;
-      } catch (mailError) {
-        console.error('Failed to send account email:', mailError);
-      }
+      setImmediate(async () => {
+        try {
+          await transporter.sendMail({
+            from: process.env.SMTP_FROM || process.env.SMTP_USER,
+            to: safeEmail,
+            subject: 'RaphaVets Account Credentials',
+            html: `
+              <p>Hello ${safeFirstName},</p>
+              <p>Your ${normalizedType} account has been created.</p>
+              <p><strong>Email:</strong> ${safeEmail}</p>
+              <p><strong>Temporary Password:</strong> ${plainPassword}</p>
+              <p>Please change your password after your first login.</p>
+            `,
+          });
+          console.log(`✅ Account email sent to ${safeEmail}`);
+        } catch (mailError) {
+          console.error('Failed to send account email:', mailError);
+        }
+      });
     }
 
     return res.status(201).json({

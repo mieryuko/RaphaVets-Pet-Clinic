@@ -152,8 +152,8 @@ export const createVideo = async (req, res) => {
 
     const query = `
       INSERT INTO video_content_tbl 
-        (accID, videoTitle, videoCategoryID, videoURL, pubStatusID)
-      VALUES (?, ?, ?, ?, ?)
+        (accID, videoTitle, videoCategoryID, videoURL, pubStatusID, isDeleted)
+      VALUES (?, ?, ?, ?, ?, ?)
     `;
 
     const [result] = await db.execute(query, [
@@ -161,7 +161,8 @@ export const createVideo = async (req, res) => {
       videoTitle,
       parseInt(videoCategoryID),
       videoURL,
-      parseInt(pubStatusID)
+      parseInt(pubStatusID),
+      0
     ]);
 
     // Fetch the created record to return complete data
