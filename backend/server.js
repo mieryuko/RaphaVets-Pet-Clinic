@@ -9,8 +9,8 @@ import forumRoutes from "./routes/forumRoutes.js";
 import userRoute from "./routes/userRoute.js";
 import appointmentRoute from "./routes/appointmentRoute.js";
 import petRoute from "./routes/petRoute.js";
-import clientRoute from "./routes/admin_routes/ownerAndPetRoute.js"
-import dashboardRoute from "./routes/admin_routes/dashboardRoute.js"
+import clientRoute from "./routes/admin_routes/ownerAndPetRoute.js";
+import dashboardRoute from "./routes/admin_routes/dashboardRoute.js";
 import petCareTipsRoutes from './routes/petCareTipsRoute.js';
 import videoRoutes from './routes/videoRoute.js';
 import faqRoute from './routes/faqRoute.js';
@@ -27,7 +27,12 @@ import "./cron/appointmentCron.js";
 import reportRoute from './routes/admin_routes/reportRoute.js';
 import adminSettingsRoute from './routes/admin_routes/adminSettingsRoute.js';
 
-dotenv.config();
+// ----------------------
+// ENVIRONMENT CONFIG
+// ----------------------
+const envFile = process.env.NODE_ENV === "production" ? ".env.production" : ".env.local";
+dotenv.config({ path: envFile });
+console.log(`✅ Using env file: ${envFile}`);
 
 const app = express();
 const server = createServer(app);
@@ -64,11 +69,13 @@ app.use("/api/chatbot", chatRoutes);
 app.use('/api/support', supportRoute);
 app.use("/api/admin", reportRoute);
 app.use('/api/admin/settings', adminSettingsRoute);
+
 app.use("/uploads", express.static("uploads"));
+app.use("/api/ml", breedDetectRoute);
+
 app.get("/api/test", (req, res) => {
   res.json({ message: "Backend connected!" });
 });
-app.use("/api/ml", breedDetectRoute);
 
 const PORT = process.env.PORT || 5000;
 
