@@ -415,66 +415,66 @@ export const createOwner = async (req, res) => {
       await connection.commit();
       connection.release();
 
-      // Send email with login credentials
-      try {
-        await emailTransporter.sendMail({
-          from: process.env.SMTP_FROM || '"RaphaVets Clinic" <markmapili29@gmail.com>',
-          to: normalizedEmail,
-          subject: 'Your RaphaVets Clinic Account Login Credentials',
-          html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-              <h2 style="color: #2563eb; text-align: center;">Welcome to RaphaVets Clinic!</h2>
-              
-              <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                <h3 style="color: #1e293b; margin-bottom: 15px;">Your Account Has Been Created</h3>
-                
-                <p style="color: #475569; margin-bottom: 10px;">
-                  Hello ${normalizedFirstName} ${normalizedLastName},
-                </p>
-                
-                <p style="color: #475569; margin-bottom: 15px;">
-                  Your account has been successfully created. Here are your login credentials:
-                </p>
-                
-                <div style="background: white; padding: 15px; border-radius: 6px; border-left: 4px solid #2563eb;">
-                  <p style="margin: 5px 0;"><strong>Email:</strong> ${normalizedEmail}</p>
-                  <p style="margin: 5px 0;"><strong>Temporary Password:</strong> <code style="background: #f1f5f9; padding: 2px 6px; border-radius: 3px; font-family: monospace;">${plainPassword}</code></p>
-                </div>
-                
-                <p style="color: #475569; margin-top: 15px; font-size: 14px;">
-                  <strong>Important:</strong> Please change your password after your first login for security.
-                </p>
-              </div>
-              
-              <div style="text-align: center; margin-top: 25px;">
-                <a href="${process.env.CLINIC_URL || process.env.FRONTEND_URL || '#'}" 
-                   style="background: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
-                  Login to Your Account
-                </a>
-              </div>
-              
-              <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
-                <p style="color: #64748b; font-size: 12px; text-align: center;">
-                  This is an automated message. Please do not reply to this email.<br>
-                  If you have any questions, please contact our clinic directly.
-                </p>
-              </div>
-            </div>
-          `
-        });
-        
-        console.log(`✅ Login credentials email sent to ${normalizedEmail}`);
-        
-      } catch (emailError) {
-        console.error('❌ Failed to send email:', emailError);
-        // Don't fail the whole request if email fails
-      }
-
       res.status(201).json({ 
         message: "Owner and pets created successfully",
         accId: accId,
         password: plainPassword,
         email: normalizedEmail
+      });
+
+      // Send email in background to avoid blocking API response
+      setImmediate(async () => {
+        try {
+          await emailTransporter.sendMail({
+            from: process.env.SMTP_FROM || '"RaphaVets Clinic" <markmapili29@gmail.com>',
+            to: normalizedEmail,
+            subject: 'Your RaphaVets Clinic Account Login Credentials',
+            html: `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h2 style="color: #2563eb; text-align: center;">Welcome to RaphaVets Clinic!</h2>
+                
+                <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                  <h3 style="color: #1e293b; margin-bottom: 15px;">Your Account Has Been Created</h3>
+                  
+                  <p style="color: #475569; margin-bottom: 10px;">
+                    Hello ${normalizedFirstName} ${normalizedLastName},
+                  </p>
+                  
+                  <p style="color: #475569; margin-bottom: 15px;">
+                    Your account has been successfully created. Here are your login credentials:
+                  </p>
+                  
+                  <div style="background: white; padding: 15px; border-radius: 6px; border-left: 4px solid #2563eb;">
+                    <p style="margin: 5px 0;"><strong>Email:</strong> ${normalizedEmail}</p>
+                    <p style="margin: 5px 0;"><strong>Temporary Password:</strong> <code style="background: #f1f5f9; padding: 2px 6px; border-radius: 3px; font-family: monospace;">${plainPassword}</code></p>
+                  </div>
+                  
+                  <p style="color: #475569; margin-top: 15px; font-size: 14px;">
+                    <strong>Important:</strong> Please change your password after your first login for security.
+                  </p>
+                </div>
+                
+                <div style="text-align: center; margin-top: 25px;">
+                  <a href="${process.env.CLINIC_URL || process.env.FRONTEND_URL || '#'}" 
+                     style="background: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+                    Login to Your Account
+                  </a>
+                </div>
+                
+                <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
+                  <p style="color: #64748b; font-size: 12px; text-align: center;">
+                    This is an automated message. Please do not reply to this email.<br>
+                    If you have any questions, please contact our clinic directly.
+                  </p>
+                </div>
+              </div>
+            `
+          });
+
+          console.log(`✅ Login credentials email sent to ${normalizedEmail}`);
+        } catch (emailError) {
+          console.error('❌ Failed to send email:', emailError);
+        }
       });
 
     } catch (transactionError) {

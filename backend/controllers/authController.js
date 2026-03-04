@@ -5,23 +5,29 @@ import pool from "../config/db.js";
 import nodemailer from "nodemailer";
 import crypto from "crypto";
 
-// Email transporter setup
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
+const getTransporter = () => {
+  const host = process.env.SMTP_HOST;
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASS;
 
-// Test email configuration
-transporter.verify(function (error, success) {
-  if (error) {
-    console.log("❌ Email transporter error:", error);
-  } else {
-    console.log("✅ Email server is ready to send messages");
+  if (!host || !user || !pass) {
+    return null;
   }
-});
+
+  return nodemailer.createTransport({
+    host,
+    port: Number(process.env.SMTP_PORT || 587),
+    secure: process.env.SMTP_SECURE === 'true',
+    auth: {
+      user,
+      pass,
+    },
+    connectionTimeout: Number(process.env.SMTP_CONNECTION_TIMEOUT || 7000),
+    greetingTimeout: Number(process.env.SMTP_GREETING_TIMEOUT || 7000),
+    socketTimeout: Number(process.env.SMTP_SOCKET_TIMEOUT || 10000),
+    dnsTimeout: Number(process.env.SMTP_DNS_TIMEOUT || 7000),
+  });
+};
 
 export const checkEmailExists = async (req, res) => {
   const { email } = req.body;
@@ -99,6 +105,14 @@ export const forgotPassword = async (req, res) => {
         </div>
       `
     };
+
+    const transporter = getTransporter();
+    if (!transporter) {
+      return res.status(500).json({
+        success: false,
+        message: "Email service not configured",
+      });
+    }
 
     await transporter.sendMail(mailOptions);
 
