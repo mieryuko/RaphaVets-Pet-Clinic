@@ -203,8 +203,8 @@ export const bookAppointment = async (req, res) => {
 
     const sql = `
       INSERT INTO appointment_tbl
-        (accID, petID, serviceID, appointmentDate, scheduledTimeID, visitType, statusID)
-      VALUES (?, ?, ?, ?, ?, "Scheduled", 1)
+        (accID, petID, serviceID, appointmentDate, scheduledTimeID, visitType, statusID, isDeleted)
+      VALUES (?, ?, ?, ?, ?, "Scheduled", 1, 0)
     `;
 
     console.log("💾 Inserting appointment with:", {

@@ -174,8 +174,8 @@ export const createPetCareTip = async (req, res) => {
 
     const query = `
       INSERT INTO pet_care_tips_content_tbl 
-        (accID, iconID, title, petCareCategoryID, shortDescription, learnMoreURL, detailedContent, pubStatusID)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        (accID, iconID, title, petCareCategoryID, shortDescription, learnMoreURL, detailedContent, pubStatusID, isDeleted)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     const [result] = await db.execute(query, [
@@ -186,7 +186,8 @@ export const createPetCareTip = async (req, res) => {
       shortDescription,
       learnMoreURL,
       detailedContent,
-      parseInt(pubStatusID)
+      parseInt(pubStatusID),
+      0
     ]);
 
     // Fetch complete record with all data for client formatting

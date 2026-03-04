@@ -375,7 +375,7 @@ async function getVisitsReport(startDate, endDate) {
     const [dailyTrend] = await db.query(
         `SELECT 
             DAYNAME(DATE(COALESCE(visitDateTime, appointmentDate))) as day,
-            CASE DAYOFWEEK(DATE(COALESCE(visitDateTime, appointmentDate)))
+            MIN(CASE DAYOFWEEK(DATE(COALESCE(visitDateTime, appointmentDate)))
                 WHEN 2 THEN 1
                 WHEN 3 THEN 2
                 WHEN 4 THEN 3
@@ -383,7 +383,7 @@ async function getVisitsReport(startDate, endDate) {
                 WHEN 6 THEN 5
                 WHEN 7 THEN 6
                 WHEN 1 THEN 7
-            END as dayOrder,
+            END) as dayOrder,
             COUNT(*) as count
          FROM appointment_tbl
          WHERE isDeleted = 0 AND statusID = 6 ${dateFilter}

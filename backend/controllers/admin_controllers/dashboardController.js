@@ -72,13 +72,13 @@ export const getAppointmentsGraphData = async (req, res) => {
     // Get monthly appointment counts for the last 6 months
     const [rows] = await db.query(`
       SELECT 
-        DATE_FORMAT(a.createdAt, '%b') as month,
+        DATE_FORMAT(MIN(a.createdAt), '%b') as month,
         COUNT(*) as appointments
       FROM appointment_tbl a
       WHERE a.createdAt >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
         AND a.isDeleted = 0
       GROUP BY DATE_FORMAT(a.createdAt, '%Y-%m')
-      ORDER BY MIN(a.createdAt) ASC
+      ORDER BY DATE_FORMAT(a.createdAt, '%Y-%m') ASC
     `);
 
     // Month name mapping for consistent display

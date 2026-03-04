@@ -121,7 +121,7 @@ export const getUserProfile = async (req, res) => {
         a.accId, a.roleID, a.firstName, a.lastName, a.email,
         c.address, c.contactNo
       FROM account_tbl AS a
-      LEFT JOIN clientInfo_tbl AS c ON a.accId = c.accId
+      LEFT JOIN clientinfo_tbl AS c ON a.accId = c.accId
       WHERE a.accId = ?
       `,
       [id]
@@ -153,7 +153,7 @@ export const getCurrentUser = async (req, res) => {
         a.accId, a.roleID, a.firstName, a.lastName, a.email,
         c.address, c.contactNo
       FROM account_tbl AS a
-      LEFT JOIN clientInfo_tbl AS c ON a.accId = c.accId
+      LEFT JOIN clientinfo_tbl AS c ON a.accId = c.accId
       WHERE a.accId = ?
       `,
       [id]
@@ -179,7 +179,7 @@ export const getUserProfileWithPreferences = async (req, res) => {
         a.accId, a.roleID, a.firstName, a.lastName, a.email,
         c.address, c.contactNo
       FROM account_tbl AS a
-      LEFT JOIN clientInfo_tbl AS c ON a.accId = c.accId
+      LEFT JOIN clientinfo_tbl AS c ON a.accId = c.accId
       WHERE a.accId = ?
       `,
       [id]
@@ -305,18 +305,18 @@ export const updateUserProfile = async (req, res) => {
     await db.query(accountQuery, accountValues);
 
     const [clientExists] = await db.query(
-      "SELECT * FROM clientInfo_tbl WHERE accId = ?",
+      "SELECT * FROM clientinfo_tbl WHERE accId = ?",
       [id]
     );
 
     if (clientExists.length > 0) {
       await db.query(
-        "UPDATE clientInfo_tbl SET address = ?, contactNo = ? WHERE accId = ?",
+        "UPDATE clientinfo_tbl SET address = ?, contactNo = ? WHERE accId = ?",
         [normalizedAddress, normalizedPhone, id]
       );
     } else {
       await db.query(
-        "INSERT INTO clientInfo_tbl (accId, address, contactNo) VALUES (?, ?, ?)",
+        "INSERT INTO clientinfo_tbl (accId, address, contactNo) VALUES (?, ?, ?)",
         [id, normalizedAddress, normalizedPhone]
       );
     }

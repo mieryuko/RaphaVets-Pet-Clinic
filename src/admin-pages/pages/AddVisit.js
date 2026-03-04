@@ -210,6 +210,11 @@ const AddVisit = () => {
   };
 
   const handleMarkAppointmentComplete = async () => {
+    if (!visitData.appointment?.id) {
+      setToast({ type: "error", message: "No appointment selected." });
+      return;
+    }
+
     console.log("Marking appointment as complete for ID:", visitData.appointment.id);
     const res = await api.patch(`admin/appointments/status`,{
       status: "Completed",
@@ -220,7 +225,7 @@ const AddVisit = () => {
       ...prev,          
       visitType: "Scheduled",
       id: visitData.appointment.id,
-      time: new Date().now().toISOString(),
+      time: new Date().toISOString(),
     }));  
     console.log("Appointment marked as completed:", visitData.appointment.id);
     

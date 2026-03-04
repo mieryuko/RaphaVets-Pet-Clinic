@@ -127,8 +127,8 @@ const normalizeToLocalPhone = (rawValue) => {
       // Insert new pet
       await db.execute(
         `INSERT INTO pet_tbl 
-          (accID, breedID, petName, petGender, weight_kg, color, dateOfBirth, note) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+          (accID, breedID, petName, petGender, weight_kg, color, dateOfBirth, note, imageName, isDeleted) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           ownerId,
           breedID,
@@ -137,7 +137,9 @@ const normalizeToLocalPhone = (rawValue) => {
           weight || null,
           color || null,
           dob || null,
-          notes || null
+          notes || null,
+          '',
+          0
         ]
       );
 
@@ -387,8 +389,8 @@ export const createOwner = async (req, res) => {
 
             await connection.execute(
               `INSERT INTO pet_tbl 
-               (accID, breedID, petName, petGender, weight_kg, color, dateOfBirth, note) 
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+               (accID, breedID, petName, petGender, weight_kg, color, dateOfBirth, note, imageName, isDeleted) 
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
               [
                 accId,
                 breedID,
@@ -397,7 +399,9 @@ export const createOwner = async (req, res) => {
                 pet.weight || null,
                 pet.color || null,
                 pet.dob || null,
-                pet.notes || null
+                pet.notes || null,
+                '',
+                0
               ]
             );
           }

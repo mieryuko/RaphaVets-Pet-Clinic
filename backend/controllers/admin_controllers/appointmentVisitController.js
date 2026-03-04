@@ -75,8 +75,9 @@ export const assignAppointment = async (req, res) => {
             appointmentDate,
             scheduledTimeID,
             visitType,
-            statusID)
-         VALUES (?, ?, ?, ?, ?, "Scheduled", 2)
+          statusID,
+          isDeleted)
+        VALUES (?, ?, ?, ?, ?, "Scheduled", 2, 0)
       `,
       [userID, petID, serviceID, date, scheduledTimeID],
     );
@@ -588,7 +589,7 @@ export const createVisit = async (req, res) => {
     const serviceID = serviceRow[0].serviceID;
 
     const [visit] = await db.execute(
-      `INSERT INTO appointment_tbl (accID, petID, serviceID, statusID, visitDateTime, visitType) VALUES (?, ?, ?, ?, NOW(), 'Walk-in')`,
+      `INSERT INTO appointment_tbl (accID, petID, serviceID, statusID, visitDateTime, visitType, isDeleted) VALUES (?, ?, ?, ?, NOW(), 'Walk-in', 0)`,
       [userID, petID, serviceID, completedStatusID],
     );
 

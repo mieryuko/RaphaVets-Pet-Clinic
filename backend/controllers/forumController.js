@@ -41,16 +41,16 @@ export const createPost = async (req, res) => {
     try {
       await dbConn.beginTransaction();
       const [result] = await dbConn.query(
-          "INSERT INTO forum_posts_tbl (accID, postType, description, contact, email, isAnonymous) VALUES (?, ?, ?, ?, ?, ?)",
-          [accID, postType, description, contact, email, isAnonymous]
+          "INSERT INTO forum_posts_tbl (accID, postType, description, contact, email, isAnonymous, isDeleted) VALUES (?, ?, ?, ?, ?, ?, ?)",
+          [accID, postType, description, contact, email, isAnonymous, 0]
       );
 
       const forumID = result.insertId;
 
       if (req.files?.length > 0) {
-          const imageData = req.files.map(file => [forumID, file.filename]);
+          const imageData = req.files.map(file => [forumID, file.filename, 0]);
           await dbConn.query(
-              "INSERT INTO forum_images_tbl (forumID, imageName) VALUES ?",
+            "INSERT INTO forum_images_tbl (forumID, imageName, isDeleted) VALUES ?",
               [imageData]
           );
       }
@@ -366,9 +366,9 @@ export const updatePost = async (req, res) => {
       }  
       //Handle new images
       if (newImages.length > 0) {
-          const imageData = newImages.map(file => [forumID, file.filename]);
+          const imageData = newImages.map(file => [forumID, file.filename, 0]);
           await dbConn.query(
-              "INSERT INTO forum_images_tbl (forumID, imageName) VALUES ?",
+            "INSERT INTO forum_images_tbl (forumID, imageName, isDeleted) VALUES ?",
               [imageData]
           );
       }
