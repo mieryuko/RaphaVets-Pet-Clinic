@@ -2,6 +2,17 @@ import db from "../config/db.js";
 import bcrypt from "bcryptjs";
 import { getIO } from "../socket.js";
 
+const NAME_REGEX = /^[A-Za-z\s\-']+$/;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const normalizeToLocalPhone = (rawValue) => {
+  const digits = String(rawValue || "").replace(/\D/g, "");
+  if (digits.length === 10) return digits;
+  if (digits.length === 11 && digits.startsWith("0")) return digits.slice(1);
+  if (digits.length === 12 && digits.startsWith("63")) return digits.slice(2);
+  return null;
+};
+
 export const getUserPreference = async (req, res) => {
   const { id } = req.params;
 
@@ -256,6 +267,24 @@ export const updateUserProfile = async (req, res) => {
   const { firstName, lastName, email, password, address, contactNo } = req.body;
 
   try {
+    const normalizedFirstName = String(firstName || "").trim();
+    const normalizedLastName = String(lastName || "").trim();
+    const normalizedEmail = String(email || "").trim();
+    const normalizedAddress = address ? String(address).trim() : null;
+    const normalizedPhone = normalizeToLocalPhone(contactNo);
+
+    if (!normalizedFirstName || !normalizedLastName || !normalizedEmail || !normalizedPhone) {
+      return res.status(400).json({ message: "First name, last name, email, and contact number are required" });
+    }
+
+    if (!NAME_REGEX.test(normalizedFirstName) || !NAME_REGEX.test(normalizedLastName)) {
+      return res.status(400).json({ message: "Names must contain only letters, spaces, hyphens, and apostrophes" });
+    }
+
+    if (!EMAIL_REGEX.test(normalizedEmail)) {
+      return res.status(400).json({ message: "Please provide a valid email address" });
+    }
+
     let hashedPassword = null;
     if (password) {
       const salt = await bcrypt.genSalt(10);
@@ -270,8 +299,8 @@ export const updateUserProfile = async (req, res) => {
     `;
 
     const accountValues = password
-      ? [firstName, lastName, email, hashedPassword, id]
-      : [firstName, lastName, email, id];
+      ? [normalizedFirstName, normalizedLastName, normalizedEmail, hashedPassword, id]
+      : [normalizedFirstName, normalizedLastName, normalizedEmail, id];
 
     await db.query(accountQuery, accountValues);
 
@@ -283,12 +312,12 @@ export const updateUserProfile = async (req, res) => {
     if (clientExists.length > 0) {
       await db.query(
         "UPDATE clientInfo_tbl SET address = ?, contactNo = ? WHERE accId = ?",
-        [address, contactNo, id]
+        [normalizedAddress, normalizedPhone, id]
       );
     } else {
       await db.query(
         "INSERT INTO clientInfo_tbl (accId, address, contactNo) VALUES (?, ?, ?)",
-        [id, address, contactNo]
+        [id, normalizedAddress, normalizedPhone]
       );
     }
 
@@ -296,11 +325,11 @@ export const updateUserProfile = async (req, res) => {
       const io = getIO();
       const payload = {
         accId: Number(id),
-        firstName,
-        lastName,
-        email,
-        contactNo,
-        address
+        firstName: normalizedFirstName,
+        lastName: normalizedLastName,
+        email: normalizedEmail,
+        contactNo: normalizedPhone,
+        address: normalizedAddress
       };
 
       io.emit("owner_updated", payload);

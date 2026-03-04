@@ -3,6 +3,17 @@
   import nodemailer from 'nodemailer'; 
   import { getIO } from "../../socket.js";
 
+const NAME_REGEX = /^[A-Za-z\s\-']+$/;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const normalizeToLocalPhone = (rawValue) => {
+  const digits = String(rawValue || "").replace(/\D/g, "");
+  if (digits.length === 10) return digits;
+  if (digits.length === 11 && digits.startsWith("0")) return digits.slice(1);
+  if (digits.length === 12 && digits.startsWith("63")) return digits.slice(2);
+  return null;
+};
+
   export const getOwnersWithPets = async (req, res) => {
   try {
     // fetch all owners (roleID = 1)
@@ -222,14 +233,28 @@ export const createOwner = async (req, res) => {
       pets
     } = req.body;
 
-    if (!firstName || !lastName || !email || !phone) {
+    const normalizedFirstName = String(firstName || "").trim();
+    const normalizedLastName = String(lastName || "").trim();
+    const normalizedEmail = String(email || "").trim();
+    const normalizedAddress = address ? String(address).trim() : null;
+    const normalizedPhone = normalizeToLocalPhone(phone);
+
+    if (!normalizedFirstName || !normalizedLastName || !normalizedEmail || !normalizedPhone) {
       return res.status(400).json({ message: "Missing required fields: firstName, lastName, email, phone" });
+    }
+
+    if (!NAME_REGEX.test(normalizedFirstName) || !NAME_REGEX.test(normalizedLastName)) {
+      return res.status(400).json({ message: "Names must contain only letters, spaces, hyphens, and apostrophes" });
+    }
+
+    if (!EMAIL_REGEX.test(normalizedEmail)) {
+      return res.status(400).json({ message: "Please provide a valid email address" });
     }
 
     // ✅ CHECK IF EMAIL EXISTS AND IS NOT DELETED
     const [existingAccount] = await db.execute(
       "SELECT accId, isDeleted FROM account_tbl WHERE email = ?",
-      [email]
+      [normalizedEmail]
     );
 
     if (existingAccount.length > 0) {
@@ -243,7 +268,7 @@ export const createOwner = async (req, res) => {
       }
       
       // If account exists but IS deleted, we can proceed with recreation
-      console.log(`⚠️ Found deleted account with email ${email}. Proceeding with recreation.`);
+      console.log(`⚠️ Found deleted account with email ${normalizedEmail}. Proceeding with recreation.`);
       
       // Optionally: You might want to hard delete or archive the old account data
       // For now, we'll proceed with creating a new account
@@ -283,7 +308,7 @@ export const createOwner = async (req, res) => {
       // Check if there's a deleted account we want to "reactivate"
       const [deletedAccount] = await connection.execute(
         "SELECT accId FROM account_tbl WHERE email = ? AND isDeleted = 1",
-        [email]
+        [normalizedEmail]
       );
 
       if (deletedAccount.length > 0) {
@@ -295,7 +320,7 @@ export const createOwner = async (req, res) => {
            SET firstName = ?, lastName = ?, password = ?, isDeleted = 0, 
                lastUpdatedAt = NOW(), createdAt = NOW()
            WHERE accId = ?`,
-          [firstName, lastName, hashedPassword, oldAccId]
+          [normalizedFirstName, normalizedLastName, hashedPassword, oldAccId]
         );
         
         accId = oldAccId;
@@ -311,14 +336,14 @@ export const createOwner = async (req, res) => {
             `UPDATE clientinfo_tbl 
              SET gender = ?, dateOfBirth = ?, address = ?, contactNo = ?
              WHERE accId = ?`,
-            [sex || null, dob || null, address || null, phone, oldAccId]
+            [sex || null, dob || null, normalizedAddress, normalizedPhone, oldAccId]
           );
         } else {
           await connection.execute(
             `INSERT INTO clientinfo_tbl 
              (accId, gender, dateOfBirth, address, contactNo) 
              VALUES (?, ?, ?, ?, ?)`,
-            [oldAccId, sex || null, dob || null, address || null, phone]
+            [oldAccId, sex || null, dob || null, normalizedAddress, normalizedPhone]
           );
         }
         
@@ -330,7 +355,7 @@ export const createOwner = async (req, res) => {
           `INSERT INTO account_tbl 
            (firstName, lastName, email, password, roleID, isDeleted, createdAt) 
            VALUES (?, ?, ?, ?, 1, 0, NOW())`,
-          [firstName, lastName, email, hashedPassword]
+          [normalizedFirstName, normalizedLastName, normalizedEmail, hashedPassword]
         );
 
         accId = accountResult.insertId;
@@ -340,7 +365,7 @@ export const createOwner = async (req, res) => {
           `INSERT INTO clientinfo_tbl 
            (accId, gender, dateOfBirth, address, contactNo) 
            VALUES (?, ?, ?, ?, ?)`,
-          [accId, sex || null, dob || null, address || null, phone]
+          [accId, sex || null, dob || null, normalizedAddress, normalizedPhone]
         );
       }
 
@@ -386,7 +411,7 @@ export const createOwner = async (req, res) => {
       try {
         await emailTransporter.sendMail({
           from: process.env.SMTP_FROM || '"RaphaVets Clinic" <markmapili29@gmail.com>',
-          to: email,
+          to: normalizedEmail,
           subject: 'Your RaphaVets Clinic Account Login Credentials',
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -396,7 +421,7 @@ export const createOwner = async (req, res) => {
                 <h3 style="color: #1e293b; margin-bottom: 15px;">Your Account Has Been Created</h3>
                 
                 <p style="color: #475569; margin-bottom: 10px;">
-                  Hello ${firstName} ${lastName},
+                  Hello ${normalizedFirstName} ${normalizedLastName},
                 </p>
                 
                 <p style="color: #475569; margin-bottom: 15px;">
@@ -404,7 +429,7 @@ export const createOwner = async (req, res) => {
                 </p>
                 
                 <div style="background: white; padding: 15px; border-radius: 6px; border-left: 4px solid #2563eb;">
-                  <p style="margin: 5px 0;"><strong>Email:</strong> ${email}</p>
+                  <p style="margin: 5px 0;"><strong>Email:</strong> ${normalizedEmail}</p>
                   <p style="margin: 5px 0;"><strong>Temporary Password:</strong> <code style="background: #f1f5f9; padding: 2px 6px; border-radius: 3px; font-family: monospace;">${plainPassword}</code></p>
                 </div>
                 
@@ -430,7 +455,7 @@ export const createOwner = async (req, res) => {
           `
         });
         
-        console.log(`✅ Login credentials email sent to ${email}`);
+        console.log(`✅ Login credentials email sent to ${normalizedEmail}`);
         
       } catch (emailError) {
         console.error('❌ Failed to send email:', emailError);
@@ -441,7 +466,7 @@ export const createOwner = async (req, res) => {
         message: "Owner and pets created successfully",
         accId: accId,
         password: plainPassword,
-        email: email
+        email: normalizedEmail
       });
 
     } catch (transactionError) {
@@ -474,8 +499,26 @@ export const updateOwner = async (req, res) => {
       dob
     } = req.body;
 
+    const normalizedFirstName = String(firstName || "").trim();
+    const normalizedLastName = String(lastName || "").trim();
+    const normalizedEmail = String(email || "").trim();
+    const normalizedAddress = address ? String(address).trim() : null;
+    const normalizedPhone = normalizeToLocalPhone(phone);
+
     if (!ownerId) {
       return res.status(400).json({ message: "Owner ID is required" });
+    }
+
+    if (!normalizedFirstName || !normalizedLastName || !normalizedEmail || !normalizedPhone) {
+      return res.status(400).json({ message: "First name, last name, email, and phone are required" });
+    }
+
+    if (!NAME_REGEX.test(normalizedFirstName) || !NAME_REGEX.test(normalizedLastName)) {
+      return res.status(400).json({ message: "Names must contain only letters, spaces, hyphens, and apostrophes" });
+    }
+
+    if (!EMAIL_REGEX.test(normalizedEmail)) {
+      return res.status(400).json({ message: "Please provide a valid email address" });
     }
 
     // Start transaction
@@ -488,7 +531,7 @@ export const updateOwner = async (req, res) => {
         `UPDATE account_tbl 
          SET firstName = ?, lastName = ?, email = ?
          WHERE accId = ? AND roleID = 1 AND isDeleted = 0`,
-        [firstName, lastName, email, ownerId]
+        [normalizedFirstName, normalizedLastName, normalizedEmail, ownerId]
       );
 
       // 2. Update clientinfo_tbl
@@ -496,7 +539,7 @@ export const updateOwner = async (req, res) => {
         `UPDATE clientinfo_tbl 
          SET gender = ?, dateOfBirth = ?, address = ?, contactNo = ?
          WHERE accId = ?`,
-        [sex || null, dob || null, address || null, phone, ownerId]
+        [sex || null, dob || null, normalizedAddress, normalizedPhone, ownerId]
       );
 
       await connection.commit();
@@ -506,11 +549,11 @@ export const updateOwner = async (req, res) => {
         const io = getIO();
         const payload = {
           accId: Number(ownerId),
-          firstName,
-          lastName,
-          email,
-          phone,
-          address,
+          firstName: normalizedFirstName,
+          lastName: normalizedLastName,
+          email: normalizedEmail,
+          phone: normalizedPhone,
+          address: normalizedAddress,
           sex,
           dob
         };

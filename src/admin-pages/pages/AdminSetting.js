@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Header from "../template/Header";
+import api from "../../api/axios";
 import {
-  Users,
   UserPlus,
   Edit,
   Trash2,
@@ -10,65 +10,25 @@ import {
   BriefcaseMedical,
   Search,
   Mail,
-  Phone,
 } from "lucide-react";
 
 const AdminSettings = () => {
+  const userRole = Number(localStorage.getItem('userRole') || 0);
+  const canManageUsers = userRole === 2;
+
   const [activeTab, setActiveTab] = useState("admins");
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [addErrors, setAddErrors] = useState({});
+  const [editErrors, setEditErrors] = useState({});
 
-  // sample data
-  const [admins, setAdmins] = useState([
-    {
-      id: 1,
-      firstName: "Fiona Irish",
-      lastName: "Beltran",
-      email: "beltran.fionahirish@gmail.com",
-      phone: "09171234567",
-    },
-    {
-      id: 2,
-      firstName: "Jordan",
-      lastName: "Frando",
-      email: "jordan.frando@email.com",
-      phone: "09172234568",
-    },
-    {
-      id: 3,
-      firstName: "Mark Angel",
-      lastName: "Mapili",
-      email: "mark.mapili@email.com",
-      phone: "09173234569",
-    },
-  ]);
-
-  const [veterinarians, setVeterinarians] = useState([
-    {
-      id: 1,
-      firstName: "Fiona Irish",
-      lastName: "Beltran",
-      email: "dr.beltran@raphavets.com",
-      phone: "09171234567",
-    },
-    {
-      id: 2,
-      firstName: "Jordan",
-      lastName: "Frando",
-      email: "dr.frando@raphavets.com",
-      phone: "09172234568",
-    },
-    {
-      id: 3,
-      firstName: "Mark Angel",
-      lastName: "Mapili",
-      email: "dr.mapili@raphavets.com",
-      phone: "09173234569",
-    },
-  ]);
+  const [admins, setAdmins] = useState([]);
+  const [veterinarians, setVeterinarians] = useState([]);
 
   const [newUser, setNewUser] = useState({
     type: "admin",
@@ -78,20 +38,84 @@ const AdminSettings = () => {
     phone: "",
   });
 
-  const generateRandomPassword = () => {
-    const length = 10;
-    const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
-    let password = "";
-    for (let i = 0; i < length; i++) {
-      password += charset.charAt(Math.floor(Math.random() * charset.length));
+  const nameRegex = /^[A-Za-z]+(?:[ '\-][A-Za-z]+)*$/;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+  const phoneRegex = /^\+63\d{10}$/;
+
+  const normalizePhoneInput = (value = '') => {
+    const digits = value.replace(/\D/g, '');
+    if (!digits) return '';
+
+    if (digits.startsWith('63') && digits.length >= 12) {
+      return digits.slice(2, 12);
     }
-    return password;
+
+    if (digits.startsWith('0') && digits.length >= 11) {
+      return digits.slice(1, 11);
+    }
+
+    if (digits.length > 10) {
+      return digits.slice(-10);
+    }
+
+    return digits;
   };
 
-  const sendPasswordToEmail = async (email, password) => {
-    console.log(`Sending password to ${email}: ${password}`);
-    alert(`Password sent to ${email}`);
+  const formatPhoneDisplay = (digits = '') => {
+    return `+63${digits}`;
   };
+
+  const validateUserPayload = ({ firstName, lastName, email, phone }) => {
+    const errors = {};
+
+    if (!nameRegex.test((firstName || '').trim())) {
+      errors.firstName = 'First name should contain letters only.';
+    }
+
+    if (!nameRegex.test((lastName || '').trim())) {
+      errors.lastName = 'Last name should contain letters only.';
+    }
+
+    if (!emailRegex.test((email || '').trim())) {
+      errors.email = 'Please enter a valid email address.';
+    }
+
+    const phoneDigits = normalizePhoneInput(phone || '');
+    if (!phoneRegex.test(formatPhoneDisplay(phoneDigits))) {
+      errors.phone = 'Phone number must be 10 digits after +63.';
+    }
+
+    return errors;
+  };
+
+  const fetchUsers = async () => {
+    setLoading(true);
+    try {
+      const response = await api.get('/admin/settings/users');
+      if (response.data?.success) {
+        setAdmins(response.data.data?.admins || []);
+        setVeterinarians(response.data.data?.veterinarians || []);
+      }
+    } catch (error) {
+      console.error('Failed to load admin settings users:', error);
+      const status = error?.response?.status;
+      if (status === 401) {
+        alert('Session expired. Please log in again.');
+      } else if (status === 403) {
+        alert('You do not have permission to access user management.');
+      } else if (status === 404) {
+        alert('Admin settings API route not found. Please restart backend server.');
+      } else {
+        alert(error?.response?.data?.message || 'Failed to load users');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
   const filteredAdmins = admins.filter(user =>
     `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -105,29 +129,53 @@ const AdminSettings = () => {
 
   // add new user
   const handleAddUser = async () => {
-    const fullName = `${newUser.firstName} ${newUser.lastName}`;
-    const randomPassword = generateRandomPassword();
-    
-    if (newUser.type === "admin") {
-      const newAdmin = {
-        id: admins.length + 1,
-        firstName: newUser.firstName,
-        lastName: newUser.lastName,
-        email: newUser.email,
-        phone: newUser.phone,
-      };
-      setAdmins([...admins, newAdmin]);
-    } else {
-      const newVet = {
-        id: veterinarians.length + 1,
-        firstName: newUser.firstName,
-        lastName: newUser.lastName,
-        email: newUser.email,
-        phone: newUser.phone,
-      };
-      setVeterinarians([...veterinarians, newVet]);
+    if (!canManageUsers) {
+      alert('Only admins can add users.');
+      return;
     }
-    await sendPasswordToEmail(newUser.email, randomPassword);
+
+    const validationErrors = validateUserPayload(newUser);
+    if (Object.keys(validationErrors).length > 0) {
+      setAddErrors(validationErrors);
+      return;
+    }
+    setAddErrors({});
+
+    setSubmitting(true);
+    try {
+      const phoneDigits = normalizePhoneInput(newUser.phone);
+      const payload = {
+        type: newUser.type,
+        firstName: newUser.firstName.trim(),
+        lastName: newUser.lastName.trim(),
+        email: newUser.email.trim(),
+        phone: formatPhoneDisplay(phoneDigits),
+      };
+
+      const response = await api.post('/admin/settings/users', payload);
+
+      if (response.data?.success) {
+        const createdUser = response.data?.data;
+        if (createdUser?.type === 'admin') {
+          setAdmins((prev) => [createdUser, ...prev]);
+        } else {
+          setVeterinarians((prev) => [createdUser, ...prev]);
+        }
+
+        if (response.data.emailSent) {
+          alert(`Password sent to ${createdUser.email}`);
+        } else if (response.data.generatedPassword) {
+          alert(`Email not sent. Temporary password for ${createdUser.email}: ${response.data.generatedPassword}`);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to add user:', error);
+      alert(error?.response?.data?.message || 'Failed to add user');
+      return;
+    } finally {
+      setSubmitting(false);
+    }
+
     setNewUser({
       type: "admin",
       firstName: "",
@@ -139,27 +187,84 @@ const AdminSettings = () => {
   };
 
   // edit user
-  const handleEditUser = () => {
-    if (activeTab === "admins") {
-      setAdmins(admins.map(admin => 
-        admin.id === selectedUser.id ? { ...selectedUser } : admin
-      ));
-    } else {
-      setVeterinarians(veterinarians.map(vet => 
-        vet.id === selectedUser.id ? { ...selectedUser } : vet
-      ));
+  const handleEditUser = async () => {
+    if (!canManageUsers) {
+      alert('Only admins can edit users.');
+      return;
     }
+
+    const validationErrors = validateUserPayload(selectedUser || {});
+    if (Object.keys(validationErrors).length > 0) {
+      setEditErrors(validationErrors);
+      return;
+    }
+    setEditErrors({});
+
+    if (!selectedUser?.id) return;
+
+    setSubmitting(true);
+    try {
+      const phoneDigits = normalizePhoneInput(selectedUser.phone || '');
+      const payload = {
+        firstName: selectedUser.firstName.trim(),
+        lastName: selectedUser.lastName.trim(),
+        email: selectedUser.email.trim(),
+        phone: formatPhoneDisplay(phoneDigits),
+      };
+
+      const response = await api.put(`/admin/settings/users/${selectedUser.id}`, payload);
+
+      if (response.data?.success) {
+        if (activeTab === "admins") {
+          setAdmins(admins.map(admin => 
+            admin.id === selectedUser.id ? { ...admin, ...payload } : admin
+          ));
+        } else {
+          setVeterinarians(veterinarians.map(vet => 
+            vet.id === selectedUser.id ? { ...vet, ...payload } : vet
+          ));
+        }
+      }
+    } catch (error) {
+      console.error('Failed to update user:', error);
+      alert(error?.response?.data?.message || 'Failed to update user');
+      return;
+    } finally {
+      setSubmitting(false);
+    }
+
     setShowEditModal(false);
     setSelectedUser(null);
   };
 
   // delete user
-  const handleDeleteUser = () => {
-    if (activeTab === "admins") {
-      setAdmins(admins.filter(admin => admin.id !== selectedUser.id));
-    } else {
-      setVeterinarians(veterinarians.filter(vet => vet.id !== selectedUser.id));
+  const handleDeleteUser = async () => {
+    if (!canManageUsers) {
+      alert('Only admins can delete users.');
+      return;
     }
+
+    if (!selectedUser?.id) return;
+
+    setSubmitting(true);
+    try {
+      const response = await api.delete(`/admin/settings/users/${selectedUser.id}`);
+
+      if (response.data?.success) {
+        if (activeTab === "admins") {
+          setAdmins(admins.filter(admin => admin.id !== selectedUser.id));
+        } else {
+          setVeterinarians(veterinarians.filter(vet => vet.id !== selectedUser.id));
+        }
+      }
+    } catch (error) {
+      console.error('Failed to delete user:', error);
+      alert(error?.response?.data?.message || 'Failed to delete user');
+      return;
+    } finally {
+      setSubmitting(false);
+    }
+
     setShowDeleteModal(false);
     setSelectedUser(null);
   };
@@ -205,20 +310,22 @@ const AdminSettings = () => {
               <td className="px-6 py-4">
                 <div className="flex items-center gap-3">
                   <button
+                    disabled={!canManageUsers}
                     onClick={() => {
                       setSelectedUser(admin);
                       setShowEditModal(true);
                     }}
-                    className="p-2 text-gray-500 hover:text-[#5EE6FE] dark:text-gray-400 dark:hover:text-[#5EE6FE] hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
+                    className="p-2 text-gray-500 hover:text-[#5EE6FE] dark:text-gray-400 dark:hover:text-[#5EE6FE] hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     <Edit size={16} />
                   </button>
                   <button
+                    disabled={!canManageUsers}
                     onClick={() => {
                       setSelectedUser(admin);
                       setShowDeleteModal(true);
                     }}
-                    className="p-2 text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
+                    className="p-2 text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     <Trash2 size={16} />
                   </button>
@@ -226,6 +333,13 @@ const AdminSettings = () => {
               </td>
             </tr>
           ))}
+          {!loading && filteredAdmins.length === 0 && (
+            <tr>
+              <td colSpan="3" className="px-6 py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+                No administrators found
+              </td>
+            </tr>
+          )}
         </tbody>
       </table>
     </div>
@@ -272,20 +386,22 @@ const AdminSettings = () => {
               <td className="px-6 py-4">
                 <div className="flex items-center gap-3">
                   <button
+                    disabled={!canManageUsers}
                     onClick={() => {
                       setSelectedUser(vet);
                       setShowEditModal(true);
                     }}
-                    className="p-2 text-gray-500 hover:text-[#5EE6FE] dark:text-gray-400 dark:hover:text-[#5EE6FE] hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
+                    className="p-2 text-gray-500 hover:text-[#5EE6FE] dark:text-gray-400 dark:hover:text-[#5EE6FE] hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     <Edit size={16} />
                   </button>
                   <button
+                    disabled={!canManageUsers}
                     onClick={() => {
                       setSelectedUser(vet);
                       setShowDeleteModal(true);
                     }}
-                    className="p-2 text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
+                    className="p-2 text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     <Trash2 size={16} />
                   </button>
@@ -293,6 +409,13 @@ const AdminSettings = () => {
               </td>
             </tr>
           ))}
+          {!loading && filteredVeterinarians.length === 0 && (
+            <tr>
+              <td colSpan="3" className="px-6 py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+                No veterinarians found
+              </td>
+            </tr>
+          )}
         </tbody>
       </table>
     </div>
@@ -319,13 +442,20 @@ const AdminSettings = () => {
             </div>
             
             <button
-              onClick={() => setShowAddModal(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-[#5EE6FE] text-white rounded-lg hover:bg-[#4CD5ED]"
+              onClick={() => {
+                setAddErrors({});
+                setShowAddModal(true);
+              }}
+              disabled={!canManageUsers || loading || submitting}
+              className="flex items-center gap-2 px-4 py-2 bg-[#5EE6FE] text-white rounded-lg hover:bg-[#4CD5ED] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <UserPlus size={16} />
               Add {activeTab === 'admins' ? 'Admin' : 'Veterinarian'}
             </button>
           </div>
+          {!canManageUsers && (
+            <p className="text-xs text-amber-600 dark:text-amber-400">Read-only mode: only admin accounts can add, edit, or delete users.</p>
+          )}
         </div>
 
         {/* tabs */}
@@ -357,7 +487,11 @@ const AdminSettings = () => {
         </div>
 
         <div className="bg-white dark:bg-[#181818] rounded-2xl border border-gray-200 dark:border-gray-800 p-6 flex-1">
-          {activeTab === "admins" ? renderAdminsTable() : renderVeterinariansTable()}
+          {loading ? (
+            <div className="py-10 text-center text-gray-600 dark:text-gray-300">Loading users...</div>
+          ) : (
+            activeTab === "admins" ? renderAdminsTable() : renderVeterinariansTable()
+          )}
         </div>
 
         {showAddModal && (
@@ -414,10 +548,14 @@ const AdminSettings = () => {
                       <input
                         type="text"
                         value={newUser.firstName}
-                        onChange={(e) => setNewUser({...newUser, firstName: e.target.value})}
+                        onChange={(e) => {
+                          setNewUser({...newUser, firstName: e.target.value.replace(/[^A-Za-z '\-]/g, '')});
+                          setAddErrors((prev) => ({ ...prev, firstName: '' }));
+                        }}
                         className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300"
                         placeholder="First name"
                       />
+                      {addErrors.firstName && <p className="mt-1 text-xs text-red-500">{addErrors.firstName}</p>}
                     </div>
 
                     <div>
@@ -427,10 +565,14 @@ const AdminSettings = () => {
                       <input
                         type="text"
                         value={newUser.lastName}
-                        onChange={(e) => setNewUser({...newUser, lastName: e.target.value})}
+                        onChange={(e) => {
+                          setNewUser({...newUser, lastName: e.target.value.replace(/[^A-Za-z '\-]/g, '')});
+                          setAddErrors((prev) => ({ ...prev, lastName: '' }));
+                        }}
                         className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300"
                         placeholder="Last name"
                       />
+                      {addErrors.lastName && <p className="mt-1 text-xs text-red-500">{addErrors.lastName}</p>}
                     </div>
                   </div>
 
@@ -441,10 +583,14 @@ const AdminSettings = () => {
                     <input
                       type="email"
                       value={newUser.email}
-                      onChange={(e) => setNewUser({...newUser, email: e.target.value})}
+                      onChange={(e) => {
+                        setNewUser({...newUser, email: e.target.value});
+                        setAddErrors((prev) => ({ ...prev, email: '' }));
+                      }}
                       className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300"
                       placeholder="Enter email address"
                     />
+                    {addErrors.email && <p className="mt-1 text-xs text-red-500">{addErrors.email}</p>}
                     <p className="text-xs text-gray-500 mt-1">
                       A random password will be sent to this email
                     </p>
@@ -454,13 +600,21 @@ const AdminSettings = () => {
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Phone Number
                     </label>
-                    <input
-                      type="tel"
-                      value={newUser.phone}
-                      onChange={(e) => setNewUser({...newUser, phone: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300"
-                      placeholder="Enter phone number"
-                    />
+                    <div className="flex items-center border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900">
+                      <span className="px-3 text-gray-500 dark:text-gray-400">+63</span>
+                      <input
+                        type="tel"
+                        value={normalizePhoneInput(newUser.phone)}
+                        onChange={(e) => {
+                          setNewUser({...newUser, phone: normalizePhoneInput(e.target.value)});
+                          setAddErrors((prev) => ({ ...prev, phone: '' }));
+                        }}
+                        className="w-full px-3 py-2 rounded-r-lg bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300"
+                        placeholder="9XXXXXXXXX"
+                        maxLength={10}
+                      />
+                    </div>
+                    {addErrors.phone && <p className="mt-1 text-xs text-red-500">{addErrors.phone}</p>}
                   </div>
                 </div>
 
@@ -473,10 +627,10 @@ const AdminSettings = () => {
                   </button>
                   <button
                     onClick={handleAddUser}
-                    disabled={!newUser.firstName || !newUser.lastName || !newUser.email}
+                    disabled={submitting || !newUser.firstName || !newUser.lastName || !newUser.email}
                     className="px-4 py-2 bg-[#5EE6FE] text-white rounded-lg hover:bg-[#4CD5ED] disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Add User & Send Password
+                    {submitting ? 'Saving...' : 'Add User & Send Password'}
                   </button>
                 </div>
               </div>
@@ -496,6 +650,7 @@ const AdminSettings = () => {
                     onClick={() => {
                       setShowEditModal(false);
                       setSelectedUser(null);
+                      setEditErrors({});
                     }}
                     className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                   >
@@ -512,9 +667,13 @@ const AdminSettings = () => {
                       <input
                         type="text"
                         value={selectedUser.firstName}
-                        onChange={(e) => setSelectedUser({...selectedUser, firstName: e.target.value})}
+                        onChange={(e) => {
+                          setSelectedUser({...selectedUser, firstName: e.target.value.replace(/[^A-Za-z '\-]/g, '')});
+                          setEditErrors((prev) => ({ ...prev, firstName: '' }));
+                        }}
                         className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300"
                       />
+                      {editErrors.firstName && <p className="mt-1 text-xs text-red-500">{editErrors.firstName}</p>}
                     </div>
 
                     <div>
@@ -524,9 +683,13 @@ const AdminSettings = () => {
                       <input
                         type="text"
                         value={selectedUser.lastName}
-                        onChange={(e) => setSelectedUser({...selectedUser, lastName: e.target.value})}
+                        onChange={(e) => {
+                          setSelectedUser({...selectedUser, lastName: e.target.value.replace(/[^A-Za-z '\-]/g, '')});
+                          setEditErrors((prev) => ({ ...prev, lastName: '' }));
+                        }}
                         className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300"
                       />
+                      {editErrors.lastName && <p className="mt-1 text-xs text-red-500">{editErrors.lastName}</p>}
                     </div>
                   </div>
 
@@ -537,21 +700,34 @@ const AdminSettings = () => {
                     <input
                       type="email"
                       value={selectedUser.email}
-                      onChange={(e) => setSelectedUser({...selectedUser, email: e.target.value})}
+                      onChange={(e) => {
+                        setSelectedUser({...selectedUser, email: e.target.value});
+                        setEditErrors((prev) => ({ ...prev, email: '' }));
+                      }}
                       className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300"
                     />
+                    {editErrors.email && <p className="mt-1 text-xs text-red-500">{editErrors.email}</p>}
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Phone
                     </label>
-                    <input
-                      type="tel"
-                      value={selectedUser.phone}
-                      onChange={(e) => setSelectedUser({...selectedUser, phone: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300"
-                    />
+                    <div className="flex items-center border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900">
+                      <span className="px-3 text-gray-500 dark:text-gray-400">+63</span>
+                      <input
+                        type="tel"
+                        value={normalizePhoneInput(selectedUser.phone || '')}
+                        onChange={(e) => {
+                          setSelectedUser({...selectedUser, phone: normalizePhoneInput(e.target.value)});
+                          setEditErrors((prev) => ({ ...prev, phone: '' }));
+                        }}
+                        className="w-full px-3 py-2 rounded-r-lg bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300"
+                        maxLength={10}
+                        placeholder="9XXXXXXXXX"
+                      />
+                    </div>
+                    {editErrors.phone && <p className="mt-1 text-xs text-red-500">{editErrors.phone}</p>}
                   </div>
                 </div>
 
@@ -560,6 +736,7 @@ const AdminSettings = () => {
                     onClick={() => {
                       setShowEditModal(false);
                       setSelectedUser(null);
+                      setEditErrors({});
                     }}
                     className="px-4 py-2 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800"
                   >
@@ -567,9 +744,10 @@ const AdminSettings = () => {
                   </button>
                   <button
                     onClick={handleEditUser}
+                    disabled={submitting}
                     className="px-4 py-2 bg-[#5EE6FE] text-white rounded-lg hover:bg-[#4CD5ED]"
                   >
-                    Save Changes
+                    {submitting ? 'Saving...' : 'Save Changes'}
                   </button>
                 </div>
               </div>
@@ -608,9 +786,10 @@ const AdminSettings = () => {
                   </button>
                   <button
                     onClick={handleDeleteUser}
+                    disabled={submitting}
                     className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
                   >
-                    Delete
+                    {submitting ? 'Deleting...' : 'Delete'}
                   </button>
                 </div>
               </div>

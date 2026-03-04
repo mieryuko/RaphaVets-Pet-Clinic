@@ -15,6 +15,14 @@ function AccountInformation({ userData, setUserData }) {
 
   const userId = localStorage.getItem("userId");
 
+  const toLocalPhone = (rawValue) => {
+    const digits = String(rawValue || "").replace(/\D/g, "");
+    if (digits.length === 10) return digits;
+    if (digits.length === 11 && digits.startsWith("0")) return digits.slice(1);
+    if (digits.length === 12 && digits.startsWith("63")) return digits.slice(2);
+    return digits.slice(0, 10);
+  };
+
   // Validation functions
   const validateName = (name) => {
     // Only letters, spaces, hyphens, and apostrophes allowed
@@ -55,7 +63,7 @@ function AccountInformation({ userData, setUserData }) {
         firstName: user.firstName || "",
         lastName: user.lastName || "",
         email: user.email || "",
-        contactNo: user.contactNo || "",
+        contactNo: toLocalPhone(user.contactNo),
         address: user.address || "",
       });
     }

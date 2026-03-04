@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 03, 2026 at 03:41 PM
+-- Generation Time: Mar 04, 2026 at 07:18 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -51,14 +51,35 @@ CREATE TABLE `account_tbl` (
 INSERT INTO `account_tbl` (`accId`, `roleID`, `firstName`, `lastName`, `email`, `password`, `createdAt`, `lastUpdatedAt`, `passwordChangeAt`, `logInAt`, `logOutAt`, `isDeleted`, `resetToken`, `resetTokenExpiry`) VALUES
 (2, 3, 'Marke', 'Mapili', 'markmapili29@gmail.com', '$2b$10$NNG154DuvS/ST/lInE1Pp.XyhniL6YtSE.3UaiAv6/OvON5uMi3MC', '2025-11-19 19:01:01', '2026-02-26 17:26:56', '2025-11-09 12:21:30', '2026-02-26 17:26:43', '2026-02-26 17:26:56', 0, '205676104592a4bdda5ae79ab8b33f59d772d71ba631da7c9af8e03be2ba39c5', '2026-02-02 11:07:19'),
 (3, 2, 'Fionah Irish', 'Beltran', 'soupcuppy@gmail.com', '$2b$10$l/lPrlJ8Vho/LyqoOiq2sOlSSrZ1t.atCEgMaxBBOW05jri/FfwIS', '0000-00-00 00:00:00', '2025-11-22 12:57:36', '2025-11-09 12:21:30', '2025-11-22 12:57:36', '2025-11-09 12:20:21', 0, NULL, NULL),
-(5, 2, 'mark', 'mapili', 'markmapili72@gmail.com', '$2b$10$LMTrRhOAEKAweVGBy1NXQeGCWEzgN2d5WueonGDiRibvDGER08YVe', '0000-00-00 00:00:00', '2026-03-03 22:20:53', '2025-11-09 12:21:30', '2026-03-02 17:33:50', '2026-03-03 22:20:53', 0, NULL, NULL),
+(5, 2, 'mark', 'mapili', 'markmapili72@gmail.com', '$2b$10$LMTrRhOAEKAweVGBy1NXQeGCWEzgN2d5WueonGDiRibvDGER08YVe', '0000-00-00 00:00:00', '2026-03-04 10:58:05', '2025-11-09 12:21:30', '2026-03-04 10:58:05', '2026-03-03 22:20:53', 0, NULL, NULL),
 (6, 1, 'Miguel', 'Rojero', 'miguelrojero@gmail.com', '0908@Taks', '2025-11-15 18:31:41', '2025-11-17 10:17:26', '2025-11-15 18:31:41', '2025-11-15 18:31:41', '2025-11-15 18:31:41', 1, NULL, NULL),
 (8, 1, 'Vanerie', 'Parcon', 'vnaerie@gmail.com', '', '2025-11-16 00:09:49', '2025-11-16 14:50:13', '2025-11-16 00:09:49', '2025-11-16 00:09:49', '2025-11-16 00:09:49', 1, NULL, NULL),
 (9, 1, 'Marvin', 'Tomales', 'marvin@gmail.com09123456789', '', '2025-11-16 00:15:22', '2026-02-26 14:48:02', '2025-11-16 00:15:22', '2025-11-16 00:15:22', '2025-11-16 00:15:22', 1, NULL, NULL),
 (15, 1, 'Mark', 'Mapili', 'markmam@gmail.com', '$2b$10$HtvFEFf/H6rlr5R109DxCu5UXMYAcoVnnkCRZZckloDTavRFUmh62', '2025-11-16 13:46:52', '2025-11-22 14:52:23', '2025-11-16 13:46:52', '2025-11-16 13:46:52', '2025-11-16 13:46:52', 1, NULL, NULL),
-(17, 1, 'Mark', 'Mapili', 'markmapili2004@gmail.com', '$2b$10$CI2dPBXHpUJh1CyNdY6E2uFQtvdVqRPrx9gCMDkWqEPWkmQ4kF9Ry', '2025-11-18 09:28:29', '2026-03-03 22:27:58', '2026-02-22 14:48:49', '2026-03-03 22:27:58', '2026-03-03 22:26:44', 0, '4df04bfc545c3761ec093b9526c8a7c79d4da93498fd1fa64f7e06081f1d057a', '2026-02-28 15:50:56'),
-(18, 1, 'Fionah Irish ', 'Beltran', 'beltran.fionahirish@gmail.com', '$2b$10$7jPfNY9j1xAcyTepUT1.pOGUPDrAWQuKdxboD6kzYpU7ppvBAv6mS', '2025-11-22 12:58:29', '2026-03-03 22:27:48', '2025-11-22 12:58:29', '2026-03-03 22:27:30', '2026-03-03 22:27:48', 0, NULL, NULL),
-(19, 1, 'Miguel', 'Rojero', 'miguelrojero69@gmail.com', '$2b$10$CrixfkN3x78yFOYF9EH2ru83ijs9PEMAggIu3baKFo3T.j.mD/Uoi', '2026-03-01 19:00:01', '2026-03-01 19:00:01', '2026-03-01 19:00:01', '2026-03-01 19:00:01', '2026-03-01 19:00:01', 0, NULL, NULL);
+(17, 1, 'Mark', 'Operaa', 'markmapili2004@gmail.com', '$2b$10$CI2dPBXHpUJh1CyNdY6E2uFQtvdVqRPrx9gCMDkWqEPWkmQ4kF9Ry', '2025-11-18 09:28:29', '2026-03-04 13:50:32', '2026-02-22 14:48:49', '2026-03-03 22:27:58', '2026-03-03 23:09:20', 0, '4df04bfc545c3761ec093b9526c8a7c79d4da93498fd1fa64f7e06081f1d057a', '2026-02-28 15:50:56'),
+(18, 1, 'Fionah Irish', 'Beltran', 'beltran.fionahirish@gmail.com', '$2b$10$7jPfNY9j1xAcyTepUT1.pOGUPDrAWQuKdxboD6kzYpU7ppvBAv6mS', '2025-11-22 12:58:29', '2026-03-04 14:18:11', '2025-11-22 12:58:29', '2026-03-03 22:27:30', '2026-03-03 22:27:48', 0, NULL, NULL),
+(19, 1, 'Miguel', 'Rojero', 'miguelrojero69@gmail.com', '$2b$10$CrixfkN3x78yFOYF9EH2ru83ijs9PEMAggIu3baKFo3T.j.mD/Uoi', '2026-03-01 19:00:01', '2026-03-01 19:00:01', '2026-03-01 19:00:01', '2026-03-01 19:00:01', '2026-03-01 19:00:01', 0, NULL, NULL),
+(23, 2, 'TJ', 'Magpantayu', 'tjmagpanta@gmail.com', '$2b$10$Gwz9vwx4SJM1TB8pSxmkJuJ4xsTuSYaVvUURKN0kAoirSgpK/dlBy', '2026-03-04 13:14:06', '2026-03-04 14:00:13', '2026-03-04 13:14:06', '2026-03-04 13:14:06', '2026-03-04 13:14:06', 0, NULL, NULL),
+(24, 3, 'Nikkie', 'Natividad', 'Nik@test.com', '$2b$10$DhGK4OBS1Vy/gpDzQarVauHjjGXBBlqWbbMEFePL5hwsqUVaKVcQa', '2026-03-04 13:16:19', '2026-03-04 13:58:49', '2026-03-04 13:16:19', '2026-03-04 13:16:19', '2026-03-04 13:16:19', 0, NULL, NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `admin_info_tbl`
+--
+
+CREATE TABLE `admin_info_tbl` (
+  `adminID` int(11) NOT NULL,
+  `accID` int(11) NOT NULL,
+  `phone_number` varchar(12) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `admin_info_tbl`
+--
+
+INSERT INTO `admin_info_tbl` (`adminID`, `accID`, `phone_number`) VALUES
+(1, 23, '2147483647');
 
 -- --------------------------------------------------------
 
@@ -197,7 +218,7 @@ INSERT INTO `appointment_tbl` (`appointmentID`, `accID`, `petID`, `serviceID`, `
 (138, 17, 62, 2, '2026-03-02', 10, NULL, 'Scheduled', 4, '2026-03-02 00:10:20', '2026-03-02 00:33:08', 0),
 (139, 18, 61, 1, NULL, NULL, '2026-03-02 13:03:30', 'Walk-in', 6, '2026-03-02 13:03:30', '2026-03-02 13:03:30', 0),
 (140, 17, 60, 1, '2026-03-02', 8, NULL, 'Scheduled', 5, '2026-03-02 17:47:12', '2026-03-02 17:47:20', 0),
-(141, 17, 60, 2, '2026-03-04', 5, NULL, 'Scheduled', 2, '2026-03-02 18:52:44', '2026-03-02 19:15:02', 0),
+(141, 17, 60, 2, '2026-03-04', 5, NULL, 'Scheduled', 5, '2026-03-02 18:52:44', '2026-03-04 13:00:10', 0),
 (142, 17, 62, 2, '2026-03-06', 3, NULL, 'Scheduled', 1, '2026-03-02 19:39:30', '2026-03-02 19:39:30', 0),
 (143, 17, 60, 2, NULL, NULL, '2026-03-02 21:51:31', 'Walk-in', 6, '2026-03-02 21:51:31', '2026-03-02 21:51:31', 0);
 
@@ -259,7 +280,7 @@ CREATE TABLE `clientinfo_tbl` (
   `gender` enum('Male','Female') NOT NULL,
   `dateOfBIrth` date NOT NULL,
   `address` varchar(250) DEFAULT NULL,
-  `contactNo` varchar(13) NOT NULL,
+  `contactNo` varchar(12) NOT NULL,
   `ai_memory` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -272,8 +293,8 @@ INSERT INTO `clientinfo_tbl` (`cliendInfoId`, `accId`, `gender`, `dateOfBIrth`, 
 (2, 8, 'Female', '2025-11-08', NULL, '09888888888', NULL),
 (3, 9, 'Female', '0000-00-00', NULL, '09123456789', NULL),
 (9, 15, 'Male', '2025-11-12', NULL, '09123456789', NULL),
-(11, 17, 'Male', '2025-11-13', NULL, '09123456789', NULL),
-(12, 18, 'Female', '2025-11-20', NULL, '096660481838', NULL),
+(11, 17, 'Male', '2008-02-28', '141-I 16th Avenue East Rembo, Taguig City', '9513733699', NULL),
+(12, 18, 'Female', '2008-02-27', 'dhsashufsfs', '9666048183', NULL),
 (13, 19, 'Male', '2004-04-27', NULL, '09193552396', NULL);
 
 -- --------------------------------------------------------
@@ -478,8 +499,9 @@ INSERT INTO `forum_images_tbl` (`forumImageID`, `forumID`, `imageName`, `isDelet
 (77, 58, 'image-1772548109297-517088887.png', 0),
 (78, 59, 'image-1772548498355-222339069.jpg', 0),
 (79, 60, 'image-1772548674789-377733323.webp', 0),
-(80, 61, 'image-1772548726729-641509849.png', 0),
-(81, 62, 'image-1772548770168-794520536.jpg', 0);
+(80, 61, 'image-1772548726729-641509849.png', 1),
+(81, 62, 'image-1772548770168-794520536.jpg', 0),
+(82, 63, 'image-1772549367663-283059274.webp', 0);
 
 -- --------------------------------------------------------
 
@@ -564,8 +586,9 @@ INSERT INTO `forum_posts_tbl` (`forumID`, `accID`, `postType`, `description`, `c
 (58, 18, 'Lost', 'test45', '09123456789', 'test@gmail.com', '2026-03-03 22:28:29', '2026-03-03 22:28:29', 0, 0),
 (59, 18, 'Lost', 'test46', '09123456789', 'test@gmail.cpm', '2026-03-03 22:34:58', '2026-03-03 22:34:58', 0, 0),
 (60, 17, 'Lost', 'test47', '09513733696', 'markmapili@gmail.com', '2026-03-03 22:37:54', '2026-03-03 22:37:54', 0, 0),
-(61, 17, 'Lost', 'test48', '09123456789', 'dsa@gmail.com', '2026-03-03 22:38:46', '2026-03-03 22:38:46', 0, 0),
-(62, 17, 'Lost', 'test49', '09123456789', 'mar@gmail.com', '2026-03-03 22:39:30', '2026-03-03 22:39:30', 0, 0);
+(61, 17, 'Lost', 'test48', '09123456789', 'dsa@gmail.com', '2026-03-03 22:38:46', '2026-03-03 23:03:52', 0, 1),
+(62, 17, 'Lost', 'test49', '09123456789', 'mar@gmail.com', '2026-03-03 22:39:30', '2026-03-03 22:39:30', 0, 0),
+(63, 18, 'Lost', 'saadsadsa', '+639123456789', 'markmapil@gmail.com', '2026-03-03 22:49:27', '2026-03-03 22:49:27', 0, 0);
 
 -- --------------------------------------------------------
 
@@ -1039,7 +1062,11 @@ INSERT INTO `notifications_tbl` (`notificationID`, `notifTypeID`, `title`, `mess
 (398, 1, 'New Lost Pet', 'Fionah Irish  Beltran reported a lost pet: test46...', '{\"forumId\":59,\"postType\":\"Lost\",\"isAnonymous\":false,\"description\":\"test46\"}', 59, 'forum_posts_tbl', 'specific', NULL, 18, '2026-03-03 22:34:58'),
 (399, 1, 'New Lost Pet', 'Mark Mapili reported a lost pet: test47...', '{\"forumId\":60,\"postType\":\"Lost\",\"isAnonymous\":false,\"description\":\"test47\"}', 60, 'forum_posts_tbl', 'specific', NULL, 17, '2026-03-03 22:37:54'),
 (400, 1, 'New Lost Pet', 'Mark Mapili reported a lost pet: test48...', '{\"forumId\":61,\"postType\":\"Lost\",\"isAnonymous\":false,\"description\":\"test48\"}', 61, 'forum_posts_tbl', 'specific', NULL, 17, '2026-03-03 22:38:46'),
-(401, 1, 'New Lost Pet', 'Mark Mapili reported a lost pet: test49...', '{\"forumId\":62,\"postType\":\"Lost\",\"isAnonymous\":false,\"description\":\"test49\"}', 62, 'forum_posts_tbl', 'specific', NULL, 17, '2026-03-03 22:39:30');
+(401, 1, 'New Lost Pet', 'Mark Mapili reported a lost pet: test49...', '{\"forumId\":62,\"postType\":\"Lost\",\"isAnonymous\":false,\"description\":\"test49\"}', 62, 'forum_posts_tbl', 'specific', NULL, 17, '2026-03-03 22:39:30'),
+(402, 1, 'New Lost Pet', 'Fionah Irish  Beltran reported a lost pet: saadsadsa...', '{\"forumId\":63,\"postType\":\"Lost\",\"isAnonymous\":false,\"description\":\"saadsadsa\"}', 63, 'forum_posts_tbl', 'specific', NULL, 18, '2026-03-03 22:49:28'),
+(403, 2, 'New Pet Care Tip', 'Title', '{\"petCareId\":17,\"shortDescription\":\"sadsada\"}', 17, 'pet_care_tips_content_tbl', 'specific', NULL, 5, '2026-03-03 23:11:28'),
+(404, 2, 'New Pet Care Tip', 'Title', '{\"petCareId\":17,\"shortDescription\":\"sadsada\"}', 17, 'pet_care_tips_content_tbl', 'specific', NULL, 5, '2026-03-03 23:12:18'),
+(405, 2, 'New Pet Care Tip', 'Title', '{\"petCareId\":17,\"shortDescription\":\"sadsada\"}', 17, 'pet_care_tips_content_tbl', 'specific', NULL, 5, '2026-03-03 23:14:33');
 
 -- --------------------------------------------------------
 
@@ -1232,7 +1259,8 @@ INSERT INTO `pet_care_tips_content_tbl` (`petCareID`, `accID`, `iconID`, `title`
 (13, 5, 8, 'TestPetTIp1', 1, 'TestPetTIp1', '', 'TestPetTIp1', 2, '2026-02-27 13:08:22', '2026-02-27 13:14:52', 1),
 (14, 5, 1, 'TestPetTIp1', 1, 'TestPetTIp1', '', 'TestPetTIp1', 2, '2026-02-27 13:15:20', '2026-02-27 23:10:08', 1),
 (15, 5, 1, 'TestPetTIp1', 1, 'TestPetTIp1', '', 'TestPetTIp1', 2, '2026-02-27 13:20:50', '2026-02-27 23:10:22', 1),
-(16, 5, 1, 'test1', 1, 'test1', '', 'test1', 2, '2026-02-27 23:24:36', '2026-02-27 23:25:05', 1);
+(16, 5, 1, 'test1', 1, 'test1', '', 'test1', 2, '2026-02-27 23:24:36', '2026-02-27 23:25:05', 1),
+(17, 5, 1, 'Title', 1, 'sadsada', 'https://www.boston.gov/departments/animal-care-and-control/pet-behavior-tips', 'dasdasd', 3, '2026-03-03 23:11:20', '2026-03-03 23:14:40', 0);
 
 -- --------------------------------------------------------
 
@@ -1942,11 +1970,22 @@ INSERT INTO `user_notifications_tbl` (`userNotifID`, `accID`, `notificationID`, 
 (495, 18, 399, 0, NULL, 0, '2026-03-03 22:37:54'),
 (496, 19, 399, 0, NULL, 0, '2026-03-03 22:37:54'),
 (497, 17, 399, 1, '2026-03-03 22:37:54', 0, '2026-03-03 22:37:54'),
-(498, 18, 400, 0, NULL, 0, '2026-03-03 22:38:46'),
-(499, 19, 400, 0, NULL, 0, '2026-03-03 22:38:46'),
-(500, 17, 400, 1, '2026-03-03 22:38:46', 0, '2026-03-03 22:38:46'),
+(498, 18, 400, 0, NULL, 1, '2026-03-03 22:38:46'),
+(499, 19, 400, 0, NULL, 1, '2026-03-03 22:38:46'),
+(500, 17, 400, 1, '2026-03-03 22:38:46', 1, '2026-03-03 22:38:46'),
 (501, 19, 401, 0, NULL, 0, '2026-03-03 22:39:30'),
-(502, 17, 401, 1, '2026-03-03 22:39:30', 0, '2026-03-03 22:39:30');
+(502, 17, 401, 1, '2026-03-03 22:39:30', 0, '2026-03-03 22:39:30'),
+(503, 19, 402, 0, NULL, 0, '2026-03-03 22:49:28'),
+(504, 18, 402, 1, '2026-03-03 22:49:28', 0, '2026-03-03 22:49:28'),
+(505, 17, 403, 0, NULL, 1, '2026-03-03 23:11:28'),
+(506, 18, 403, 0, NULL, 1, '2026-03-03 23:11:28'),
+(507, 19, 403, 0, NULL, 1, '2026-03-03 23:11:28'),
+(508, 17, 404, 0, NULL, 1, '2026-03-03 23:12:18'),
+(509, 18, 404, 0, NULL, 1, '2026-03-03 23:12:18'),
+(510, 19, 404, 0, NULL, 1, '2026-03-03 23:12:18'),
+(511, 17, 405, 0, NULL, 1, '2026-03-03 23:14:33'),
+(512, 18, 405, 0, NULL, 1, '2026-03-03 23:14:33'),
+(513, 19, 405, 0, NULL, 1, '2026-03-03 23:14:33');
 
 -- --------------------------------------------------------
 
@@ -2104,10 +2143,49 @@ INSERT INTO `user_websocket_sessions_tbl` (`sessionID`, `accID`, `socketID`, `co
 (721, 18, 'cw3ZqMffKIH0ZMv-AAAO', '2026-03-03 22:35:22', '2026-03-03 22:35:22', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
 (724, 18, 'TaplFnI-yW-6Qj4fAAAR', '2026-03-03 22:35:52', '2026-03-03 22:35:52', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
 (727, 18, 'Qvq0rR4esNaHEWPZAAAU', '2026-03-03 22:36:27', '2026-03-03 22:37:51', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
-(730, 17, 'mwrAD7l10dqI2BGJAAAX', '2026-03-03 22:36:34', '2026-03-03 22:37:21', 1, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
+(730, 17, 'mwrAD7l10dqI2BGJAAAX', '2026-03-03 22:36:34', '2026-03-03 22:37:21', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
 (744, 18, 'oDAEmHQbg8jf1oz2AAAa', '2026-03-03 22:39:42', '2026-03-03 22:39:42', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
 (747, 18, '1uwnGhF1dGSxNmIvAAAB', '2026-03-03 22:41:05', '2026-03-03 22:41:05', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
-(750, 18, 'UoebjoGhtRCeOJ12AAAI', '2026-03-03 22:41:11', '2026-03-03 22:41:11', 1, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1');
+(750, 18, 'UoebjoGhtRCeOJ12AAAI', '2026-03-03 22:41:11', '2026-03-03 22:51:05', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
+(759, 17, 'qjkLds2i_izBSOOCAAAL', '2026-03-03 22:58:14', '2026-03-03 22:58:14', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(760, 18, 'hT0JqaZU4G9Fqck5AAAB', '2026-03-03 23:03:28', '2026-03-03 23:03:30', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
+(768, 18, 'R2wMvxg7jA_eJg86AAAB', '2026-03-03 23:06:13', '2026-03-03 23:06:13', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::ffff:127.0.0.1'),
+(769, 18, '0BPquUSTtzrl1FavAAAB', '2026-03-03 23:08:57', '2026-03-03 23:09:38', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
+(770, 5, 'ahW8OFdCTp5dKKwmAAAD', '2026-03-03 23:09:30', '2026-03-03 23:09:48', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
+(775, 18, '3WfMPJdzC7xgZoByAAAI', '2026-03-03 23:14:29', '2026-03-03 23:14:29', 1, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(776, 5, 'QS6TY1Jrwo51An_sAAAD', '2026-03-03 23:15:42', '2026-03-03 23:15:43', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
+(778, 5, 'tnB5spSOIVr4KhJ2AAAI', '2026-03-03 23:18:36', '2026-03-03 23:18:37', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
+(780, 17, 'rJUdC5YzzR2NfUg2AAAC', '2026-03-04 10:56:12', '2026-03-04 10:56:12', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(783, 17, 'AkcKlE_H-NpuwsIPAAAG', '2026-03-04 10:57:00', '2026-03-04 10:59:43', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(786, 5, 'Z0GDE4JnomZaI6h0AAAD', '2026-03-04 10:58:06', '2026-03-04 10:59:05', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(802, 17, 'F4BacNnGiOgiFOnLAAAD', '2026-03-04 11:56:08', '2026-03-04 11:56:08', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(803, 17, 'k6aR6ucZsnhh4uR0AAAB', '2026-03-04 12:00:52', '2026-03-04 12:00:52', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(804, 17, 'Ro9WQR5O47w7niePAAAG', '2026-03-04 12:49:54', '2026-03-04 12:49:54', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(805, 17, 'dnqdUNQBX-XtEaWZAAAB', '2026-03-04 12:50:50', '2026-03-04 12:50:50', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(806, 17, '31yQ7LF_VaJuVXdPAAAD', '2026-03-04 12:54:20', '2026-03-04 12:54:20', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(807, 17, '6ghRso1XKmfphSs5AAAD', '2026-03-04 12:58:50', '2026-03-04 12:58:50', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(808, 17, '-q03Wu0I-x944VjrAAAD', '2026-03-04 13:11:54', '2026-03-04 13:11:54', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(809, 17, 'rA1s-FnwAoSlAoV5AAAB', '2026-03-04 13:13:26', '2026-03-04 13:13:26', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(810, 17, 'nTMxtuNytWvGTLSRAAAD', '2026-03-04 13:21:51', '2026-03-04 13:21:51', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(811, 17, 'v2pjj_uH-sBN9EIlAAAD', '2026-03-04 13:27:50', '2026-03-04 13:27:50', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(812, 17, 'jt9qRI7AgdCOCjTuAAAB', '2026-03-04 13:35:32', '2026-03-04 13:35:32', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::ffff:127.0.0.1'),
+(813, 17, 'U0q4yMY0CeUn1gZxAAAD', '2026-03-04 13:36:54', '2026-03-04 13:36:54', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(814, 5, 'dLGIC_KcRB_2mODJAAAB', '2026-03-04 13:37:24', '2026-03-04 13:37:24', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(816, 17, 'kbbl5V8PK4YZUb5WAAAB', '2026-03-04 13:39:31', '2026-03-04 13:39:31', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(817, 17, 'GRxolt-pgk8Uo298AAAB', '2026-03-04 13:40:09', '2026-03-04 13:40:09', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(818, 5, 'OAQnZcBASzOmghh3AAAG', '2026-03-04 13:40:54', '2026-03-04 13:40:54', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
+(820, 5, 'qr4NdgRkcIyT-xm3AAAB', '2026-03-04 13:46:08', '2026-03-04 13:46:08', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
+(821, 17, 'g7E_D6Ijhvo_sqD1AAAD', '2026-03-04 13:46:10', '2026-03-04 13:46:10', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(822, 17, 'WayzA9RsiWCiI7OhAAAB', '2026-03-04 13:47:35', '2026-03-04 13:47:35', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(823, 5, 'wjf1SFV1UL7XojLyAAAD', '2026-03-04 13:47:35', '2026-03-04 13:47:35', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
+(824, 5, '0LRUmv5JcrcxCOrHAAAB', '2026-03-04 13:47:59', '2026-03-04 13:47:59', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
+(825, 17, 'uAyumFPMlVagxwy6AAAD', '2026-03-04 13:48:01', '2026-03-04 13:48:01', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(826, 5, 'AsYrXbU0bvaj3PqvAAAF', '2026-03-04 13:48:46', '2026-03-04 13:48:57', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
+(829, 5, 'Wgb2fNAHCUINNOSTAAAI', '2026-03-04 13:49:21', '2026-03-04 13:49:21', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(830, 17, 'BBpS01WQQxq4gC8hAAAL', '2026-03-04 13:50:27', '2026-03-04 13:50:27', 0, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1'),
+(833, 17, 'a5u_s2CC8Pp85Aa_AAAB', '2026-03-04 13:51:30', '2026-03-04 13:58:24', 1, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::ffff:127.0.0.1'),
+(836, 5, '1fbfWceITbAFYhA_AAAB', '2026-03-04 14:15:57', '2026-03-04 14:16:04', 0, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36', '::1'),
+(840, 5, 'VbpxAoYsq8Jeq9B3AAAG', '2026-03-04 14:17:25', '2026-03-04 14:17:25', 1, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '::1');
 
 -- --------------------------------------------------------
 
@@ -2118,10 +2196,15 @@ INSERT INTO `user_websocket_sessions_tbl` (`sessionID`, `accID`, `socketID`, `co
 CREATE TABLE `vet_table` (
   `vetId` int(11) NOT NULL,
   `accId` int(11) NOT NULL,
-  `licenseNumber` int(50) NOT NULL,
-  `specializationId` int(11) NOT NULL,
-  `certificationId` int(11) NOT NULL
+  `phone_number` varchar(13) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `vet_table`
+--
+
+INSERT INTO `vet_table` (`vetId`, `accId`, `phone_number`) VALUES
+(1, 24, '2147483647');
 
 -- --------------------------------------------------------
 
@@ -2187,6 +2270,13 @@ ALTER TABLE `account_tbl`
   ADD PRIMARY KEY (`accId`),
   ADD UNIQUE KEY `email` (`email`),
   ADD KEY `roleID_account_fk` (`roleID`);
+
+--
+-- Indexes for table `admin_info_tbl`
+--
+ALTER TABLE `admin_info_tbl`
+  ADD PRIMARY KEY (`adminID`),
+  ADD KEY `admin_acc_id` (`accID`);
 
 --
 -- Indexes for table `allergen_tbl`
@@ -2423,7 +2513,13 @@ ALTER TABLE `video_content_tbl`
 -- AUTO_INCREMENT for table `account_tbl`
 --
 ALTER TABLE `account_tbl`
-  MODIFY `accId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+  MODIFY `accId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+
+--
+-- AUTO_INCREMENT for table `admin_info_tbl`
+--
+ALTER TABLE `admin_info_tbl`
+  MODIFY `adminID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `allergen_tbl`
@@ -2477,13 +2573,13 @@ ALTER TABLE `feedbacks_tbl`
 -- AUTO_INCREMENT for table `forum_images_tbl`
 --
 ALTER TABLE `forum_images_tbl`
-  MODIFY `forumImageID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=82;
+  MODIFY `forumImageID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=83;
 
 --
 -- AUTO_INCREMENT for table `forum_posts_tbl`
 --
 ALTER TABLE `forum_posts_tbl`
-  MODIFY `forumID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=63;
+  MODIFY `forumID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=64;
 
 --
 -- AUTO_INCREMENT for table `icon_tbl`
@@ -2501,7 +2597,7 @@ ALTER TABLE `labtype_tbl`
 -- AUTO_INCREMENT for table `notifications_tbl`
 --
 ALTER TABLE `notifications_tbl`
-  MODIFY `notificationID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=402;
+  MODIFY `notificationID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=406;
 
 --
 -- AUTO_INCREMENT for table `notification_type_tbl`
@@ -2531,7 +2627,7 @@ ALTER TABLE `pet_care_category_tbl`
 -- AUTO_INCREMENT for table `pet_care_tips_content_tbl`
 --
 ALTER TABLE `pet_care_tips_content_tbl`
-  MODIFY `petCareID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `petCareID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT for table `pet_tbl`
@@ -2579,19 +2675,19 @@ ALTER TABLE `userpreference_tbl`
 -- AUTO_INCREMENT for table `user_notifications_tbl`
 --
 ALTER TABLE `user_notifications_tbl`
-  MODIFY `userNotifID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=503;
+  MODIFY `userNotifID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=514;
 
 --
 -- AUTO_INCREMENT for table `user_websocket_sessions_tbl`
 --
 ALTER TABLE `user_websocket_sessions_tbl`
-  MODIFY `sessionID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=753;
+  MODIFY `sessionID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=841;
 
 --
 -- AUTO_INCREMENT for table `vet_table`
 --
 ALTER TABLE `vet_table`
-  MODIFY `vetId` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `vetId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `video_category_tbl`
@@ -2614,6 +2710,12 @@ ALTER TABLE `video_content_tbl`
 --
 ALTER TABLE `account_tbl`
   ADD CONSTRAINT `roleID_account_fk` FOREIGN KEY (`roleID`) REFERENCES `role_tbl` (`roleID`);
+
+--
+-- Constraints for table `admin_info_tbl`
+--
+ALTER TABLE `admin_info_tbl`
+  ADD CONSTRAINT `admin_acc_id` FOREIGN KEY (`accID`) REFERENCES `account_tbl` (`accId`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `appointment_tbl`

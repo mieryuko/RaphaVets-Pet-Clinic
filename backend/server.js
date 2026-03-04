@@ -25,6 +25,7 @@ import supportRoute from './routes/supportRoute.js';
 import notificationRoute from './routes/notificationRoute.js';
 import "./cron/appointmentCron.js";
 import reportRoute from './routes/admin_routes/reportRoute.js';
+import adminSettingsRoute from './routes/admin_routes/adminSettingsRoute.js';
 
 dotenv.config();
 
@@ -62,6 +63,7 @@ app.use('/api/medical-records', medicalRecordsRoute);
 app.use("/api/chatbot", chatRoutes);
 app.use('/api/support', supportRoute);
 app.use("/api/admin", reportRoute);
+app.use('/api/admin/settings', adminSettingsRoute);
 app.use("/uploads", express.static("uploads"));
 app.get("/api/test", (req, res) => {
   res.json({ message: "Backend connected!" });
