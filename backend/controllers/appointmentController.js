@@ -15,7 +15,7 @@ const getCachedTimeSlots = async () => {
   }
 
   const [rows] = await db.query(
-    "SELECT scheduledTimeID, scheduleTime, endTime FROM scheduletime_tbl ORDER BY scheduleTime"
+    "SELECT scheduledTimeID, scheduleTime FROM scheduletime_tbl ORDER BY scheduleTime"
   );
 
   timeSlotsCache.data = rows;
@@ -166,7 +166,7 @@ export const getAllTime = async (req, res) => {
     const timeSlots = rows.map(row => ({
       scheduledTimeID: row.scheduledTimeID,
       scheduleTime: row.scheduleTime, // Use scheduleTime field
-      endTime: row.endTime
+      endTime: row.endTime || null
     }));
 
     res.json(timeSlots);

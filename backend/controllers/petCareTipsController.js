@@ -116,10 +116,11 @@ export const getRandomPetCareTips = async (req, res) => {
       INNER JOIN account_tbl a ON pc.accID = a.accId
       WHERE pc.isDeleted = 0 AND pc.pubStatusID = 2
       ORDER BY pc.petCareID
-      LIMIT ? OFFSET ?
     `;
 
-    const [results] = await db.execute(query, [safeLimit, randomOffset]);
+    // Use numeric interpolation for LIMIT/OFFSET to avoid MySQL prepared-statement quirks on some hosts.
+    const finalQuery = `${query}\nLIMIT ${Number(safeLimit)} OFFSET ${Number(randomOffset)}`;
+    const [results] = await db.query(finalQuery);
     
     const tips = results.map(tip => ({
       id: tip.petCareID,
