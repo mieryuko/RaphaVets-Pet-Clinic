@@ -2,32 +2,8 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { validationResult } from "express-validator";
 import pool from "../config/db.js";
-import nodemailer from "nodemailer";
 import crypto from "crypto";
-
-const getTransporter = () => {
-  const host = process.env.SMTP_HOST;
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
-
-  if (!host || !user || !pass) {
-    return null;
-  }
-
-  return nodemailer.createTransport({
-    host,
-    port: Number(process.env.SMTP_PORT || 587),
-    secure: process.env.SMTP_SECURE === 'true',
-    auth: {
-      user,
-      pass,
-    },
-    connectionTimeout: Number(process.env.SMTP_CONNECTION_TIMEOUT || 7000),
-    greetingTimeout: Number(process.env.SMTP_GREETING_TIMEOUT || 7000),
-    socketTimeout: Number(process.env.SMTP_SOCKET_TIMEOUT || 10000),
-    dnsTimeout: Number(process.env.SMTP_DNS_TIMEOUT || 7000),
-  });
-};
+import { getDefaultFromAddress, isResendConfigured, sendResendEmail } from "../utils/resendEmail.js";
 
 export const checkEmailExists = async (req, res) => {
   const { email } = req.body;
@@ -81,8 +57,15 @@ export const forgotPassword = async (req, res) => {
     const resetLink = `${frontendBaseUrl}/change-password?token=${resetToken}`;
 
     // Send email
-    const mailOptions = {
-      from: process.env.SMTP_FROM || process.env.SMTP_USER,
+    if (!isResendConfigured()) {
+      return res.status(500).json({
+        success: false,
+        message: "Email service not configured",
+      });
+    }
+
+    const info = await sendResendEmail({
+      from: process.env.RESEND_AUTH_FROM || getDefaultFromAddress(),
       to: email,
       subject: 'Password Reset Request - RaphaVets Pet Clinic',
       html: `
@@ -104,23 +87,10 @@ export const forgotPassword = async (req, res) => {
           <p>Best regards,<br>RaphaVets Pet Clinic Team</p>
         </div>
       `
-    };
-
-    const transporter = getTransporter();
-    if (!transporter) {
-      return res.status(500).json({
-        success: false,
-        message: "Email service not configured",
-      });
-    }
-
-    const info = await transporter.sendMail(mailOptions);
+    });
     console.log('✅ Forgot password email send result', {
       to: email,
-      messageId: info?.messageId,
-      accepted: info?.accepted,
-      rejected: info?.rejected,
-      response: info?.response,
+      emailId: info?.id,
     });
 
     res.status(200).json({

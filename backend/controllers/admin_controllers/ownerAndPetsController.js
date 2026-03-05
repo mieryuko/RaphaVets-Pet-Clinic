@@ -1,8 +1,7 @@
   import db from "../../config/db.js";
   import bcrypt from 'bcryptjs';
-  import nodemailer from 'nodemailer'; 
   import { getIO } from "../../socket.js";
-
+  import { getDefaultFromAddress, isResendConfigured, sendResendEmail } from "../../utils/resendEmail.js";
 const NAME_REGEX = /^[\p{L}]+(?:[ '\-][\p{L}]+)*$/u;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -211,21 +210,6 @@ const normalizeToLocalPhone = (rawValue) => {
     }
   };
 
-// Email transporter configuration
-const emailTransporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT || 587),
-  secure: process.env.SMTP_SECURE === 'true',
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS
-  },
-  connectionTimeout: Number(process.env.SMTP_CONNECTION_TIMEOUT || 7000),
-  greetingTimeout: Number(process.env.SMTP_GREETING_TIMEOUT || 7000),
-  socketTimeout: Number(process.env.SMTP_SOCKET_TIMEOUT || 10000),
-  dnsTimeout: Number(process.env.SMTP_DNS_TIMEOUT || 7000)
-});
-
 export const createOwner = async (req, res) => {
   try {
     const {
@@ -425,17 +409,17 @@ export const createOwner = async (req, res) => {
       // Send email in background to avoid blocking API response
       setImmediate(async () => {
         try {
-          if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-            console.warn('⚠️ SMTP not configured for owner credentials email', {
-              hasUser: Boolean(process.env.SMTP_USER),
-              hasPass: Boolean(process.env.SMTP_PASS),
+          if (!isResendConfigured()) {
+            console.warn('⚠️ Resend not configured for owner credentials email', {
+              hasApiKey: Boolean(process.env.RESEND_API_KEY),
+              hasFrom: Boolean(process.env.RESEND_FROM || process.env.RESEND_FROM_EMAIL),
             });
             return;
           }
 
           console.log(`📧 Queueing owner credentials email to ${normalizedEmail}`);
-          const info = await emailTransporter.sendMail({
-            from: process.env.SMTP_FROM || process.env.SMTP_USER,
+          const info = await sendResendEmail({
+            from: process.env.RESEND_OWNER_FROM || getDefaultFromAddress(),
             to: normalizedEmail,
             subject: 'Your RaphaVets Clinic Account Login Credentials',
             html: `
@@ -482,10 +466,7 @@ export const createOwner = async (req, res) => {
 
           console.log('✅ Login credentials email sent', {
             to: normalizedEmail,
-            messageId: info?.messageId,
-            accepted: info?.accepted,
-            rejected: info?.rejected,
-            response: info?.response,
+            emailId: info?.id,
           });
         } catch (emailError) {
           console.error('❌ Failed to send email:', emailError);

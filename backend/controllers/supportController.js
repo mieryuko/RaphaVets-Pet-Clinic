@@ -1,40 +1,8 @@
 import dotenv from 'dotenv';
-import nodemailer from 'nodemailer';
 import db from '../config/db.js';
+import { getDefaultFromAddress, isResendConfigured, sendResendEmail } from '../utils/resendEmail.js';
 
 dotenv.config();
-
-const createTransporter = () => {
-  const host = process.env.SMTP_HOST;
-  const port = parseInt(process.env.SMTP_PORT || '587', 10);
-  const secure = (process.env.SMTP_SECURE === 'true');
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
-
-  if (!host || !user || !pass) {
-    console.warn('SMTP not fully configured: SMTP_HOST/SMTP_USER/SMTP_PASS are required');
-    return null;
-  }
-
-  try {
-    return nodemailer.createTransport({
-      host,
-      port,
-      secure,
-      auth: {
-        user,
-        pass
-      },
-      connectionTimeout: Number(process.env.SMTP_CONNECTION_TIMEOUT || 7000),
-      greetingTimeout: Number(process.env.SMTP_GREETING_TIMEOUT || 7000),
-      socketTimeout: Number(process.env.SMTP_SOCKET_TIMEOUT || 10000),
-      dnsTimeout: Number(process.env.SMTP_DNS_TIMEOUT || 7000)
-    });
-  } catch (err) {
-    console.error('Failed to create SMTP transporter:', err);
-    return null;
-  }
-};
 
 export const sendSupportMessage = async (req, res) => {
   try {
@@ -62,28 +30,20 @@ export const sendSupportMessage = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Name and email are required' });
     }
 
-    const transporter = createTransporter();
-
-    if (!transporter) {
-      console.error('SMTP transporter not available. Check .env configuration.');
-      return res.status(500).json({ success: false, message: 'SMTP not configured on server. Contact administrator.' });
+    if (!isResendConfigured()) {
+      console.error('Resend is not configured. Check RESEND_API_KEY and RESEND_FROM.');
+      return res.status(500).json({ success: false, message: 'Email service not configured on server. Contact administrator.' });
     }
 
-    const supportTo = process.env.SUPPORT_EMAIL || process.env.SMTP_USER;
-    const smtpFromRaw = process.env.SMTP_FROM || process.env.SMTP_USER;
-    const smtpFromMatch = typeof smtpFromRaw === 'string' ? smtpFromRaw.match(/<([^>]+)>/) : null;
-    const smtpFrom = (smtpFromMatch ? smtpFromMatch[1] : smtpFromRaw || '').trim();
+    const supportTo = process.env.SUPPORT_EMAIL;
+    const resendFrom = process.env.RESEND_SUPPORT_FROM || getDefaultFromAddress();
 
     if (!supportTo) {
       return res.status(500).json({ success: false, message: 'Support destination email is not configured on server.' });
     }
 
-    const mailOptions = {
-      from: {
-        name: 'RaphaVets Support',
-        address: smtpFrom
-      },
-      sender: smtpFrom,
+    const info = await sendResendEmail({
+      from: resendFrom,
       to: supportTo,
       subject: `[Support] ${subject}`,
       replyTo: email,
@@ -162,12 +122,9 @@ export const sendSupportMessage = async (req, res) => {
 
   </div>
 `
+    });
 
-    };
-
-    const info = await transporter.sendMail(mailOptions);
-
-    console.log('✅ Support email sent:', info.messageId);
+    console.log('✅ Support email sent:', info?.id);
 
     return res.json({ success: true, message: 'Support message sent' });
   } catch (err) {

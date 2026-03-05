@@ -1,7 +1,7 @@
 import db from '../../config/db.js';
 import bcrypt from 'bcryptjs';
-import nodemailer from 'nodemailer';
 import { generateRandomPassword } from '../../middleware/passwordGenerator.js';
+import { getDefaultFromAddress, isResendConfigured, sendResendEmail } from '../../utils/resendEmail.js';
 
 const ROLE_MAP = {
   admin: 2,
@@ -11,27 +11,6 @@ const ROLE_MAP = {
 const ROLE_NAME = {
   2: 'admin',
   3: 'veterinarian',
-};
-
-const getTransporter = () => {
-  const host = process.env.SMTP_HOST;
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
-
-  if (!host || !user || !pass) {
-    return null;
-  }
-
-  return nodemailer.createTransport({
-    host,
-    port: Number(process.env.SMTP_PORT || 587),
-    secure: false,
-    auth: { user, pass },
-    connectionTimeout: Number(process.env.SMTP_CONNECTION_TIMEOUT || 7000),
-    greetingTimeout: Number(process.env.SMTP_GREETING_TIMEOUT || 7000),
-    socketTimeout: Number(process.env.SMTP_SOCKET_TIMEOUT || 10000),
-    dnsTimeout: Number(process.env.SMTP_DNS_TIMEOUT || 7000),
-  });
 };
 
 const normalizeType = (type = '') => type.toString().trim().toLowerCase();
@@ -231,15 +210,14 @@ export const createAdminSettingsUser = async (req, res) => {
       connection.release();
     }
 
-    let emailSent = false;
-    const transporter = getTransporter();
+    const emailConfigured = isResendConfigured();
 
-    if (transporter) {
+    if (emailConfigured) {
       console.log(`📧 Queueing admin settings email to ${safeEmail}`);
       setImmediate(async () => {
         try {
-          const info = await transporter.sendMail({
-            from: process.env.SMTP_FROM || process.env.SMTP_USER,
+          const info = await sendResendEmail({
+            from: process.env.RESEND_ADMIN_FROM || getDefaultFromAddress(),
             to: safeEmail,
             subject: 'RaphaVets Account Credentials',
             html: `
@@ -252,20 +230,16 @@ export const createAdminSettingsUser = async (req, res) => {
           });
           console.log('✅ Account email sent', {
             to: safeEmail,
-            messageId: info?.messageId,
-            accepted: info?.accepted,
-            rejected: info?.rejected,
-            response: info?.response,
+            emailId: info?.id,
           });
         } catch (mailError) {
           console.error('Failed to send account email:', mailError);
         }
       });
     } else {
-      console.warn('⚠️ SMTP not configured for admin settings email', {
-        hasHost: Boolean(process.env.SMTP_HOST),
-        hasUser: Boolean(process.env.SMTP_USER),
-        hasPass: Boolean(process.env.SMTP_PASS),
+      console.warn('⚠️ Resend not configured for admin settings email', {
+        hasApiKey: Boolean(process.env.RESEND_API_KEY),
+        hasFrom: Boolean(process.env.RESEND_FROM || process.env.RESEND_FROM_EMAIL),
       });
     }
 
@@ -280,8 +254,8 @@ export const createAdminSettingsUser = async (req, res) => {
         phone: safePhone || '',
         type: normalizedType,
       },
-      emailSent,
-      generatedPassword: emailSent ? undefined : plainPassword,
+      emailSent: emailConfigured,
+      generatedPassword: emailConfigured ? undefined : plainPassword,
     });
   } catch (error) {
     console.error('Error creating admin settings user:', error);

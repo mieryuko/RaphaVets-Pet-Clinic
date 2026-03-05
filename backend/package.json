@@ -33,6 +33,7 @@
     "node-cron": "^4.2.1",
     "nodemailer": "^7.0.13",
     "openai": "^6.17.0",
+    "resend": "^6.9.3",
     "socket.io": "^4.8.3",
     "socket.io-client": "^4.8.3"
   },
