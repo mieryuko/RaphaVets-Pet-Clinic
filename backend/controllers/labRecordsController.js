@@ -3,7 +3,7 @@ import path from 'path';
 import fs from 'fs';
 import axios from 'axios';
 import { fileURLToPath } from 'url';
-import { buildOptimizedPdfUrlFromStoredName } from '../utils/cloudinary.js';
+import { buildOptimizedPdfUrlFromStoredName, buildPrivatePdfUrlFromStoredName } from '../utils/cloudinary.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -183,6 +183,18 @@ export const downloadMedicalRecord = async (req, res) => {
         return res.send(Buffer.from(response.data));
       } catch (cloudinaryError) {
         console.warn('Cloudinary download failed, trying local fallback:', cloudinaryError?.message);
+      }
+    }
+
+    const privatePdfUrl = buildPrivatePdfUrlFromStoredName(file.storedName, { attachment: true });
+    if (privatePdfUrl) {
+      try {
+        const response = await axios.get(privatePdfUrl, { responseType: 'arraybuffer' });
+        res.setHeader('Content-Disposition', `attachment; filename="${file.originalName}"`);
+        res.setHeader('Content-Type', response.headers['content-type'] || 'application/pdf');
+        return res.send(Buffer.from(response.data));
+      } catch (privateFetchError) {
+        console.warn('Cloudinary private signed download failed, trying local fallback:', privateFetchError?.message);
       }
     }
     

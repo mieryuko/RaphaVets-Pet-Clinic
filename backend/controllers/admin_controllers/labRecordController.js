@@ -4,6 +4,7 @@ import fs from 'fs';
 import axios from 'axios';
 import { createMedicalRecordNotification } from "../notificationController.js";
 import {
+  buildPrivatePdfUrlFromStoredName,
   buildOptimizedPdfUrlFromStoredName,
   deleteCloudinaryAssetByStoredName,
   uploadPdfFromPath,
@@ -688,44 +689,27 @@ export const serveMedicalRecord = async (req, res) => {
         res.setHeader('Cache-Control', 'public, max-age=86400');
         return res.send(Buffer.from(response.data));
       } catch (cloudinaryError) {
-        console.warn('Cloudinary inline fetch failed, trying filePath fallback:', cloudinaryError?.message);
+        console.warn('Cloudinary inline fetch failed, trying private signed URL:', cloudinaryError?.message);
       }
     }
 
-    const filePath = fileRecord.filePath;
-
-    if (typeof filePath === 'string' && /^https?:\/\//i.test(filePath)) {
+    const privatePdfUrl = buildPrivatePdfUrlFromStoredName(fileRecord.storedName, { attachment: false });
+    if (privatePdfUrl) {
       try {
-        const response = await axios.get(filePath, { responseType: 'arraybuffer' });
+        const response = await axios.get(privatePdfUrl, { responseType: 'arraybuffer' });
         res.setHeader('Content-Type', response.headers['content-type'] || 'application/pdf');
         res.setHeader('Content-Disposition', `inline; filename="${fileRecord.originalName}"`);
-        res.setHeader('Cache-Control', 'public, max-age=3600');
+        res.setHeader('Cache-Control', 'private, no-store');
         return res.send(Buffer.from(response.data));
-      } catch (urlFetchError) {
-        console.warn('HTTP filePath fallback failed:', urlFetchError?.message);
+      } catch (privateFetchError) {
+        console.warn('Cloudinary private signed fetch failed:', privateFetchError?.message);
       }
     }
 
-    if (!fs.existsSync(filePath)) {
-      console.error('File not found at path:', filePath);
-      return res.status(404).json({ 
-        success: false, 
-        message: 'File not found on server' 
-      });
-    }
-
-    const fileBuffer = fs.readFileSync(filePath);
-    const ext = path.extname(filename).toLowerCase();
-    let contentType = 'application/octet-stream';
-    
-    if (ext === '.pdf') {
-      contentType = 'application/pdf';
-    }
-
-    res.setHeader('Content-Type', contentType);
-    res.setHeader('Content-Disposition', `inline; filename="${fileRecord.originalName}"`);
-    res.setHeader('Cache-Control', 'no-cache');
-    res.send(fileBuffer);
+    return res.status(404).json({
+      success: false,
+      message: 'File not available from Cloudinary'
+    });
 
   } catch (error) {
     console.error('Serve medical record error:', error);

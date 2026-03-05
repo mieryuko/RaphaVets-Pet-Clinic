@@ -104,6 +104,8 @@ export const uploadPdfFromPath = async (filePath, { scope = "pdf", originalName 
 
   const result = await cloudinary.uploader.upload(filePath, {
     resource_type: "raw",
+    type: "upload",
+    access_mode: "public",
     public_id: publicId,
     overwrite: true,
     unique_filename: false,
@@ -139,6 +141,17 @@ export const buildOptimizedPdfUrlFromStoredName = (storedName, { attachment = fa
     resource_type: "raw",
     type: "upload",
     flags: attachment ? "attachment" : undefined,
+  });
+};
+
+export const buildPrivatePdfUrlFromStoredName = (storedName, { attachment = false } = {}) => {
+  const publicId = getPublicIdFromStoredName(storedName);
+  if (!publicId || !isCloudinaryConfigured()) return "";
+
+  return cloudinary.utils.private_download_url(publicId, "pdf", {
+    resource_type: "raw",
+    type: "upload",
+    attachment,
   });
 };
 
