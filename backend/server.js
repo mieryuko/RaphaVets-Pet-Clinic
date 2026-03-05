@@ -26,6 +26,7 @@ import notificationRoute from './routes/notificationRoute.js';
 import "./cron/appointmentCron.js";
 import reportRoute from './routes/admin_routes/reportRoute.js';
 import adminSettingsRoute from './routes/admin_routes/adminSettingsRoute.js';
+import vetDashboardRoute from './routes/vet_routers/vetDashboardRoute.js';
 
 // ----------------------
 // ENVIRONMENT CONFIG
@@ -67,6 +68,9 @@ app.use("/api/chatbot", chatRoutes);
 app.use('/api/support', supportRoute);
 app.use("/api/admin", reportRoute);
 app.use('/api/admin/settings', adminSettingsRoute);
+
+//VET ROUTES
+app.use("/api/vet", vetDashboardRoute);
 
 app.use("/uploads", express.static("uploads"));
 app.use("/api/ml", breedDetectRoute);
