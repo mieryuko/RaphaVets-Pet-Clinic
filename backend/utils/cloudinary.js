@@ -138,7 +138,6 @@ export const buildOptimizedPdfUrlFromStoredName = (storedName, { attachment = fa
     secure: true,
     resource_type: "raw",
     type: "upload",
-    quality: "auto",
     flags: attachment ? "attachment" : undefined,
   });
 };

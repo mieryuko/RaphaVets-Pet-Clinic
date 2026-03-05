@@ -681,14 +681,30 @@ export const serveMedicalRecord = async (req, res) => {
     const cloudinaryPdfUrl = buildOptimizedPdfUrlFromStoredName(fileRecord.storedName);
 
     if (cloudinaryPdfUrl) {
-      const response = await axios.get(cloudinaryPdfUrl, { responseType: 'arraybuffer' });
-      res.setHeader('Content-Type', response.headers['content-type'] || 'application/pdf');
-      res.setHeader('Content-Disposition', `inline; filename="${fileRecord.originalName}"`);
-      res.setHeader('Cache-Control', 'public, max-age=86400');
-      return res.send(Buffer.from(response.data));
+      try {
+        const response = await axios.get(cloudinaryPdfUrl, { responseType: 'arraybuffer' });
+        res.setHeader('Content-Type', response.headers['content-type'] || 'application/pdf');
+        res.setHeader('Content-Disposition', `inline; filename="${fileRecord.originalName}"`);
+        res.setHeader('Cache-Control', 'public, max-age=86400');
+        return res.send(Buffer.from(response.data));
+      } catch (cloudinaryError) {
+        console.warn('Cloudinary inline fetch failed, trying filePath fallback:', cloudinaryError?.message);
+      }
     }
 
     const filePath = fileRecord.filePath;
+
+    if (typeof filePath === 'string' && /^https?:\/\//i.test(filePath)) {
+      try {
+        const response = await axios.get(filePath, { responseType: 'arraybuffer' });
+        res.setHeader('Content-Type', response.headers['content-type'] || 'application/pdf');
+        res.setHeader('Content-Disposition', `inline; filename="${fileRecord.originalName}"`);
+        res.setHeader('Cache-Control', 'public, max-age=3600');
+        return res.send(Buffer.from(response.data));
+      } catch (urlFetchError) {
+        console.warn('HTTP filePath fallback failed:', urlFetchError?.message);
+      }
+    }
 
     if (!fs.existsSync(filePath)) {
       console.error('File not found at path:', filePath);

@@ -2,10 +2,13 @@ import db from "../config/db.js";
 
 // Save message
 export const saveMessage = async (userId, role, message) => {
+  // chat_messages.role is enum('user','system') in production schema.
+  const normalizedRole = role === "user" ? "user" : "system";
+
   await db.execute(
     `INSERT INTO chat_messages (user_id, role, message)
      VALUES (?, ?, ?)`,
-    [userId, role, message]
+    [userId, normalizedRole, message]
   );
 };
 
