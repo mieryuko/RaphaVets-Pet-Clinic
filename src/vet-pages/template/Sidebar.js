@@ -115,6 +115,7 @@ const Sidebar = ({
     navigate("/");
   };
 
+  // In vet Sidebar.js - Update handleChangePassword function
   const handleChangePassword = async () => {
     if (!allValid) {
       setChangePasswordMessage({ 
@@ -130,20 +131,17 @@ const Sidebar = ({
     try {
       const token = localStorage.getItem("token");
       
-      // TODO: Implement actual API call to change password
-      // const response = await api.post("/vet/change-password", passwordData, {
-      //   headers: { Authorization: `Bearer ${token}` }
-      // });
-
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // UNCOMMENT THIS - Replace the simulated API call
+      const response = await api.post("/vet/change-password", passwordData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       
+      // Remove the simulated setTimeout below
       setChangePasswordMessage({ 
         message: "Password changed successfully!", 
         type: "success" 
       });
       
-      // Close modal after success
       setTimeout(() => {
         setShowChangePasswordModal(false);
         resetPasswordForm();
@@ -152,7 +150,7 @@ const Sidebar = ({
     } catch (err) {
       console.error("Change password error:", err);
       setChangePasswordMessage({
-        message: "Failed to change password. Please check your current password.",
+        message: err.response?.data?.message || "Failed to change password. Please check your current password.",
         type: "error"
       });
     } finally {
