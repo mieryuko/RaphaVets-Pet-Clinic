@@ -8,13 +8,6 @@ import SuccessToast from "../../template/SuccessToast";
 import ErrorToast from "../../template/ErrorToast";
 import socket from "../../socket";
 import { buildMediaUrl } from "../../utils/runtimeUrls";
-
-const resolveAdminPetImage = (imageName) => {
-  if (!imageName) return "/images/sad-dog.png";
-  if (/^https?:\/\//i.test(imageName)) return imageName;
-  return buildMediaUrl(`/api/pets/images/${encodeURIComponent(imageName)}`);
-};
-
 import PetOwnersTab from "../components/petpatient-management/PetOwnersTab";
 import PetsTab from "../components/petpatient-management/PetsTab";
 import RecordsTab from "../components/petpatient-management/RecordsTab";
@@ -23,6 +16,12 @@ import RightPanel from "../components/petpatient-management/RightPanel";
 import DeleteModal from "../components/petpatient-management/DeleteModal";
 import UploadRecordModal from "../components/petpatient-management/UploadRecordModal";
 import PdfModal from "../components/petpatient-management/PdfModal";
+
+const resolveAdminPetImage = (imageName) => {
+  if (!imageName) return "/images/sad-dog.png";
+  if (/^https?:\/\//i.test(imageName)) return imageName;
+  return buildMediaUrl(`/api/pets/images/${encodeURIComponent(imageName)}`);
+};
 
 const PetPatientManagement = () => {
   const [activeTab, setActiveTab] = useState("Pet Owners");
