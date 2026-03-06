@@ -417,7 +417,16 @@ const ContentManagement = () => {
             post.id === id ? { ...post, status: newStatus } : post
           )
         );
-        showToast(`Post ${newStatus === 'active' ? 'restored' : 'archived'} successfully!`, 'success');
+        showSuccess(
+          newStatus === 'active'
+            ? 'The forum post has been restored and is now active.'
+            : 'The forum post has been archived successfully.',
+          {
+            title: newStatus === 'active' ? 'Post Restored' : 'Post Archived',
+            confirmText: 'Done',
+            showCancel: false,
+          }
+        );
       } else {
         showError(response.data?.message || 'Failed to update forum post status', {
           title: 'Update Failed'

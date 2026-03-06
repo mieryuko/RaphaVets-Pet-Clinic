@@ -12,6 +12,7 @@ import AppointmentDetailsModal from "../components/appointments/AppointmentDetai
 import DeleteConfirmationModal from "../components/appointments/DeleteConfirmationModal";
 import CancelAppointmentModal from "../components/appointments/CancelAppointmentModal";
 import SuccessToast from "../../template/SuccessToast";
+import ErrorToast from "../../template/ErrorToast";
 import { ca } from "date-fns/locale";
 
 import api from "../../api/axios";
@@ -257,7 +258,7 @@ const AppointmentsVisits = () => {
       setSelectedAppointments([]);
       setIsSelectMode(false);
     }catch(err){
-      alert(err.response?.data?.message || "Failed to update appointment status.");
+      setToast({ type: "error", message: err.response?.data?.message || "Failed to update appointment status." });
     }
     
   };
@@ -521,6 +522,14 @@ const AppointmentsVisits = () => {
       {toast?.type === "success" && (
         <SuccessToast 
           message={toast.message} 
+          onClose={handleToastClose}
+        />
+      )}
+
+      {/* Error Toast */}
+      {toast?.type === "error" && (
+        <ErrorToast
+          message={toast.message}
           onClose={handleToastClose}
         />
       )}

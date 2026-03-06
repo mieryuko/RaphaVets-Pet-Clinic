@@ -18,9 +18,11 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import api from "../../api/axios";
+import ErrorToast from "../../template/ErrorToast";
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const [errorToast, setErrorToast] = useState(null);
   const [stats, setStats] = useState({
     adminName: "Admin",
     totalOwners: 0,
@@ -46,6 +48,7 @@ const Dashboard = () => {
         setRecentActivity(activityRes.data);
       } catch (err) {
         console.error("❌ Failed to fetch dashboard data:", err);
+        setErrorToast("Failed to load dashboard data. Please refresh.");
       } finally {
         setLoading(false);
       }
@@ -78,7 +81,8 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="flex bg-[#FBFBFB] dark:bg-[#101010] h-screen overflow-hidden"> 
+    <div className="flex bg-[#FBFBFB] dark:bg-[#101010] h-screen overflow-hidden">
+      {errorToast && <ErrorToast message={errorToast} onClose={() => setErrorToast(null)} />}
       <main className="flex-1 p-4 flex flex-col justify-between">
         <Header title="Dashboard" />
 

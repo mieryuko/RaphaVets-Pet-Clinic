@@ -11,10 +11,12 @@ import {
   Search,
   Mail,
 } from "lucide-react";
+import { useAlert } from "../hooks/useAlert";
 
 const AdminSettings = () => {
   const userRole = Number(localStorage.getItem('userRole') || 0);
   const canManageUsers = userRole === 2;
+  const { showSuccess, showError, showWarning, showInfo, AlertComponent } = useAlert();
 
   const [activeTab, setActiveTab] = useState("admins");
   const [showAddModal, setShowAddModal] = useState(false);
@@ -100,13 +102,13 @@ const AdminSettings = () => {
       console.error('Failed to load admin settings users:', error);
       const status = error?.response?.status;
       if (status === 401) {
-        alert('Session expired. Please log in again.');
+        showError('Session expired. Please log in again.', { title: 'Session Expired' });
       } else if (status === 403) {
-        alert('You do not have permission to access user management.');
+        showError('You do not have permission to access user management.', { title: 'Access Denied' });
       } else if (status === 404) {
-        alert('Admin settings API route not found. Please restart backend server.');
+        showError('Admin settings API route not found. Please restart backend server.', { title: 'Not Found' });
       } else {
-        alert(error?.response?.data?.message || 'Failed to load users');
+        showError(error?.response?.data?.message || 'Failed to load users', { title: 'Load Failed' });
       }
     } finally {
       setLoading(false);
@@ -130,7 +132,7 @@ const AdminSettings = () => {
   // add new user
   const handleAddUser = async () => {
     if (!canManageUsers) {
-      alert('Only admins can add users.');
+      showWarning('Only admins can add users.', { title: 'Permission Denied' });
       return;
     }
 
@@ -163,14 +165,14 @@ const AdminSettings = () => {
         }
 
         if (response.data.emailSent) {
-          alert(`Password sent to ${createdUser.email}`);
+          showSuccess(`Password sent to ${createdUser.email}`, { title: 'User Created' });
         } else if (response.data.generatedPassword) {
-          alert(`Email not sent. Temporary password for ${createdUser.email}: ${response.data.generatedPassword}`);
+          showInfo(`Email not sent. Temporary password for ${createdUser.email}: ${response.data.generatedPassword}`, { title: 'User Created (No Email)' });
         }
       }
     } catch (error) {
       console.error('Failed to add user:', error);
-      alert(error?.response?.data?.message || 'Failed to add user');
+      showError(error?.response?.data?.message || 'Failed to add user', { title: 'Add Failed' });
       return;
     } finally {
       setSubmitting(false);
@@ -189,7 +191,7 @@ const AdminSettings = () => {
   // edit user
   const handleEditUser = async () => {
     if (!canManageUsers) {
-      alert('Only admins can edit users.');
+      showWarning('Only admins can edit users.', { title: 'Permission Denied' });
       return;
     }
 
@@ -227,12 +229,13 @@ const AdminSettings = () => {
       }
     } catch (error) {
       console.error('Failed to update user:', error);
-      alert(error?.response?.data?.message || 'Failed to update user');
+      showError(error?.response?.data?.message || 'Failed to update user', { title: 'Update Failed' });
       return;
     } finally {
       setSubmitting(false);
     }
 
+    showSuccess('User updated successfully!', { title: 'Updated' });
     setShowEditModal(false);
     setSelectedUser(null);
   };
@@ -240,7 +243,7 @@ const AdminSettings = () => {
   // delete user
   const handleDeleteUser = async () => {
     if (!canManageUsers) {
-      alert('Only admins can delete users.');
+      showWarning('Only admins can delete users.', { title: 'Permission Denied' });
       return;
     }
 
@@ -259,12 +262,13 @@ const AdminSettings = () => {
       }
     } catch (error) {
       console.error('Failed to delete user:', error);
-      alert(error?.response?.data?.message || 'Failed to delete user');
+      showError(error?.response?.data?.message || 'Failed to delete user', { title: 'Delete Failed' });
       return;
     } finally {
       setSubmitting(false);
     }
 
+    showSuccess('User deleted successfully!', { title: 'Deleted' });
     setShowDeleteModal(false);
     setSelectedUser(null);
   };
@@ -423,6 +427,7 @@ const AdminSettings = () => {
 
   return (
     <div className="flex bg-[#FBFBFB] dark:bg-[#101010] min-h-screen">
+      <AlertComponent />
       <main className="flex-1 p-4 flex flex-col">
         <Header title="User Management" />
         
