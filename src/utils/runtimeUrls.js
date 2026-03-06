@@ -12,27 +12,24 @@ const browserOrigin =
     ? window.location.origin
     : "";
 
-const normalizeOrigin = (url) => ensureProtocol(url).replace(/\/+$/, "").toLowerCase();
+const isLocalhostOrigin = /https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(
+  browserOrigin,
+);
 
-export const API_BASE_URL = (ensureProtocol(configuredApiUrl) || `${browserOrigin}/api`).replace(
+const localApiFallback = "http://localhost:5000/api";
+
+export const API_BASE_URL = (
+  ensureProtocol(configuredApiUrl) ||
+  (isLocalhostOrigin ? localApiFallback : `${browserOrigin}/api`)
+).replace(
   /\/+$/,
   "",
 );
 
 export const API_ORIGIN = API_BASE_URL.replace(/\/api\/?$/i, "");
 
-const configuredSocketUrl = ensureProtocol(process.env.REACT_APP_SOCKET_URL || "").replace(
-  /\/+$/,
-  "",
-);
-
-const shouldUseApiOriginForSocket =
-  configuredSocketUrl &&
-  normalizeOrigin(configuredSocketUrl) === normalizeOrigin(browserOrigin) &&
-  normalizeOrigin(API_ORIGIN) !== normalizeOrigin(browserOrigin);
-
 export const SOCKET_URL = (
-  (shouldUseApiOriginForSocket ? API_ORIGIN : configuredSocketUrl) || API_ORIGIN
+  ensureProtocol(process.env.REACT_APP_SOCKET_URL || "") || API_ORIGIN
 ).replace(/\/+$/, "");
 
 export const buildMediaUrl = (path) => {

@@ -54,22 +54,25 @@ export const getVetDashboardStats = async (req, res) => {
         [today]
       );
 
-      // 2. This week's visits count (last 7 days)
+      // 2. This week's visits count (last 7 days) — include walk-in appointments
       const [weeklyVisits] = await db.execute(
         `SELECT COUNT(*) as count
          FROM appointment_tbl a
-         WHERE a.appointmentDate >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
-           AND a.appointmentDate <= CURDATE()
-           AND a.isDeleted = 0`,
+         WHERE (
+           (a.appointmentDate >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND a.appointmentDate <= CURDATE())
+           OR
+           (a.appointmentDate IS NULL AND DATE(a.visitDateTime) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND DATE(a.visitDateTime) <= CURDATE())
+         )
+         AND a.isDeleted = 0`,
         []
       );
 
       // 3. Total patients (unique pets)
       const [totalPatients] = await db.execute(
-        `SELECT COUNT(DISTINCT p.petID) as count
-         FROM appointment_tbl a
-         JOIN pet_tbl p ON a.petID = p.petID
-         WHERE a.isDeleted = 0`,
+        `SELECT COUNT(*) as totalPets 
+      FROM pet_tbl p
+      INNER JOIN account_tbl a ON p.accID = a.accId
+      WHERE p.isDeleted = 0 AND a.isDeleted = 0 AND a.roleID = 1`,
         []
       );
 
@@ -83,9 +86,10 @@ export const getVetDashboardStats = async (req, res) => {
 
       // 5. Total pets registered
       const [totalPets] = await db.execute(
-        `SELECT COUNT(*) as count
-         FROM pet_tbl 
-         WHERE isDeleted = 0`,
+        `SELECT COUNT(*) as totalPets 
+          FROM pet_tbl p
+          INNER JOIN account_tbl a ON p.accID = a.accId
+          WHERE p.isDeleted = 0 AND a.isDeleted = 0 AND a.roleID = 1`,
         []
       );
 
@@ -94,9 +98,9 @@ export const getVetDashboardStats = async (req, res) => {
         email: fallbackVet.email,
         todayAppointments: todayAppointments[0]?.count || 0,
         weeklyVisits: weeklyVisits[0]?.count || 0,
-        totalPatients: totalPatients[0]?.count || 0,
+        totalPatients: totalPatients[0]?.totalPets || 0,
         totalOwners: totalOwners[0]?.count || 0,
-        totalPets: totalPets[0]?.count || 0
+        totalPets: totalPets[0]?.totalPets || 0
       });
     }
 
@@ -117,13 +121,16 @@ export const getVetDashboardStats = async (req, res) => {
       [today]
     );
 
-    // 2. This week's visits count (last 7 days)
+    // 2. This week's visits count (last 7 days) — include walk-in appointments
     const [weeklyVisits] = await db.execute(
       `SELECT COUNT(*) as count
        FROM appointment_tbl a
-       WHERE a.appointmentDate >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
-         AND a.appointmentDate <= CURDATE()
-         AND a.isDeleted = 0`,
+       WHERE (
+         (a.appointmentDate >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND a.appointmentDate <= CURDATE())
+         OR
+         (a.appointmentDate IS NULL AND DATE(a.visitDateTime) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND DATE(a.visitDateTime) <= CURDATE())
+       )
+       AND a.isDeleted = 0`,
       []
     );
 
@@ -146,9 +153,10 @@ export const getVetDashboardStats = async (req, res) => {
 
     // 5. Total pets registered
     const [totalPets] = await db.execute(
-      `SELECT COUNT(*) as count
-       FROM pet_tbl 
-       WHERE isDeleted = 0`,
+      `SELECT COUNT(*) as totalPets
+      FROM pet_tbl p
+      INNER JOIN account_tbl a ON p.accID = a.accId
+      WHERE p.isDeleted = 0 AND a.isDeleted = 0 AND a.roleID = 1`,
       []
     );
 
@@ -159,7 +167,7 @@ export const getVetDashboardStats = async (req, res) => {
       weeklyVisits: weeklyVisits[0]?.count || 0,
       totalPatients: totalPatients[0]?.count || 0,
       totalOwners: totalOwners[0]?.count || 0,
-      totalPets: totalPets[0]?.count || 0
+      totalPets: totalPets[0]?.totalPets || 0
     };
 
     console.log("✅ Vet dashboard stats:", response);
@@ -221,7 +229,11 @@ export const getTodaysAppointments = async (req, res) => {
     const [appointments] = await db.execute(`
       SELECT 
         a.appointmentID as id,
-        DATE_FORMAT(st.scheduleTime, '%l:%i %p') as time,
+        CASE
+          WHEN st.scheduleTime IS NOT NULL THEN TIME_FORMAT(st.scheduleTime, '%l:%i %p')
+          WHEN a.visitDateTime IS NOT NULL THEN TIME_FORMAT(TIME(a.visitDateTime), '%l:%i %p')
+          ELSE 'Walk-in'
+        END as time,
         CONCAT(p.petName, ' - ', b.breedName) as patient,
         s.service as service,
         CONCAT(acc.firstName, ' ', acc.lastName) as owner,
@@ -231,12 +243,15 @@ export const getTodaysAppointments = async (req, res) => {
       JOIN breed_tbl b ON p.breedID = b.breedID
       JOIN service_tbl s ON a.serviceID = s.serviceID
       JOIN account_tbl acc ON a.accID = acc.accId
-      JOIN scheduletime_tbl st ON a.scheduledTimeID = st.scheduledTimeID
+      LEFT JOIN scheduletime_tbl st ON a.scheduledTimeID = st.scheduledTimeID
       JOIN appointment_status_tbl ast ON a.statusID = ast.statusID
-      WHERE a.appointmentDate = ?
+      WHERE (
+        a.appointmentDate = ?
+        OR (a.appointmentDate IS NULL AND DATE(a.visitDateTime) = ?)
+      )
         AND a.isDeleted = 0
-      ORDER BY st.scheduleTime ASC
-    `, [today]);
+      ORDER BY COALESCE(st.scheduleTime, TIME(a.visitDateTime)) ASC
+    `, [today, today]);
 
     res.json(appointments);
   } catch (error) {
@@ -287,7 +302,10 @@ export const getUpcomingAppointments = async (req, res) => {
       SELECT 
         a.appointmentID as id,
         DATE_FORMAT(a.appointmentDate, '%b %e') as date,
-        DATE_FORMAT(st.scheduleTime, '%l:%i %p') as time,
+        CASE
+          WHEN st.scheduleTime IS NOT NULL THEN TIME_FORMAT(st.scheduleTime, '%l:%i %p')
+          ELSE NULL
+        END as time,
         CONCAT(p.petName, ' - ', b.breedName) as patient,
         s.service as service,
         CONCAT(acc.firstName, ' ', acc.lastName) as owner
@@ -296,7 +314,7 @@ export const getUpcomingAppointments = async (req, res) => {
       JOIN breed_tbl b ON p.breedID = b.breedID
       JOIN service_tbl s ON a.serviceID = s.serviceID
       JOIN account_tbl acc ON a.accID = acc.accId
-      JOIN scheduletime_tbl st ON a.scheduledTimeID = st.scheduledTimeID
+      LEFT JOIN scheduletime_tbl st ON a.scheduledTimeID = st.scheduledTimeID
       JOIN appointment_status_tbl ast ON a.statusID = ast.statusID
       WHERE a.appointmentDate >= ?
         AND a.isDeleted = 0
@@ -482,7 +500,10 @@ export const getAllUpcomingAppointments = async (req, res) => {
       SELECT 
         a.appointmentID as id,
         a.appointmentDate as date,
-        DATE_FORMAT(st.scheduleTime, '%H:%i') as time,
+        CASE
+          WHEN st.scheduleTime IS NOT NULL THEN TIME_FORMAT(st.scheduleTime, '%H:%i')
+          ELSE NULL
+        END as time,
         CONCAT(p.petName, ' (', b.breedName, ')') as title,
         s.service as service,
         CONCAT(acc.firstName, ' ', acc.lastName) as owner,
@@ -494,7 +515,7 @@ export const getAllUpcomingAppointments = async (req, res) => {
       JOIN breed_tbl b ON p.breedID = b.breedID
       JOIN service_tbl s ON a.serviceID = s.serviceID
       JOIN account_tbl acc ON a.accID = acc.accId
-      JOIN scheduletime_tbl st ON a.scheduledTimeID = st.scheduledTimeID
+      LEFT JOIN scheduletime_tbl st ON a.scheduledTimeID = st.scheduledTimeID
       JOIN appointment_status_tbl ast ON a.statusID = ast.statusID
       WHERE a.appointmentDate >= ?
         AND a.isDeleted = 0

@@ -22,40 +22,30 @@ import api from "../../api/axios";
 
 const Dashboard = () => {
   const [stats, setStats] = useState({
-    vetName: "Dr. Eric",
+    vetName: "",
     todayAppointments: 0,
     weeklyVisits: 0,
     totalOwners: 0,
     totalPets: 0,
   });
   const [loading, setLoading] = useState(true);
-
-  // Simple mock data for appointments only
-  const mockAppointmentData = {
-    todayAppointments: 5,
-    weeklyVisits: 10,
-  };
+  const [appointmentsData, setAppointmentsData] = useState([]);
+  const [upcomingAppointments, setUpcomingAppointments] = useState([]);
 
   useEffect(() => {
     const fetchDashboardStats = async () => {
       try {
-        const response = await api.get('/admin/dashboard/stats');
-        // Combine real data with mock appointment data
-        setStats({
-          ...response.data,
-          todayAppointments: mockAppointmentData.todayAppointments,
-          weeklyVisits: mockAppointmentData.weeklyVisits,
-        });
+        const [statsRes, graphRes, todayRes] = await Promise.all([
+          api.get('/vet/dashboard/stats'),
+          api.get('/vet/dashboard/appointments-graph'),
+          api.get('/vet/dashboard/todays-appointments'),
+        ]);
+
+        setStats(statsRes.data);
+        setAppointmentsData(graphRes.data);
+        setUpcomingAppointments(todayRes.data);
       } catch (err) {
-        console.error("❌ Failed to fetch dashboard stats:", err);
-        // Use mock data as fallback
-        setStats({
-          vetName: "Dr. Eric",
-          todayAppointments: mockAppointmentData.todayAppointments,
-          weeklyVisits: mockAppointmentData.weeklyVisits,
-          totalOwners: 0,
-          totalPets: 0,
-        });
+        console.error("❌ Failed to fetch vet dashboard data:", err);
       } finally {
         setLoading(false);
       }
@@ -63,23 +53,6 @@ const Dashboard = () => {
 
     fetchDashboardStats();
   }, []);
-
-  const appointmentsData = [
-    { day: "Mon", appointments: 8 },
-    { day: "Tue", appointments: 12 },
-    { day: "Wed", appointments: 6 },
-    { day: "Thu", appointments: 14 },
-    { day: "Fri", appointments: 10 },
-    { day: "Sat", appointments: 4 },
-  ];
-
-  const upcomingAppointments = [
-    { time: "09:00 AM", patient: "Max - Golden Retriever", service: "Annual Checkup" },
-    { time: "10:30 AM", patient: "Bella - Siamese Cat", service: "Vaccination" },
-    { time: "01:15 PM", patient: "Rocky - German Shepherd", service: "Injury Assessment" },
-    { time: "03:00 PM", patient: "Luna - Persian Cat", service: "Dental Cleaning" },
-    { time: "04:30 PM", patient: "Charlie - Beagle", service: "Skin Allergy" },
-  ];
 
   const statCards = [
     { 
@@ -138,7 +111,7 @@ const Dashboard = () => {
         <div className="bg-gradient-to-r from-[#E5FBFF] to-[#FDFBFF] dark:from-[#1F1F1F] dark:to-[#232323] rounded-2xl p-4 mb-3 flex justify-between items-center shadow-sm border border-gray-100 dark:border-gray-800">
           <div>
             <h1 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
-              Welcome back, {stats.adminName} 👋
+              Welcome back, {stats.vetName} 👋
             </h1>
             <p className="text-xs text-gray-500 dark:text-gray-400">
               Here's your clinical overview for today at RVCare.
