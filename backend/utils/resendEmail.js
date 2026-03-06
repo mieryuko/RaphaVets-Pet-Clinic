@@ -4,6 +4,7 @@ let resendClient = null;
 
 const EMAIL_ONLY_REGEX = /^[^<>@\s]+@[^<>@\s]+\.[^<>@\s]+$/;
 const NAME_AND_EMAIL_REGEX = /^(.*)<\s*([^<>@\s]+@[^<>@\s]+\.[^<>@\s]+)\s*>$/;
+const EMAIL_IN_TEXT_REGEX = /([A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,})/i;
 
 const normalizeEnvValue = (value) => {
   if (value === undefined || value === null) return "";
@@ -16,7 +17,7 @@ const normalizeFromAddress = (value) => {
   if (!raw) return "";
 
   // Remove stray quoting characters that often come from copied env values.
-  const cleaned = raw.replace(/[`'\"]/g, "").trim();
+  const cleaned = raw.replace(/[\u2018\u2019\u201C\u201D`'\"]/g, "").trim();
   if (!cleaned) return "";
 
   if (EMAIL_ONLY_REGEX.test(cleaned)) {
@@ -24,11 +25,15 @@ const normalizeFromAddress = (value) => {
   }
 
   const nameEmailMatch = cleaned.match(NAME_AND_EMAIL_REGEX);
-  if (!nameEmailMatch) return "";
+  if (nameEmailMatch) {
+    const name = nameEmailMatch[1].trim();
+    const email = nameEmailMatch[2].trim();
+    return name ? `${name} <${email}>` : email;
+  }
 
-  const name = nameEmailMatch[1].trim();
-  const email = nameEmailMatch[2].trim();
-  return name ? `${name} <${email}>` : email;
+  // Last-resort recovery: if a valid email appears anywhere, use plain email format.
+  const emailMatch = cleaned.match(EMAIL_IN_TEXT_REGEX);
+  return emailMatch ? emailMatch[1].trim() : "";
 };
 
 const getResendClient = () => {

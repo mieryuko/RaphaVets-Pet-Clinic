@@ -429,7 +429,7 @@ export const createOwner = async (req, res) => {
 
           console.log(`📧 Queueing owner credentials email to ${normalizedEmail}`);
           const info = await sendResendEmail({
-            from: process.env.RESEND_FROM || getDefaultFromAddress(),
+            from: getDefaultFromAddress(),
             to: normalizedEmail,
             subject: 'Your RaphaVets Clinic Account Login Credentials',
             html: `

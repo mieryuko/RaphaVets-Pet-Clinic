@@ -295,7 +295,7 @@ export const createAdminSettingsUser = async (req, res) => {
       setImmediate(async () => {
         try {
           const info = await sendResendEmail({
-            from: process.env.RESEND_FROM || getDefaultFromAddress(),
+            from: getDefaultFromAddress(),
             to: safeEmail,
             subject: 'RaphaVets Account Credentials',
             html: `
