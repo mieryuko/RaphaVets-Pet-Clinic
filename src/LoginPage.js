@@ -85,7 +85,7 @@ function LoginPage() {
       });
       
       if (res.data.success) {
-        setEmailMessage({ message: "✅ Password reset link sent to your email!", type: "success" });
+        setEmailMessage({ message: "Password reset link sent to your email.", type: "success" });
         
         setTimeout(() => {
           setEmailModalOpen(false);
@@ -739,7 +739,7 @@ function LoginPage() {
                     transition={{ delay: 0.2, type: "spring" }}
                     className="w-20 h-20 mx-auto mb-4 bg-green-100 rounded-2xl flex items-center justify-center"
                   >
-                    <i className="fa-regular fa-envelope-check text-3xl text-green-600"></i>
+                    <i className="fa-regular fa-envelope text-3xl text-green-600"></i>
                   </motion.div>
                   <h3 className="text-xl font-bold text-gray-800 mb-2">Check Your Email!</h3>
                   <p className="text-sm text-gray-500 mb-6">
@@ -785,7 +785,7 @@ function LoginPage() {
                 <div className="p-6">
                   <div className="flex items-center gap-3 mb-6">
                     <div className="w-14 h-14 bg-[#5EE6FE] rounded-2xl flex items-center justify-center md:w-12 md:h-12 md:rounded-xl">
-                      <i className="fa-regular fa-user-plus text-white text-xl"></i>
+                      <i className="fa-solid fa-user-plus text-white text-xl"></i>
                     </div>
                     <div>
                       <h3 className="text-xl font-bold text-gray-800">Account Creation</h3>
@@ -817,7 +817,7 @@ function LoginPage() {
                         className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl"
                       >
                         <div className={`w-10 h-10 ${item.color} rounded-xl flex items-center justify-center flex-shrink-0`}>
-                          <i className={`fa-regular ${item.icon} text-white text-sm`}></i>
+                          <i className={`fa-solid ${item.icon} text-white text-sm`}></i>
                         </div>
                         <div>
                           <h4 className="font-semibold text-gray-800 text-sm">{item.title}</h4>

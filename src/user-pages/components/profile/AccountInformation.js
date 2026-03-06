@@ -14,6 +14,7 @@ function AccountInformation({ userData, setUserData }) {
   const [message, setMessage] = useState({ type: "", text: "" });
 
   const userId = localStorage.getItem("userId");
+  const NAME_PATTERN = /^[\p{L}\p{M}]+(?:[ '\-.][\p{L}\p{M}]+)*$/u;
 
   const toLocalPhone = (rawValue) => {
     const digits = String(rawValue || "").replace(/\D/g, "");
@@ -25,8 +26,7 @@ function AccountInformation({ userData, setUserData }) {
 
   // Validation functions
   const validateName = (name) => {
-    // Only letters, spaces, hyphens, and apostrophes allowed
-    return /^[A-Za-z\s\-']+$/.test(name) || name === "";
+    return NAME_PATTERN.test(name) || name === "";
   };
 
   const validateContactNo = (number) => {
@@ -46,8 +46,7 @@ function AccountInformation({ userData, setUserData }) {
 
   // Filter functions to prevent invalid characters during typing
   const filterNameInput = (value) => {
-    // Remove any numbers and special characters except spaces, hyphens, and apostrophes
-    return value.replace(/[^A-Za-z\s\-']/g, '');
+    return value.replace(/[^\p{L}\p{M} '\-.]/gu, "");
   };
 
   const filterContactInput = (value) => {
@@ -168,7 +167,12 @@ function AccountInformation({ userData, setUserData }) {
       setTimeout(() => setMessage({ type: "", text: "" }), 3000);
     } catch (err) {
       console.error("❌ Error updating profile:", err.response?.data || err.message);
-      setMessage({ type: "error", text: "Failed to update profile" });
+      setMessage({
+        type: "error",
+        text:
+          err.response?.data?.message ||
+          (err.response?.status === 409 ? "Email is already taken." : "Failed to update profile"),
+      });
     } finally {
       setLoading(false);
     }

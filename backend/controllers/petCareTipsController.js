@@ -153,8 +153,10 @@ export const getRandomPetCareTips = async (req, res) => {
 export const getCategories = async (req, res) => {
   try {
     const query = `
-      SELECT categoryName 
-      FROM pet_care_category_tbl 
+      SELECT DISTINCT pcc.categoryName
+      FROM pet_care_category_tbl pcc
+      INNER JOIN pet_care_tips_content_tbl pc ON pc.petCareCategoryID = pcc.petCareCategoryID
+      WHERE pc.isDeleted = 0 AND pc.pubStatusID = 2
       ORDER BY categoryName
     `;
 

@@ -203,6 +203,13 @@ export default function Step2DateTime({
 
             <div className="mt-3 sm:mt-4">
               <button
+                onClick={() => goToStep(1)}
+                className="w-full mb-2 py-2 sm:py-2.5 rounded-lg border border-gray-200 hover:bg-gray-50 transition text-xs sm:text-sm"
+              >
+                Back: Change service
+              </button>
+
+              <button
                 disabled={!selectedTime || loading}
                 onClick={() => goToStep(3)}
                 className={`w-full py-2 sm:py-3 rounded-lg font-semibold text-xs sm:text-sm transition ${

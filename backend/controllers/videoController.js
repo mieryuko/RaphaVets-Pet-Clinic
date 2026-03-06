@@ -127,8 +127,10 @@ export const getVideosByCategory = async (req, res) => {
 export const getVideoCategories = async (req, res) => {
   try {
     const query = `
-      SELECT videoCategory 
-      FROM video_category_tbl 
+      SELECT DISTINCT vc.videoCategory
+      FROM video_category_tbl vc
+      INNER JOIN video_content_tbl v ON v.videoCategoryID = vc.videoCategoryID
+      WHERE v.isDeleted = 0 AND v.pubStatusID = 2
       ORDER BY videoCategory
     `;
 

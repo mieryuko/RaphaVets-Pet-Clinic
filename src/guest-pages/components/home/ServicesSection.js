@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import api from "../../../api/axios";
+import { useNavigate } from "react-router-dom";
 
 const serviceIconMap = {
   consultation: "fa-stethoscope",
@@ -60,9 +61,11 @@ const mapApiServiceToUi = (service, fallbackId) => {
 };
 
 const ServicesSection = () => {
+  const navigate = useNavigate();
   const [servicesData, setServicesData] = useState([]);
   const [selectedService, setSelectedService] = useState(null);
   const [showAllServices, setShowAllServices] = useState(false);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [hoveredId, setHoveredId] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [hasFetched, setHasFetched] = useState(false);
@@ -72,6 +75,26 @@ const ServicesSection = () => {
     let loadingTimer;
 
     const fetchServices = async () => {
+      const cacheKey = "guest_services_cache_v1";
+      const now = Date.now();
+      const cacheTtlMs = 5 * 60 * 1000;
+
+      try {
+        const cachedRaw = sessionStorage.getItem(cacheKey);
+        if (cachedRaw) {
+          const cached = JSON.parse(cachedRaw);
+          if (cached?.expiresAt > now && Array.isArray(cached?.data)) {
+            if (isMounted) {
+              setServicesData(cached.data);
+              setHasFetched(true);
+            }
+            return;
+          }
+        }
+      } catch {
+        // Ignore cache parsing errors and fetch fresh data.
+      }
+
       loadingTimer = setTimeout(() => {
         if (isMounted) setIsLoading(true);
       }, 250);
@@ -94,6 +117,18 @@ const ServicesSection = () => {
         const normalized = rows.map((row, index) =>
           mapApiServiceToUi(row, index + 1)
         );
+
+        try {
+          sessionStorage.setItem(
+            cacheKey,
+            JSON.stringify({
+              data: normalized,
+              expiresAt: now + cacheTtlMs,
+            })
+          );
+        } catch {
+          // Ignore storage quota/private mode errors.
+        }
 
         setServicesData(normalized);
       } catch (error) {
@@ -183,9 +218,8 @@ const ServicesSection = () => {
         <motion.div
           variants={containerVariants}
           initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+          animate="visible"
+          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
         >
           {isLoading ? (
             [1, 2, 3, 4].map((card) => (
@@ -301,6 +335,15 @@ const ServicesSection = () => {
                     ))}
                   </div>
                 </div>
+
+                <div className="mt-6 pt-4 border-t border-gray-100 flex justify-end">
+                  <button
+                    onClick={() => setShowLoginPrompt(true)}
+                    className="bg-[#5EE6FE] hover:bg-[#3ecbe0] text-white px-5 py-2.5 rounded-lg font-semibold transition-colors"
+                  >
+                    Book Now
+                  </button>
+                </div>
               </div>
             </motion.div>
           </motion.div>
@@ -368,6 +411,52 @@ const ServicesSection = () => {
                     </div>
                   ))}
                 </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showLoginPrompt && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[60] flex items-center justify-center p-4"
+            onClick={() => setShowLoginPrompt(false)}
+          >
+            <div className="absolute inset-0 bg-black/45 backdrop-blur-sm" />
+
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="relative bg-white rounded-2xl w-full max-w-md p-6"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Login Required</h3>
+              <p className="text-sm text-gray-600 mb-5">
+                Booking an appointment requires a client account. Please login to continue.
+              </p>
+
+              <div className="flex gap-2 justify-end">
+                <button
+                  onClick={() => setShowLoginPrompt(false)}
+                  className="px-4 py-2 rounded-lg border border-gray-200 hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    setShowLoginPrompt(false);
+                    setSelectedService(null);
+                    navigate("/");
+                  }}
+                  className="px-4 py-2 rounded-lg bg-[#5EE6FE] text-white hover:bg-[#3ecbe0]"
+                >
+                  Go to Login
+                </button>
               </div>
             </motion.div>
           </motion.div>

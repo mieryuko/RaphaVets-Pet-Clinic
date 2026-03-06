@@ -32,7 +32,8 @@ import { UPLOADS_ROOT } from "./utils/uploadPaths.js";
 // ----------------------
 // ENVIRONMENT CONFIG
 // ----------------------
-dotenv.config({ path: ".env.production" }); 
+// Load backend/.env for localhost development.
+dotenv.config();
 
 const app = express();
 const server = createServer(app);

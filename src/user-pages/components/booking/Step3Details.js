@@ -60,6 +60,13 @@ export default function Step3Details({ goToStep, selectedPet, setSelectedPet }) 
     }
   };
 
+  const formatPetAge = (ageValue) => {
+    const raw = String(ageValue || "").trim();
+    if (!raw) return "Unknown age";
+    if (/(day|week|month|yr|year)/i.test(raw)) return raw;
+    return `${raw} yrs old`;
+  };
+
   return (
     <>
       <div className="mb-3 sm:mb-4">
@@ -142,7 +149,7 @@ export default function Step3Details({ goToStep, selectedPet, setSelectedPet }) 
                         {pet.breed}
                       </p>
                       <div className="flex items-center justify-center gap-2 mt-2 text-xs text-gray-400">
-                        <span>{pet.age} yrs</span>
+                        <span>{formatPetAge(pet.age)}</span>
                         <span>•</span>
                         <span>{pet.weight} kg</span>
                       </div>

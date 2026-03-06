@@ -75,6 +75,13 @@ export default function Step4Review({
     return date;
   };
 
+  const formatPetAge = (ageValue) => {
+    const raw = String(ageValue || "").trim();
+    if (!raw) return "Unknown age";
+    if (/(day|week|month|yr|year)/i.test(raw)) return raw;
+    return `${raw} yrs old`;
+  };
+
   return (
     <div className="space-y-4 sm:space-y-5 md:space-y-6">
       <div>
@@ -119,7 +126,7 @@ export default function Step4Review({
               <div className="min-w-0 flex-1">
                 <div className="text-base sm:text-lg font-semibold text-gray-800 truncate">{selectedPet.name}</div>
                 <div className="text-xs sm:text-sm text-gray-500 truncate">
-                  {selectedPet.breed} • {selectedPet.gender} • {selectedPet.age} years old
+                  {selectedPet.breed} • {selectedPet.gender} • {formatPetAge(selectedPet.age)}
                 </div>
               </div>
             </div>

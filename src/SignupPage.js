@@ -21,6 +21,7 @@ function SignupPage() {
   const hasLength = password.length >= 8;
   const hasSpecial = /[*\-@\$]/.test(password);
   const matches = password !== "" && password === confirm;
+  const namePattern = /^[\p{L}\p{M}]+(?:[ '\-.][\p{L}\p{M}]+)*$/u;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -28,6 +29,12 @@ function SignupPage() {
     // Basic validations first
     if (!firstName || !lastName || !email || !password || !confirm) {
       return setFormMessage({ message: "Please fill out all fields.", type: "error" });
+    }
+    if (!namePattern.test(firstName.trim()) || !namePattern.test(lastName.trim())) {
+      return setFormMessage({
+        message: "Names can include letters, spaces, apostrophes, hyphens, and accented characters.",
+        type: "error",
+      });
     }
     if (password !== confirm) {
       return setFormMessage({ message: "Password do not match.", type: "error" });

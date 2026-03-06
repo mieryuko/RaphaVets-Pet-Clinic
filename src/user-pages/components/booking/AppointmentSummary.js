@@ -20,6 +20,13 @@ export default function AppointmentSummary({
     return date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
   };
 
+  const formatPetAge = (ageValue) => {
+    const raw = String(ageValue || "").trim();
+    if (!raw) return "Unknown age";
+    if (/(day|week|month|yr|year)/i.test(raw)) return raw;
+    return `${raw} yrs old`;
+  };
+
   return (
     <div className="bg-white p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-gray-100 shadow-sm">
       <div className="text-xs sm:text-sm text-gray-500 mb-2 sm:mb-3">Appointment Summary</div>
@@ -59,7 +66,7 @@ export default function AppointmentSummary({
               <div className="min-w-0 flex-1">
                 <div className="font-semibold text-gray-800 text-xs sm:text-sm truncate">{selectedPet.name}</div>
                 <div className="text-[10px] sm:text-xs text-gray-500 truncate">
-                  {selectedPet.breed} • {selectedPet.gender || "-"} • {selectedPet.age || "-"} years old
+                  {selectedPet.breed} • {selectedPet.gender || "-"} • {formatPetAge(selectedPet.age)}
                 </div>
               </div>
             </div>

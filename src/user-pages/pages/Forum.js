@@ -45,29 +45,9 @@ function Forum() {
   const [errorMessage, setErrorMessage] = useState("");
   const [privacyConsent, setPrivacyConsent] = useState(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+  const [currentUser, setCurrentUser] = useState({ name: "You", email: "", contactNo: "" });
 
-  const emptyPostTemplate = {
-    user: "You",
-    type: "Lost",
-    desc: "",
-    images: [],
-    contact: "",
-    email: "",
-    anonymous: false,
-    date: new Date().toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    }),
-  };
-
-  const [newPost, setNewPost] = useState({ ...emptyPostTemplate });
-
-  const [posts, setPosts] = useState([]);
-
-  const fetchedOnce = useRef(false);
-
-  const normalizeContactInput = (value = "") => {
+  function normalizeContactInput(value = "") {
     const digits = value.replace(/\D/g, "");
 
     if (!digits) return "";
@@ -81,7 +61,28 @@ function Forum() {
     }
 
     return digits.slice(0, 10);
-  };
+  }
+
+  const buildEmptyPostTemplate = (user = currentUser) => ({
+    user: user.name || "You",
+    type: "Lost",
+    desc: "",
+    images: [],
+    contact: normalizeContactInput(user.contactNo || ""),
+    email: user.email || "",
+    anonymous: false,
+    date: new Date().toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    }),
+  });
+
+  const [newPost, setNewPost] = useState(() => buildEmptyPostTemplate({ name: "You", email: "", contactNo: "" }));
+
+  const [posts, setPosts] = useState([]);
+
+  const fetchedOnce = useRef(false);
 
   const validateForumInputs = () => {
     if (!["Lost", "Found"].includes(newPost.type)) {
@@ -180,6 +181,32 @@ function Forum() {
     if (fetchedOnce.current) return;
     fetchedOnce.current = true;
     fetchPosts();
+  }, []);
+
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        const res = await api.get("/users/me");
+        const user = res.data || {};
+        const resolvedUser = {
+          name: `${user.firstName || ""} ${user.lastName || ""}`.trim() || "You",
+          email: user.email || "",
+          contactNo: user.contactNo || "",
+        };
+
+        setCurrentUser(resolvedUser);
+        setNewPost((prev) => ({
+          ...prev,
+          user: prev.user === "You" ? resolvedUser.name : prev.user,
+          email: prev.email || resolvedUser.email,
+          contact: prev.contact || normalizeContactInput(resolvedUser.contactNo || ""),
+        }));
+      } catch (error) {
+        // Keep fallback values if profile preload fails.
+      }
+    };
+
+    fetchCurrentUser();
   }, []);
   
   useEffect(() => {
@@ -303,7 +330,7 @@ function Forum() {
           console.log("Post created:", createdPost);
 
           setShowCreateModal(false);
-          setNewPost({ ...emptyPostTemplate, user: newPost.user });
+          setNewPost(buildEmptyPostTemplate(currentUser));
           setPrivacyConsent(false);
           setInputKey(Date.now());
 
@@ -362,7 +389,7 @@ function Forum() {
       console.log("Post updated:", updatedPost);
 
       setShowCreateModal(false);
-      setNewPost({ ...emptyPostTemplate, user: newPost.user });
+      setNewPost(buildEmptyPostTemplate(currentUser));
       setOriginalPost(null);
       setPrivacyConsent(false);
       setInputKey(Date.now());
@@ -729,7 +756,7 @@ function Forum() {
                 </p>
                 <button
                   onClick={() => {
-                    setNewPost({ ...emptyPostTemplate, user: "You" });
+                    setNewPost(buildEmptyPostTemplate(currentUser));
                     setPrivacyConsent(false);
                     setInputKey(Date.now());
                     setShowCreateModal(true);

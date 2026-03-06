@@ -15,6 +15,7 @@ function NotificationSettings() {
 
   const userId = localStorage.getItem("userId");
   const token = localStorage.getItem("token");
+  const cacheKey = userId ? `user_pref_cache_${userId}` : null;
 
   // Fetch preferences from backend
   useEffect(() => {
@@ -26,17 +27,42 @@ function NotificationSettings() {
 
       try {
         setLoading(true);
+
+        if (cacheKey) {
+          const cachedRaw = localStorage.getItem(cacheKey);
+          if (cachedRaw) {
+            const cached = JSON.parse(cachedRaw);
+            if (cached?.expiresAt > Date.now() && cached?.data) {
+              setNotifications(cached.data);
+              setLoading(false);
+            }
+          }
+        }
+
         const res = await api.get(`/users/${userId}/preferences`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        setNotifications({
+        const incoming = {
           appointments: res.data.appointmentReminders === 1,
           health: res.data.petHealthUpd === 1,
           petTips: res.data.petCareTips === 1,
           petVideos: res.data.petVideos === 1,
           forumPosts: res.data.forumPost === 1,
-        });
+        };
+
+        setNotifications(incoming);
+
+        if (cacheKey) {
+          localStorage.setItem(
+            cacheKey,
+            JSON.stringify({
+              data: incoming,
+              expiresAt: Date.now() + 3 * 60 * 1000,
+            })
+          );
+        }
+
         setMessage({ type: "", text: "" });
       } catch (err) {
         console.error("❌ Error loading preferences:", err);
@@ -47,7 +73,7 @@ function NotificationSettings() {
     };
 
     fetchPreferences();
-  }, [userId, token]);
+  }, [userId, token, cacheKey]);
 
   // Toggle notification switch
   const toggle = (key) => {
@@ -73,6 +99,16 @@ function NotificationSettings() {
       await api.put(`/users/${userId}/preferences`, payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
+
+      if (cacheKey) {
+        localStorage.setItem(
+          cacheKey,
+          JSON.stringify({
+            data: notifications,
+            expiresAt: Date.now() + 3 * 60 * 1000,
+          })
+        );
+      }
       
       setMessage({ type: "success", text: "Preferences saved successfully!" });
       

@@ -2,7 +2,7 @@ import db from "../config/db.js";
 import bcrypt from "bcryptjs";
 import { getIO } from "../socket.js";
 
-const NAME_REGEX = /^[A-Za-z\s\-']+$/;
+const NAME_REGEX = /^[\p{L}\p{M}]+(?:[ '\-.][\p{L}\p{M}]+)*$/u;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const normalizeToLocalPhone = (rawValue) => {
@@ -289,6 +289,15 @@ export const updateUserProfile = async (req, res) => {
 
     if (!EMAIL_REGEX.test(normalizedEmail)) {
       return res.status(400).json({ message: "Please provide a valid email address" });
+    }
+
+    const [existingEmailRows] = await db.query(
+      "SELECT accId FROM account_tbl WHERE email = ? AND accId <> ? LIMIT 1",
+      [normalizedEmail, id]
+    );
+
+    if (existingEmailRows.length > 0) {
+      return res.status(409).json({ message: "Email is already taken" });
     }
 
     let hashedPassword = null;

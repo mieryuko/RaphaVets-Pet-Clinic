@@ -2,6 +2,7 @@
   import bcrypt from 'bcryptjs';
   import { getIO } from "../../socket.js";
   import { getDefaultFromAddress, isResendConfigured, sendResendEmail } from "../../utils/resendEmail.js";
+  import { removeNotificationsByReference } from "../notificationController.js";
 const NAME_REGEX = /^[\p{L}]+(?:[ '\-][\p{L}]+)*$/u;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -634,6 +635,19 @@ export const softDeleteOwner = async (req, res) => {
       );
     }
 
+    // Hide forum posts and images from deleted owners.
+    await connection.execute(
+      'UPDATE forum_posts_tbl SET isDeleted = 1 WHERE accID = ?',
+      [ownerId]
+    );
+    await connection.execute(
+      `UPDATE forum_images_tbl fi
+       JOIN forum_posts_tbl fp ON fp.forumID = fi.forumID
+       SET fi.isDeleted = 1
+       WHERE fp.accID = ?`,
+      [ownerId]
+    );
+
     await connection.execute('DELETE FROM appointment_tbl WHERE accID = ?', [ownerId]);
     await connection.execute('DELETE FROM pet_tbl WHERE accID = ?', [ownerId]);
     await connection.execute('DELETE FROM clientinfo_tbl WHERE accId = ?', [ownerId]);
@@ -641,6 +655,23 @@ export const softDeleteOwner = async (req, res) => {
 
     await connection.commit();
     connection.release();
+
+    // Best-effort cleanup of related notifications.
+    try {
+      for (const petId of petIds) {
+        await removeNotificationsByReference('pet_tbl', Number(petId));
+      }
+
+      const [forumRows] = await db.execute(
+        'SELECT forumID FROM forum_posts_tbl WHERE accID = ?',
+        [ownerId]
+      );
+      for (const forumRow of forumRows) {
+        await removeNotificationsByReference('forum_posts_tbl', Number(forumRow.forumID));
+      }
+    } catch (notifError) {
+      console.error('⚠️ Notification cleanup after owner deletion failed:', notifError.message);
+    }
 
     res.status(200).json({ message: 'Owner soft deleted successfully' });
   } catch (error) {
@@ -668,6 +699,12 @@ export const softDeletePet = async (req, res) => {
 
     if (result.affectedRows === 0) {
       return res.status(404).json({ message: 'Pet not found' });
+    }
+
+    try {
+      await removeNotificationsByReference('pet_tbl', Number(petId));
+    } catch (notifError) {
+      console.error('⚠️ Failed to cleanup pet notifications:', notifError.message);
     }
 
     res.status(200).json({ message: 'Pet soft deleted successfully' });

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
+import api from "../../../api/axios";
 
 const ContactSection = () => {
   const [formData, setFormData] = useState({
@@ -9,11 +10,49 @@ const ContactSection = () => {
     subject: "",
     message: ""
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [feedback, setFeedback] = useState({ type: "", text: "" });
 
-  const handleSubmit = (e) => {
+  const NAME_PATTERN = /^[\p{L}\p{M}]+(?:[ '\-.][\p{L}\p{M}]+)*$/u;
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle form submission
-    console.log("Form submitted:", formData);
+
+    const firstName = String(formData.firstName || "").trim();
+    const lastName = String(formData.lastName || "").trim();
+    const email = String(formData.email || "").trim();
+    const subject = String(formData.subject || "").trim();
+    const message = String(formData.message || "").trim();
+
+    if (!NAME_PATTERN.test(firstName) || !NAME_PATTERN.test(lastName)) {
+      setFeedback({
+        type: "error",
+        text: "Names can include letters, spaces, apostrophes, hyphens, and accented characters.",
+      });
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      setFeedback({ type: "", text: "" });
+
+      await api.post("/support/guest", {
+        name: `${firstName} ${lastName}`.trim(),
+        email,
+        subject,
+        message,
+      });
+
+      setFeedback({ type: "success", text: "Message sent successfully. We will reply soon." });
+      setFormData({ firstName: "", lastName: "", email: "", subject: "", message: "" });
+    } catch (error) {
+      setFeedback({
+        type: "error",
+        text: error.response?.data?.message || "Failed to send message. Please try again.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (e) => {
@@ -97,6 +136,12 @@ const ContactSection = () => {
             className="bg-white rounded-xl shadow-md border border-gray-100 p-6"
           >
             <h3 className="text-xl font-bold text-gray-900 mb-4">Send us a message</h3>
+
+            {feedback.text && (
+              <div className={`mb-4 rounded-lg px-3 py-2 text-sm ${feedback.type === "success" ? "bg-green-50 text-green-700 border border-green-200" : "bg-red-50 text-red-700 border border-red-200"}`}>
+                {feedback.text}
+              </div>
+            )}
             
             <form onSubmit={handleSubmit} className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
@@ -174,9 +219,10 @@ const ContactSection = () => {
                 type="submit"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="w-full bg-[#5EE6FE] text-white py-2.5 rounded-lg font-medium text-sm hover:bg-[#5cdffd] transition-colors duration-300"
+                disabled={isSubmitting}
+                className="w-full bg-[#5EE6FE] text-white py-2.5 rounded-lg font-medium text-sm hover:bg-[#5cdffd] transition-colors duration-300 disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                Send Message
+                {isSubmitting ? "Sending..." : "Send Message"}
               </motion.button>
             </form>
           </motion.div>

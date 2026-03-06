@@ -16,6 +16,15 @@ const getAllowedOrigins = () => {
         ...(process.env.SOCKET_ALLOWED_ORIGINS || '').split(','),
     ];
 
+    if (process.env.NODE_ENV !== 'production') {
+        configured.push(
+            'http://localhost:3000',
+            'http://127.0.0.1:3000',
+            'http://localhost:3001',
+            'http://127.0.0.1:3001'
+        );
+    }
+
     return [...new Set(configured.map(normalizeOrigin).filter(Boolean))];
 };
 

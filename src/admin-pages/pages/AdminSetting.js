@@ -549,7 +549,7 @@ const AdminSettings = () => {
                         type="text"
                         value={newUser.firstName}
                         onChange={(e) => {
-                          setNewUser({...newUser, firstName: e.target.value.replace(/[^A-Za-z '\-]/g, '')});
+                          setNewUser({...newUser, firstName: e.target.value.replace(/[^\p{L}\p{M} '\-.]/gu, '')});
                           setAddErrors((prev) => ({ ...prev, firstName: '' }));
                         }}
                         className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300"
@@ -566,7 +566,7 @@ const AdminSettings = () => {
                         type="text"
                         value={newUser.lastName}
                         onChange={(e) => {
-                          setNewUser({...newUser, lastName: e.target.value.replace(/[^A-Za-z '\-]/g, '')});
+                          setNewUser({...newUser, lastName: e.target.value.replace(/[^\p{L}\p{M} '\-.]/gu, '')});
                           setAddErrors((prev) => ({ ...prev, lastName: '' }));
                         }}
                         className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300"
@@ -668,7 +668,7 @@ const AdminSettings = () => {
                         type="text"
                         value={selectedUser.firstName}
                         onChange={(e) => {
-                          setSelectedUser({...selectedUser, firstName: e.target.value.replace(/[^A-Za-z '\-]/g, '')});
+                          setSelectedUser({...selectedUser, firstName: e.target.value.replace(/[^\p{L}\p{M} '\-.]/gu, '')});
                           setEditErrors((prev) => ({ ...prev, firstName: '' }));
                         }}
                         className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300"
@@ -684,7 +684,7 @@ const AdminSettings = () => {
                         type="text"
                         value={selectedUser.lastName}
                         onChange={(e) => {
-                          setSelectedUser({...selectedUser, lastName: e.target.value.replace(/[^A-Za-z '\-]/g, '')});
+                          setSelectedUser({...selectedUser, lastName: e.target.value.replace(/[^\p{L}\p{M} '\-.]/gu, '')});
                           setEditErrors((prev) => ({ ...prev, lastName: '' }));
                         }}
                         className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300"
