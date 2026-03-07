@@ -45,9 +45,29 @@ function Forum() {
   const [errorMessage, setErrorMessage] = useState("");
   const [privacyConsent, setPrivacyConsent] = useState(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
-  const [currentUser, setCurrentUser] = useState({ name: "You", email: "", contactNo: "" });
 
-  function normalizeContactInput(value = "") {
+  const emptyPostTemplate = {
+    user: "You",
+    type: "Lost",
+    desc: "",
+    images: [],
+    contact: "",
+    email: "",
+    anonymous: false,
+    date: new Date().toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    }),
+  };
+
+  const [newPost, setNewPost] = useState({ ...emptyPostTemplate });
+
+  const [posts, setPosts] = useState([]);
+
+  const fetchedOnce = useRef(false);
+
+  const normalizeContactInput = (value = "") => {
     const digits = value.replace(/\D/g, "");
 
     if (!digits) return "";
@@ -61,28 +81,7 @@ function Forum() {
     }
 
     return digits.slice(0, 10);
-  }
-
-  const buildEmptyPostTemplate = (user = currentUser) => ({
-    user: user.name || "You",
-    type: "Lost",
-    desc: "",
-    images: [],
-    contact: normalizeContactInput(user.contactNo || ""),
-    email: user.email || "",
-    anonymous: false,
-    date: new Date().toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    }),
-  });
-
-  const [newPost, setNewPost] = useState(() => buildEmptyPostTemplate({ name: "You", email: "", contactNo: "" }));
-
-  const [posts, setPosts] = useState([]);
-
-  const fetchedOnce = useRef(false);
+  };
 
   const validateForumInputs = () => {
     if (!["Lost", "Found"].includes(newPost.type)) {
@@ -181,32 +180,6 @@ function Forum() {
     if (fetchedOnce.current) return;
     fetchedOnce.current = true;
     fetchPosts();
-  }, []);
-
-  useEffect(() => {
-    const fetchCurrentUser = async () => {
-      try {
-        const res = await api.get("/users/me");
-        const user = res.data || {};
-        const resolvedUser = {
-          name: `${user.firstName || ""} ${user.lastName || ""}`.trim() || "You",
-          email: user.email || "",
-          contactNo: user.contactNo || "",
-        };
-
-        setCurrentUser(resolvedUser);
-        setNewPost((prev) => ({
-          ...prev,
-          user: prev.user === "You" ? resolvedUser.name : prev.user,
-          email: prev.email || resolvedUser.email,
-          contact: prev.contact || normalizeContactInput(resolvedUser.contactNo || ""),
-        }));
-      } catch (error) {
-        // Keep fallback values if profile preload fails.
-      }
-    };
-
-    fetchCurrentUser();
   }, []);
   
   useEffect(() => {
@@ -330,7 +303,7 @@ function Forum() {
           console.log("Post created:", createdPost);
 
           setShowCreateModal(false);
-          setNewPost(buildEmptyPostTemplate(currentUser));
+          setNewPost({ ...emptyPostTemplate, user: newPost.user });
           setPrivacyConsent(false);
           setInputKey(Date.now());
 
@@ -389,7 +362,7 @@ function Forum() {
       console.log("Post updated:", updatedPost);
 
       setShowCreateModal(false);
-      setNewPost(buildEmptyPostTemplate(currentUser));
+      setNewPost({ ...emptyPostTemplate, user: newPost.user });
       setOriginalPost(null);
       setPrivacyConsent(false);
       setInputKey(Date.now());
@@ -582,7 +555,7 @@ function Forum() {
         animateIcon={animateIcon}
       />
 
-      <div className="flex flex-col md:flex-row gap-4 md:gap-5 px-4 sm:px-6 md:px-8 lg:px-12">
+      <div className="flex flex-col lg:flex-row gap-4 lg:gap-5 px-4 sm:px-6 md:px-8 lg:px-12">
         <Sidebar
           isMenuOpen={isMenuOpen}
           closeMenuImmediate={() => setIsMenuOpen(false)}
@@ -590,8 +563,8 @@ function Forum() {
         />
 
         <div
-          className={`transition-all duration-500 flex flex-col gap-4 sm:gap-6 w-full ${
-            !isMenuOpen ? "md:w-full" : "md:w-[calc(100%-260px)]"
+          className={`transition-all duration-300 flex flex-col gap-4 sm:gap-6 w-full ${
+            isMenuOpen ? "lg:w-[calc(100%-260px)]" : "lg:w-full"
           }`}
         >
           {/* Main Content */}
@@ -756,7 +729,7 @@ function Forum() {
                 </p>
                 <button
                   onClick={() => {
-                    setNewPost(buildEmptyPostTemplate(currentUser));
+                    setNewPost({ ...emptyPostTemplate, user: "You" });
                     setPrivacyConsent(false);
                     setInputKey(Date.now());
                     setShowCreateModal(true);

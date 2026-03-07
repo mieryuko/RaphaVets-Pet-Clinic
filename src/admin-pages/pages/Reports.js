@@ -11,10 +11,13 @@ import PetsReport from "../components/reports/PetsReport";
 import VisitsReport from "../components/reports/VisitsReport";
 import FeedbacksReport from "../components/reports/FeedbacksReport";
 import LostPetsReport from "../components/reports/LostPetsReport";
+import SuccessToast from "../../template/SuccessToast";
+import ErrorToast from "../../template/ErrorToast";
 
 const Reports = () => {
   const [dateRange, setDateRange] = useState({ start: null, end: null });
   const [isExporting, setIsExporting] = useState(false);
+  const [exportToast, setExportToast] = useState(null);
   const reportsRef = useRef(null);
 
   const handleDateRangeChange = (range) => {
@@ -52,8 +55,10 @@ const Reports = () => {
       
       pdf.addImage(imgData, 'PNG', 0, 0, canvas.width * 0.75, canvas.height * 0.75);
       pdf.save(`reports-${new Date().toISOString().split('T')[0]}.pdf`);
+      setExportToast({ type: 'success', message: 'PDF exported successfully!' });
     } catch (error) {
       console.error('Error generating PDF:', error);
+      setExportToast({ type: 'error', message: 'Failed to generate PDF. Please try again.' });
     } finally {
       setIsExporting(false);
     }
@@ -61,6 +66,8 @@ const Reports = () => {
 
   return (
     <div className="bg-gray-50 dark:bg-[#0B0B0B] p-6">
+      {exportToast?.type === 'success' && <SuccessToast message={exportToast.message} onClose={() => setExportToast(null)} />}
+      {exportToast?.type === 'error' && <ErrorToast message={exportToast.message} onClose={() => setExportToast(null)} />}
       <ChartConfig />
       
       {/* Header */}
