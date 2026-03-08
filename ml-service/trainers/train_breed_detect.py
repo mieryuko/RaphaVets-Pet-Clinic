@@ -78,6 +78,14 @@ def main():
     learn.export(export_path)
     print(f"Model exported to: {export_path}")
 
+    # ---------------------------
+    # 8️⃣ Clean up temporary files
+    # ---------------------------
+    model_pth = ml_service_root / "models" / "model.pth"
+    if model_pth.exists():
+        model_pth.unlink()
+        print(f"Deleted temporary file: {model_pth}")
+
 
 if __name__ == "__main__":
     main()
