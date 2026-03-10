@@ -165,6 +165,7 @@ def predict_dog(symptom_input: dict, top_k: int = 3):
 
     # Prepare DataFrame
     x_input = prepare_input(symptom_input)
+    assert x_input.shape[0] == 1, "Input DataFrame should have exactly one row"
 
     trained_cols = models[disease_columns[0]].feature_names_in_
     input_cols = x_input.columns
@@ -210,7 +211,7 @@ def predict_dog(symptom_input: dict, top_k: int = 3):
             continue  # Skip low-confidence predictions
 
         model = models[disease]           
-        weights = model.coef_
+        weights = model.coef_[0]  # Get the weights for the features
         formatted_disease = format_disease_output(disease)               
 
         contributions = {
