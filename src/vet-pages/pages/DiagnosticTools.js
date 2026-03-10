@@ -189,28 +189,6 @@ const DiagnosticTool = () => {
     }finally{
       setLoading(false);
     }
-    /*
-    setTimeout(() => {
-      const shouldShowNoDiagnosis = Math.random() > 0.7;
-
-      if (shouldShowNoDiagnosis) {
-        setDiagnosisResults({
-          inputSymptoms: selectedSymptoms,
-          species,
-          possibleDiagnoses: [],
-          analysisNotes: `Analyzed ${selectedSymptoms.length} symptom(s) but found no matching diagnoses.`,
-          noDiagnosisFound: true,
-        });
-      } else {
-        setDiagnosisResults({
-          inputSymptoms: selectedSymptoms,
-          species,
-          possibleDiagnoses: sampleDiagnoses,
-          analysisNotes: `Analyzed ${selectedSymptoms.length} symptom(s) using multiple regression model.`,
-          noDiagnosisFound: false,
-        });
-      }
-      */
   };
 
   const getConfidenceColor = (confidence) => {
@@ -220,9 +198,9 @@ const DiagnosticTool = () => {
   };
 
   const getConfidenceBar = (confidence) => {
-    if (confidence >= 80) return "bg-red-500";
-    if (confidence >= 50) return "bg-orange-500";
-    return "bg-yellow-500";
+    if (confidence >= 80) return "bg-green-500";
+    if (confidence >= 50) return "bg-yellow-500";
+    return "bg-red-500";
   };
 
   return (

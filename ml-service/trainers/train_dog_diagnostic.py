@@ -3,7 +3,9 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 from sklearn.linear_model import RidgeCV
+from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import RobustScaler
+from scipy.special import expit
 from sklearn.metrics import f1_score
 import joblib
 from pathlib import Path
@@ -48,30 +50,20 @@ for disease in disease_columns:
 # Train a separate model for each disease
 models = {}
 for disease in disease_columns:
-    alpha_values = [0.1, 1.0, 10.0]
-    model = RidgeCV(alphas=alpha_values, cv=5)
-    model.fit(X_train_scaled, y_train[disease], sample_weight=weights_dict[disease])
+    model = LogisticRegression(
+        class_weight='balanced', 
+        max_iter=1000, 
+        solver='liblinear'
+    )
+    model.fit(X_train_scaled, y_train[disease])
     models[disease] = model
 
 # Predict all diseases on test set
-y_pred = pd.DataFrame({
-    disease: model.predict(X_test_scaled)
-    for disease, model in models.items()
-})
-print("Predicted risk scores (before normalization):")
-print(y_pred.head())
-# Convert probabilities to binary labels using 0.5 threshold
-y_pred_binary = (y_pred >= 0.5).astype(int)
-print("Predicted binary labels:")
-print(y_pred_binary.head())
-
-f1_scores = {
-    disease: f1_score(y_test[disease], y_pred_binary[disease])
-    for disease in disease_columns
-}
-print("F1 Scores per disease:")
-print(f1_scores)
-
+for disease, model in models.items():
+    y_pred_proba = model.predict_proba(X_test_scaled)[:, 1]
+    y_pred_binary = (y_pred_proba >= 0.5).astype(int)
+    f1 = f1_score(y_test[disease], y_pred_binary)
+    print(f"{disease}: F1 Score = {f1:.4f}")
 
 # Save the model
 ml_service_root = Path(__file__).parent.parent

@@ -6,6 +6,7 @@ from pathlib import Path
 from model_state import dog_diagnostic_model, dog_diagnostic_model_load_error, dog_diagnostic_scaler, dog_diagnostic_scaler_load_error
 
 # Load symptom columns to match training
+DATASET_PATH = Path(__file__).resolve().parent.parent / "data" / "dog_disease_dataset.csv"
 df = pd.read_csv(DATASET_PATH)
 symptom_columns = [col for col in df.columns if col.startswith("symptom_")]
 disease_columns = [col for col in df.columns if col.startswith("disease_")]
@@ -183,11 +184,15 @@ def predict_dog(symptom_input: dict, top_k: int = 3):
     x_scaled = pd.DataFrame(scaler.transform(x_input), columns=symptom_columns)
     
     # Predict risk scores
-    y_pred_input = {disease: model.predict(x_scaled)[0] for disease, model in models.items()}
+    y_pred_input = {
+        disease: model.predict_proba(x_scaled)[0][1]
+        for disease, model in models.items()
+    }
     
     # Sort descending
     # Sort the predicted diseases by risk score in descending order
     sorted_predictions = pd.Series(y_pred_input).sort_values(ascending=False)
+    
 
     # Select the top 3 predictions
     top_k_diseases = sorted_predictions.index[:top_k]
@@ -198,8 +203,13 @@ def predict_dog(symptom_input: dict, top_k: int = 3):
 
     user_selected_set = set(symptom_input)
 
+    UNKNWN_THRESHOLD = 0.3
+
     top_k_results = []
     for disease, score in top_k_pairs:
+        if score < UNKNWN_THRESHOLD:
+            continue  # Skip low-confidence predictions
+
         model = models[disease]           
         weights = model.coef_
         formatted_disease = format_disease_output(disease)               
@@ -219,6 +229,13 @@ def predict_dog(symptom_input: dict, top_k: int = 3):
             "disease": formatted_disease,
             "risk_score": round(score * 100),
             "symptoms": matching_symptoms
+        })
+
+    if not top_k_results:
+        top_k_results.append({
+            "disease": "Unknown",
+            "risk_score": 0,
+            "symptoms": []
         })
 
     return top_k_results
