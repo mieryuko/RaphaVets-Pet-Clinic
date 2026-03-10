@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+import fastai, torch, torchvision, sklearn, numpy
 from routes import breed_router as breed
 from routes import disease_router as disease
 from fastapi.middleware.cors import CORSMiddleware
