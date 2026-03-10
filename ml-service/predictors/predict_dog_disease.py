@@ -6,7 +6,7 @@ from pathlib import Path
 from model_state import dog_diagnostic_model, dog_diagnostic_model_load_error, dog_diagnostic_scaler, dog_diagnostic_scaler_load_error
 
 # Load symptom columns to match training
-DATASET_PATH = Path(__file__).resolve().parent.parent / "data" / "dog_disease_dataset.csv"
+DATASET_PATH = Path(__file__).resolve().parent.parent / "datasets" / "dog_symptom_disease.csv"
 df = pd.read_csv(DATASET_PATH)
 symptom_columns = [col for col in df.columns if col.startswith("symptom_")]
 disease_columns = [col for col in df.columns if col.startswith("disease_")]
