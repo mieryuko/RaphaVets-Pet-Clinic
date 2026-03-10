@@ -39,7 +39,8 @@
     "local": "concurrently \"set PORT=3001 && npm run start\" \"cd backend && set PORT=5000 && npm run dev\"",
     "start-fastapi": "cd ml-service && venv\\Scripts\\python.exe -m uvicorn app:app --reload --port 5001",
     "start-node": "cd backend && npm run dev",
-    "start-all": "concurrently \"npm run start-fastapi\" \"npm run start-node\""
+    "start-all": "concurrently \"npm run start-fastapi\" \"npm run start-node\"",
+    "migrate": "node backend/scripts/runSqlFile.js backend/migrations/add_symptoms_tables.sql"
   },
   "eslintConfig": {
     "extends": [

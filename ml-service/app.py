@@ -5,6 +5,13 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="ML Service")
 
+# Print versions (for debugging)
+print("fastai:", fastai.__version__)
+print("torch:", torch.__version__)
+print("torchvision:", torchvision.__version__)
+print("scikit-learn:", sklearn.__version__)
+print("numpy:", numpy.__version__)
+
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,

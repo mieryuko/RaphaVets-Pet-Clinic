@@ -20,22 +20,32 @@ if (!dbUrl) {
 
 const resolvedPath = path.resolve(process.cwd(), inputPath);
 if (!fs.existsSync(resolvedPath)) {
-  console.error(`SQL file not found: ${resolvedPath}`);
+  console.error("SQL file not found: ${resolvedPath}");
   process.exit(1);
 }
 
 const sql = fs.readFileSync(resolvedPath, "utf8");
-const useSsl = ["true", "1", "yes"].includes(String(process.env.DB_SSL ?? "true").toLowerCase());
+const useSsl = ["true", "1", "yes"].includes(
+  String(process.env.DB_SSL ?? "true").toLowerCase()
+);
 
-const conn = await mysql.createConnection({
-  uri: dbUrl,
-  ssl: useSsl ? { rejectUnauthorized: false } : undefined,
-  multipleStatements: true,
-});
+let conn;
 
 try {
+  conn = await mysql.createConnection({
+    uri: dbUrl,
+    ssl: useSsl ? { rejectUnauthorized: false } : undefined,
+    multipleStatements: true,
+  });
+
   await conn.query(sql);
-  console.log(`Executed SQL file successfully: ${resolvedPath}`);
+  console.log("Executed SQL file successfully: ${resolvedPath}");
+} catch (error) {
+  console.error("Failed to execute SQL file.");
+  console.error(error.message);
+  if (error.code) console.error("Code:", error.code);
+  if (error.sqlMessage) console.error("SQL Message:", error.sqlMessage);
+  process.exit(1);
 } finally {
-  await conn.end();
+  if (conn) await conn.end();
 }

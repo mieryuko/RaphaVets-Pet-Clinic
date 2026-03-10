@@ -1,5 +1,5 @@
 [variables]
-NIXPACKS_PYTHON_VERSION = "3.10.11"
+NIXPACKS_PYTHON_VERSION = "3.11"
 
 [start]
 # Use gunicorn with uvicorn workers for production. Adjust workers based on available RAM.
