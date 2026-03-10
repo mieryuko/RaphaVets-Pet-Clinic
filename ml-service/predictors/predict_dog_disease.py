@@ -36,8 +36,7 @@ system_definitions = {
     },
     "Gastrointestinal": {
         "symptoms": [
-            "enlarged_liver", "yellow_gums", "loss_of_appetite",
-            "eating_less_than_usual", "vomiting", "diarrhea",
+            "enlarged_liver", "yellow_gums", "vomiting", "diarrhea",
             "bloated_stomach", "burping", "passing_gases",
             "constipation", "eating_grass", "purging", "abdominal_pain"
         ],

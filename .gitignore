@@ -6,7 +6,8 @@
 .pnp.js
 
 #python environment
-venv/
+venv310/
+venv_prod/
 __pycache__/
 *.pyc
 

@@ -1,14 +1,18 @@
---extra-index-url https://download.pytorch.org/whl/cpu
+# Core ML stack
+fastai==2.8.7
+torch==2.3.1+cpu
+torchvision==0.18.1+cpu
+scikit-learn==1.8.0
+numpy==1.26.4
+pandas==2.1.1
+pillow==10.4.0
 
+# FastAPI stack
 fastapi==0.129.0
 uvicorn[standard]==0.41.0
 python-multipart==0.0.22
 ipython==8.38.0
-
-fastai==2.8.7
-numpy==1.26.4
-pillow==10.4.0
-
-torch==2.3.1+cpu
 gunicorn==21.2.0
-torchvision==0.18.1+cpu
+
+# Extra index for PyTorch CPU wheels
+--extra-index-url https://download.pytorch.org/whl/cpu

@@ -9,7 +9,6 @@ import joblib
 from pathlib import Path
 
 df = pd.read_csv("../datasets/dog_symptom_disease.csv")
-df.drop_duplicates()
 
 # Prepare features and targets
 # Features = all columns starting with "symptom_"

@@ -39,7 +39,7 @@ def main():
         batch_tfms=aug_transforms(size=224)
     )
 
-    dls = dblock.dataloaders(path/'images', bs=32, num_workers=0)
+    dls = dblock.dataloaders(path/'images', bs=32, num_workers=6)
     dls.show_batch(max_n=4, figsize=(8,8))
 
     # ---------------------------
