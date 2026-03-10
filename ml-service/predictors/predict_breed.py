@@ -25,7 +25,29 @@ def get_learner():
         )
 
     try:
+        # ------------------------------
+        # Patch WindowsPath for Linux
+        # ------------------------------
+        import pickle
+        from pathlib import PureWindowsPath, Path
+
+        class WindowsPathFix(PureWindowsPath):
+            def __new__(cls, *args, **kwargs):
+                return Path(*args)
+
+        _pickle_load_orig = pickle.load
+
+        def patched_pickle_load(f, *args, **kwargs):
+            return _pickle_load_orig(f, *args, **kwargs)
+
+        pickle.load = patched_pickle_load
+        # ------------------------------
+
+        # Load the learner
         learn = load_learner(MODEL_PATH)
+        # Optionally, re-export to fix paths permanently
+        learn.export(MODEL_PATH)
+
         return learn
     except Exception as error:
         model_load_error = str(error)
