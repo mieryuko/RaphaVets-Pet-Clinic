@@ -131,6 +131,7 @@ const DiagnosticTool = () => {
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [toast, setToast] = useState(null);
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
 
   const fetchSymptomByCategories = async (species) => {
     try {
@@ -378,6 +379,7 @@ const DiagnosticTool = () => {
           ))}
 
           {/* Analyze Button */}
+          {/*}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4">
             <button
               onClick={analyzeSymptoms}
@@ -399,6 +401,7 @@ const DiagnosticTool = () => {
               )}
             </button>
           </div>
+          */}
         </div>
 
         {/* RIGHT: Sticky info panel — never scrolls */}
@@ -452,11 +455,12 @@ const DiagnosticTool = () => {
           </div>
 
           {/* Selected Symptoms Preview */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 flex flex-col flex-1 min-h-0 overflow-hidden">
+          {/* Selected Symptoms Preview */}
+          {/* Selected Symptoms Preview */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 flex flex-col flex-1 min-h-0">
+            {/* Header */}
             <div className="flex items-center justify-between mb-3 flex-shrink-0">
-              <h3 className="text-sm font-semibold text-gray-800">
-                Selected Symptoms
-              </h3>
+              <h3 className="text-sm font-semibold text-gray-800">Selected Symptoms</h3>
               {selectedSymptoms.length > 0 && (
                 <span className="text-xs text-gray-400">
                   {selectedSymptoms.length} symptom
@@ -464,32 +468,125 @@ const DiagnosticTool = () => {
                 </span>
               )}
             </div>
+
+            {/* No symptoms selected */}
             {selectedSymptoms.length === 0 ? (
               <div className="flex-1 flex flex-col items-center justify-center py-6 text-center">
                 <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center mb-2">
                   <CheckCircle className="w-5 h-5 text-gray-300" />
                 </div>
-                <p className="text-xs text-gray-400">
-                  No symptoms selected yet
-                </p>
+                <p className="text-xs text-gray-400">No symptoms selected yet</p>
               </div>
             ) : (
-              <div className="overflow-y-auto flex-1">
-                <div className="flex flex-wrap gap-1.5">
-                  {selectedSymptoms.map((s) => (
+              <div className="flex-1 flex flex-col overflow-y-auto gap-2">
+                {/* Single line chips */}
+                <div className="relative">
+                  <div className="flex items-center gap-1.5 overflow-hidden whitespace-nowrap">
+                    {selectedSymptoms.map((s) => (
+                      <button
+                        key={s.feature_name}
+                        onClick={() => toggleSymptom(s)}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#5EE6FE]/10 text-[#5EE6FE] border border-[#5EE6FE]/20 rounded-full text-xs font-medium hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition group"
+                        title="Click to remove"
+                      >
+                        {s.symptom_name}
+                        <span className="opacity-0 group-hover:opacity-100 transition ml-0.5">×</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Gradient fade and ellipsis */}
+                  <div className="absolute right-0 top-0 bottom-0 flex items-center">
+                    <div className="w-12 h-full bg-gradient-to-l from-white via-white to-transparent pointer-events-none" />
                     <button
-                      key={s.feature_name}
-                      onClick={() => toggleSymptom(s)}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#5EE6FE]/10 text-[#5EE6FE] border border-[#5EE6FE]/20 rounded-full text-xs font-medium hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition group"
-                      title="Click to remove"
+                      onClick={() => setIsPopupOpen(!isPopupOpen)}
+                      className="relative ml-auto bg-white rounded-full w-8 h-8 flex items-center justify-center shadow-md border border-gray-200 hover:bg-gray-50 transition z-10"
+                      title="View all symptoms"
                     >
-                      {s.symptom_name}
-                      <span className="opacity-0 group-hover:opacity-100 transition ml-0.5">
-                        ×
-                      </span>
+                      <span className="text-sm font-medium text-gray-600">...</span>
                     </button>
-                  ))}
+                  </div>
                 </div>
+
+                {/* Mini Popup Screen */}
+                {isPopupOpen && (
+                  <>
+                    {/* Backdrop */}
+                    <div 
+                      className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50"
+                      onClick={() => setIsPopupOpen(false)}
+                    />
+                    
+                    {/* Popup Card */}
+                    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-72 bg-white rounded-xl shadow-2xl z-50 overflow-hidden border border-gray-200">
+                      {/* Popup Header */}
+                      <div className="flex items-center justify-between px-4 py-3 bg-gray-50 border-b border-gray-200">
+                        <h4 className="font-semibold text-sm text-gray-700">Selected Symptoms</h4>
+                        <span className="text-xs text-gray-500">{selectedSymptoms.length} total</span>
+                        <button 
+                          onClick={() => setIsPopupOpen(false)}
+                          className="text-gray-400 hover:text-gray-600"
+                        >
+                          <span className="text-lg">×</span>
+                        </button>
+                      </div>
+                      
+                      {/* Popup Content */}
+                      <div className="p-4 max-h-64 overflow-y-auto">
+                        <div className="flex flex-wrap gap-2">
+                          {selectedSymptoms.map((s) => (
+                            <button
+                              key={s.feature_name}
+                              onClick={() => {
+                                toggleSymptom(s);
+                                // Optional: keep popup open or close it?
+                                // setIsPopupOpen(false);
+                              }}
+                              className="inline-flex items-center gap-1 px-3 py-1.5 bg-[#5EE6FE]/10 text-[#5EE6FE] border border-[#5EE6FE]/20 rounded-full text-xs font-medium hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition group"
+                            >
+                              {s.symptom_name}
+                              <span className="opacity-0 group-hover:opacity-100 transition ml-0.5">×</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      {/* Popup Footer */}
+                      <div className="px-4 py-3 bg-gray-50 border-t border-gray-200">
+                        <button
+                          onClick={() => {
+                            analyzeSymptoms();
+                            setIsPopupOpen(false);
+                          }}
+                          className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-[#5EE6FE] text-white hover:bg-[#4dd5ed] transition font-medium text-sm"
+                        >
+                          <Brain className="w-4 h-4" />
+                          Analyze
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* Analyze Button */}
+                <button
+                  onClick={analyzeSymptoms}
+                  disabled={loading || selectedSymptoms.length === 0}
+                  className="mt-3 w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#5EE6FE] text-white hover:bg-[#4dd5ed] transition font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                >
+                  {loading ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Analyzing...
+                    </>
+                  ) : (
+                    <>
+                      <Brain className="w-4 h-4" />
+                      Analyze Symptoms
+                      {selectedSymptoms.length > 0 && ` (${selectedSymptoms.length})`}
+                    </>
+                  )}
+                </button>
               </div>
             )}
           </div>
