@@ -267,8 +267,6 @@ const AddAppointment = () => {
     };
   }, []);
 
-  useEffect(() => console.log("Owners updated: ", owners),[owners]);
-  useEffect(() => console.log("pets updated: ", pets), [pets]);
 
   useEffect(() => {
     if (currentStep !== 2) return;
@@ -453,7 +451,6 @@ const AddAppointment = () => {
     };
 
     // In real app, you would send this to backend
-    console.log("New pet created:", newPetData);
 
     setAppointmentData(prev => ({ ...prev, pet: newPetData }));
     setShowNewPetForm(false);
@@ -499,7 +496,6 @@ const AddAppointment = () => {
         s => s.label === appointmentData.serviceType
       );
 
-      console.log("Service selected: ", serviceSelected);
 
       const payload = {
         userID: appointmentData.user.id,
@@ -518,7 +514,6 @@ const AddAppointment = () => {
       console.error("Booking error: ", err.message);
     }
     // In real app, you would send this to backend
-    console.log("Final appointment data:", appointmentData);
     
     // Show success page instead of toast
     setCurrentStep(5); // Go to success page

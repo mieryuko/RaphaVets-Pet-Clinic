@@ -128,10 +128,8 @@ function Forum() {
     try {
       const res = await api.get("/forum");
       const data = res.data.posts;
-      console.log("Raw Image Data", data[0]?.images);
       setPosts(data);
       const message = res.data.message || "✅ Forum posts fetched successfully.";
-      console.log(message);
     } catch (err) {
       const message = err.response?.data?.message || "❌ Error fetching forum posts.";
       console.error(message);
@@ -142,10 +140,8 @@ function Forum() {
   // 🔌 REAL-TIME SOCKET LISTENER FOR NEW POSTS
   // ===========================================
   useEffect(() => {
-    console.log("🔌 Setting up real-time forum post listener...");
 
     socket.on("new_forum_post", (newPost) => {
-      console.log("📢 [Socket] New real-time post received:", newPost);
 
       setPosts((prevPosts) => [newPost, ...prevPosts]);
 
@@ -158,7 +154,6 @@ function Forum() {
     });
 
     socket.on("delete_forum_post", ({ postId }) => {
-      console.log("🗑️ [Socket] Post deleted:", postId);
 
       setPosts((prevPosts) => prevPosts.filter((post) => post.id !== postId));
 
@@ -169,7 +164,6 @@ function Forum() {
     });
 
     return () => {
-      console.log("🔌 Cleaning up real-time forum post listener");
       socket.off("new_forum_post");
       socket.off("delete_forum_post");
     };
@@ -293,7 +287,6 @@ function Forum() {
         });
 
         const createdPost = res.data;
-        console.log("Post created:", createdPost);
 
         setShowCreateModal(false);
         setNewPost({ ...emptyPostTemplate, user: newPost.user });
@@ -359,7 +352,6 @@ function Forum() {
       });
 
       const updatedPost = res.data;
-      console.log("Post updated:", updatedPost);
 
       setShowCreateModal(false);
       setNewPost({ ...emptyPostTemplate, user: newPost.user });

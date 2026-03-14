@@ -21,7 +21,6 @@ function FloatingChatBox({ type, onClose }) {
     const fetchHistory = async () => {
       try {
         const { data } = await api.get("/chatbot/history");
-        console.log(data);
         if (data.length > 0) {
           setMessages(convertTimestamps(data));
         } else {

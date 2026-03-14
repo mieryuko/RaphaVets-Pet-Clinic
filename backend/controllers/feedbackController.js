@@ -25,7 +25,6 @@ export const createFeedback = async (req, res) => {
     });
 
     const cleanedMessage = result.processedText;
-    console.log("Original:", message, "Cleaned:", cleanedMessage);
     try {
         const queryString = `INSERT INTO feedbacks_tbl (accID, rating, message, isAnonymous) VALUES (?, ?, ?, ?)`;
         const [result] = await db.query(queryString, [accID, rating, cleanedMessage, isAnonymous]);

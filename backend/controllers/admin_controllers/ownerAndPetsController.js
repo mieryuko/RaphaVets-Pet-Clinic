@@ -169,10 +169,8 @@ const normalizeToLocalPhone = (rawValue) => {
         ]
       );
 
-      console.log("REQ BODY:", req.body);
       const petData = req.body;
 
-  console.log("Saving pet data:", petData);
 
       try {
         const io = getIO();
@@ -198,7 +196,6 @@ const normalizeToLocalPhone = (rawValue) => {
       res.status(201).json({ message: "Pet created successfully", petId: result.insertId });
 
     } catch (err) {
-      console.log("REQ BODY:", req.body);
 
       console.error("Error creating pet:", err);
       res.status(500).json({ message: "Server error", error: err.message });
@@ -303,7 +300,6 @@ export const createOwner = async (req, res) => {
         return res.status(409).json({ message: "Email is already in use." });
       }
 
-      console.log(`⚠️ Found deleted account with email ${normalizedEmail}. Proceeding with client recreation.`);
     }
 
     // Generate random password
@@ -373,7 +369,6 @@ export const createOwner = async (req, res) => {
           [oldAccId, sex || null, dob || null, normalizedAddress, normalizedPhone]
         );
         
-        console.log(`✅ Reactivated deleted account with ID: ${oldAccId}`);
         
       } else {
         // Create new account
@@ -479,7 +474,6 @@ export const createOwner = async (req, res) => {
             return;
           }
 
-          console.log(`📧 Queueing owner credentials email to ${normalizedEmail}`);
           const info = await sendResendEmail({
             from: getDefaultFromAddress(),
             to: normalizedEmail,
@@ -524,11 +518,6 @@ export const createOwner = async (req, res) => {
                 </div>
               </div>
             `
-          });
-
-          console.log('✅ Login credentials email sent', {
-            to: normalizedEmail,
-            emailId: info?.id,
           });
         } catch (emailError) {
           console.error('❌ Failed to send email:', emailError);

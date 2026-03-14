@@ -55,12 +55,9 @@ export const getMedicalRecordsByUser = async (req, res) => {
       ORDER BY pm.uploadedOn DESC
     `;
     
-    console.log('🔍 Executing query for user:', accID, 'recordType:', recordType);
-    console.log('📊 Query:', query);
     
     const [records] = await db.execute(query, [accID]);
     
-    console.log('✅ Records found:', records);
     
     res.json({
       success: true,
@@ -137,12 +134,9 @@ export const getMedicalRecordsByPet = async (req, res) => {
       ORDER BY pm.uploadedOn DESC
     `;
     
-    console.log('🔍 Executing query for pet:', petID, 'recordType:', recordType);
-    console.log('📊 Query:', query);
     
     const [records] = await db.execute(query, [petID]);
     
-    console.log('✅ Records found for pet:', records);
     
     res.json({
       success: true,
@@ -169,7 +163,6 @@ export const downloadMedicalRecord = async (req, res) => {
     const requesterId = Number(req.user?.id);
     const requesterRole = Number(req.user?.role || 0);
     
-    console.log("🔍 Download request for file ref:", fileRef);
     
     const queryById = `
       SELECT pmf.originalName, pmf.storedName, pmf.filePath, p.accID
@@ -198,10 +191,8 @@ export const downloadMedicalRecord = async (req, res) => {
       files = rows;
     }
     
-    console.log("📁 Files found:", files);
     
     if (files.length === 0) {
-      console.log("❌ No file found for ref:", fileRef);
       return res.status(404).json({
         success: false,
         message: 'File not found'
@@ -209,7 +200,6 @@ export const downloadMedicalRecord = async (req, res) => {
     }
     
     const file = files[0];
-    console.log("📄 File details:", file);
 
     if (!isStaffRole(requesterRole) && Number(file.accID) !== requesterId) {
       return res.status(403).json({
@@ -261,7 +251,6 @@ export const downloadMedicalRecord = async (req, res) => {
 // Debug route to check all records
 export const debugAllRecords = async (req, res) => {
   try {
-    console.log('🔧 DEBUG: Checking all medical records in database');
     
     // Check all petmedical records
     const [allRecords] = await db.execute(`
@@ -287,8 +276,6 @@ export const debugAllRecords = async (req, res) => {
       SELECT * FROM petmedical_file_tbl WHERE isDeleted = 0
     `);
     
-    console.log('📋 All medical records:', allRecords);
-    console.log('📁 All files:', allFiles);
     
     res.json({
       success: true,
@@ -315,7 +302,6 @@ export const debugUserRecords = async (req, res) => {
   try {
     const { accID } = req.params;
     
-    console.log(`🔧 DEBUG: Checking records for user ${accID}`);
     
     // Get user's pets
     const [userPets] = await db.execute(`
@@ -323,7 +309,6 @@ export const debugUserRecords = async (req, res) => {
       WHERE accID = ? AND isDeleted = 0
     `, [accID]);
     
-    console.log(`🐕 User ${accID} pets:`, userPets);
     
     // Get records for each pet
     const userRecords = [];
@@ -335,7 +320,6 @@ export const debugUserRecords = async (req, res) => {
         WHERE pm.petID = ? AND pm.isDeleted = 0
       `, [pet.petID]);
       
-      console.log(`📄 Records for pet ${pet.petName}:`, petRecords);
       userRecords.push(...petRecords);
     }
     

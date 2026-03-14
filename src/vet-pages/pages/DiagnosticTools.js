@@ -142,7 +142,6 @@ const DiagnosticTool = () => {
 
       setSymptomCategories(coloredData);
       // Process the fetched data as needed
-      console.log("Fetched symptom categories:", data);
     } catch (error) {
       console.error("Error fetching symptoms:", error);
       setToast({
@@ -206,7 +205,6 @@ const DiagnosticTool = () => {
         species,
         symptoms: payload,
       });
-      console.log("ML response:", res.data);
 
       setDiagnosisResults({
         inputSymptoms: selectedSymptoms,

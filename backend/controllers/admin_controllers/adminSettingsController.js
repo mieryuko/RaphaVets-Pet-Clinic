@@ -175,7 +175,6 @@ export const createAdminSettingsUser = async (req, res) => {
       }
       
       // If account exists but IS deleted, we can proceed with reactivation
-      console.log(`⚠️ Found deleted account with email ${safeEmail}. Proceeding with reactivation.`);
     }
 
     const plainPassword = generateRandomPassword(10);
@@ -256,7 +255,6 @@ export const createAdminSettingsUser = async (req, res) => {
           }
         }
         
-        console.log(`✅ Reactivated deleted account with ID: ${oldAccId}`);
         
       } else {
         // Create new account
@@ -296,7 +294,6 @@ export const createAdminSettingsUser = async (req, res) => {
     const emailConfigured = isResendConfigured();
 
     if (emailConfigured) {
-      console.log(`📧 Queueing admin settings email to ${safeEmail}`);
       setImmediate(async () => {
         try {
           const info = await sendResendEmail({
@@ -310,10 +307,6 @@ export const createAdminSettingsUser = async (req, res) => {
               <p><strong>Temporary Password:</strong> ${plainPassword}</p>
               <p>Please change your password after your first login.</p>
             `,
-          });
-          console.log('✅ Account email sent', {
-            to: safeEmail,
-            emailId: info?.id,
           });
         } catch (mailError) {
           console.error('Failed to send account email:', mailError);

@@ -180,7 +180,6 @@ export const getChatHistory = async (req, res) => {
     }));
 
     res.json(messages);
-    console.log(messages);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to load chat history" });

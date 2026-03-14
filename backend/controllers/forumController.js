@@ -154,7 +154,6 @@ export const createPost = async (req, res) => {
         // Get socket instance and emit to ALL connected clients
         const io = req.app.get('io');
         io.emit('new_forum_post', formattedPost);
-        console.log('📢 [createPost] Real-time post emitted to all clients');
 
       } catch (socketError) {
         console.error('⚠️ [createPost] Failed to emit real-time post:', socketError);
@@ -165,7 +164,6 @@ export const createPost = async (req, res) => {
       // 🔔 TRIGGER NOTIFICATION
       // ===========================================
       try {
-          console.log('🔔 [createPost] Triggering notification for new forum post...');
           
           // Create a mock request for the notification controller
           const notifReq = {
@@ -183,14 +181,12 @@ export const createPost = async (req, res) => {
           const notifRes = {
               status: (code) => ({
                   json: (data) => {
-                      console.log(`🔔 [createPost] Notification response (${code}):`, data);
                   }
               })
           };
 
           // Call the notification controller
           await createForumPostNotification(notifReq, notifRes);
-          console.log('✅ [createPost] Notification triggered successfully');
           
       } catch (notifError) {
           // Log but don't fail the main request if notification fails
@@ -382,11 +378,7 @@ export const updatePost = async (req, res) => {
         forumID
       );
       const existingCount = forumImageCount[0].imageCount;
-      console.log("Existing images: ", existingCount);
-      console.log("Deleting images: ", deletedArray.length);
-      console.log("New Images: ", newImages.length);
       const remainingImages = existingCount - deletedArray.length + newImages.length;
-      console.log("remainingImages: ", remainingImages)
       if (remainingImages < 1){
         return res.status(400).json({ message: "❌ Please provide at least 1 image" });
       }
@@ -412,7 +404,6 @@ export const updatePost = async (req, res) => {
                     if (err) {
                       console.error(`❌ Error deleting image file ${imageName}:`, err);
                     } else {
-                      console.log(`✅ Deleted image file: ${imageName}`);
                     }
                   });
                 }
@@ -503,7 +494,6 @@ export const updatePost = async (req, res) => {
         // Get socket instance and emit to ALL connected clients
         const io = req.app.get('io');
         io.emit('update_forum_post', formattedPost);
-        console.log(`📢 [updatePost] Real-time update emitted for post ID: ${forumID}`);
 
       } catch (socketError) {
         console.error('⚠️ [updatePost] Failed to emit real-time update:', socketError);
@@ -557,7 +547,6 @@ export const deletePost = async (req, res) => {
               await dbConn.rollback();
               return res.status(500).json({ message: "❌ Error deleting image file: " + err.message });
             } else {
-              console.log(`✅ Deleted image file: ${img.imageName}`);
             }
           });
         }
@@ -569,14 +558,12 @@ export const deletePost = async (req, res) => {
         try {
             const io = req.app.get('io');
             io.emit('delete_forum_post', { postId: parseInt(forumID) });
-            console.log(`📢 [deletePost] Real-time deletion emitted for post ID: ${forumID}`);
         } catch (socketError) {
             console.error('⚠️ [deletePost] Failed to emit real-time deletion:', socketError);
         }
 
         try {
           const removalResult = await removeNotificationsByReference('forum_posts_tbl', parseInt(forumID));
-          console.log('🧹 [deletePost] Notification cleanup result:', removalResult);
         } catch (notifCleanupError) {
           console.error('⚠️ [deletePost] Failed notification cleanup:', notifCleanupError);
         }

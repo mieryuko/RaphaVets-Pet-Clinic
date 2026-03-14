@@ -39,7 +39,6 @@ try {
   });
 
   await conn.query(sql);
-  console.log("Executed SQL file successfully: ${resolvedPath}");
 } catch (error) {
   console.error("Failed to execute SQL file.");
   console.error(error.message);

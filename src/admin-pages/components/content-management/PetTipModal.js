@@ -84,11 +84,6 @@ const PetTipModal = ({
   const getStatusIdFromItem = (item) => {
     if (!item) return 1;
     
-    console.log('Getting status ID from item:', {
-      pubStatusID: item.pubStatusID,
-      status: item.status
-    });
-    
     // Priority 1: Use pubStatusID if available
     if (item.pubStatusID) {
       return item.pubStatusID;
@@ -102,7 +97,6 @@ const PetTipModal = ({
         "Archived": 3
       };
       const mappedId = statusMap[item.status];
-      console.log(`Mapped status "${item.status}" to ID:`, mappedId);
       return mappedId || 1;
     }
     
@@ -113,11 +107,6 @@ const PetTipModal = ({
   // Helper function to get icon ID from item
   const getIconIdFromItem = (item, icons) => {
     if (!item) return icons?.[0]?.id?.toString() || "";
-    
-    console.log('Getting icon ID from item:', {
-      iconID: item.iconID,
-      icon: item.icon
-    });
     
     // Priority 1: Use iconID if available
     if (item.iconID) {
@@ -132,11 +121,8 @@ const PetTipModal = ({
         icon.name === item.icon
       );
       if (matchingIcon) {
-        console.log(`Mapped icon "${item.icon}" to ID:`, matchingIcon.id);
         return matchingIcon.id.toString();
       } else {
-        console.log(`No matching icon found for: "${item.icon}"`);
-        console.log('Available icons:', icons.map(i => ({ id: i.id, name: i.iconName, key: i.iconKey })));
       }
     }
     
@@ -153,11 +139,6 @@ const PetTipModal = ({
   const getCategoryIdFromItem = (item, categories) => {
     if (!item) return categories?.[0]?.id?.toString() || "";
     
-    console.log('Getting category ID from item:', {
-      petCareCategoryID: item.petCareCategoryID,
-      category: item.category
-    });
-    
     // Priority 1: Use petCareCategoryID if available
     if (item.petCareCategoryID) {
       return item.petCareCategoryID.toString();
@@ -170,11 +151,8 @@ const PetTipModal = ({
         cat.categoryName === item.category
       );
       if (matchingCategory) {
-        console.log(`Mapped category "${item.category}" to ID:`, matchingCategory.id);
         return matchingCategory.id.toString();
       } else {
-        console.log(`No matching category found for: "${item.category}"`);
-        console.log('Available categories:', categories.map(c => ({ id: c.id, name: c.name })));
       }
     }
     
@@ -189,32 +167,14 @@ const PetTipModal = ({
 
   // Initialize form data when item or props change
   useEffect(() => {
-    console.log('=== INITIALIZING PET TIP MODAL ===');
-    console.log('Item:', item);
-    console.log('Item iconID:', item?.iconID);
-    console.log('Item icon:', item?.icon);
-    console.log('Item petCareCategoryID:', item?.petCareCategoryID);
-    console.log('Item category:', item?.category);
-    console.log('Item pubStatusID:', item?.pubStatusID);
-    console.log('Item status:', item?.status);
-    console.log('Available icons:', icons);
-    console.log('Available categories:', categories);
-    console.log('Available publicationStatuses:', publicationStatuses);
 
     if (item) {
       // Editing existing item - use the item's actual values
-      console.log('=== EDITING MODE ===');
 
       // Get the correct values
       const initialIconID = getIconIdFromItem(item, icons);
       const initialPubStatusID = getStatusIdFromItem(item);
       const initialCategoryID = getCategoryIdFromItem(item, categories);
-
-      console.log('Determined values:', {
-        iconID: initialIconID,
-        pubStatusID: initialPubStatusID,
-        categoryID: initialCategoryID
-      });
 
       setFormData({
         title: item.title || "",
@@ -229,16 +189,9 @@ const PetTipModal = ({
       
       setSelectedIcon(initialIconID);
       setShowNewCategory(false);
-      
-      console.log('=== FINAL FORM DATA SET ===', {
-        iconID: initialIconID,
-        petCareCategoryID: initialCategoryID,
-        pubStatusID: initialPubStatusID
-      });
 
     } else {
       // Creating new item - use defaults only if props are available
-      console.log('=== CREATING NEW ITEM ===');
       const defaultIconID = icons?.[0]?.id ? icons[0].id.toString() : "";
       const defaultCategoryID = categories?.[0]?.id ? categories[0].id.toString() : "";
       
@@ -261,18 +214,13 @@ const PetTipModal = ({
   const createNewCategory = async (categoryName) => {
     try {
       setCategoryLoading(true);
-      console.log('=== DEBUG CATEGORY CREATION ===');
-      console.log('Category name to create:', categoryName);
       
       const response = await api.post('/admin/content/pet-care-tips/createCategory', {
         categoryName: categoryName.trim()
       });
 
-      console.log('Category creation API response:', response);
-      console.log('Response data:', response.data);
 
       if (response.data.success) {
-        console.log('New category created successfully:', response.data.data);
         if (onNewCategoryCreated) {
           onNewCategoryCreated(response.data.data);
         }
@@ -295,10 +243,6 @@ const PetTipModal = ({
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    console.log('=== DEBUG PETTIPMODAL SUBMIT ===');
-    console.log('Form data state:', formData);
-    console.log('Selected icon:', selectedIcon);
-    console.log('Show new category:', showNewCategory);
 
     // Validate required fields
     const requiredFields = {
@@ -348,9 +292,7 @@ const PetTipModal = ({
 
       // If creating a new category, create it first
       if (showNewCategory && formData.newCategory.trim()) {
-        console.log('Creating new category:', formData.newCategory);
         const newCategory = await createNewCategory(formData.newCategory);
-        console.log('New category result:', newCategory);
         
         // Double-check the category ID
         if (!newCategory || !newCategory.id) {
@@ -358,14 +300,10 @@ const PetTipModal = ({
         }
         
         finalCategoryID = newCategory.id;
-        console.log('Using new category ID:', finalCategoryID);
       } else {
         finalCategoryID = formData.petCareCategoryID;
-        console.log('Using existing category ID:', finalCategoryID);
       }
 
-      console.log('Final category ID:', finalCategoryID);
-      console.log('Final category ID type:', typeof finalCategoryID);
 
       // Validate finalCategoryID
       if (!finalCategoryID || isNaN(parseInt(finalCategoryID))) {
@@ -385,7 +323,6 @@ const PetTipModal = ({
         pubStatusID: parseInt(formData.pubStatusID)
       };
 
-      console.log('Final submit data:', submitData);
 
       // Validate all numbers are valid
       if (isNaN(submitData.iconID)) {
@@ -398,7 +335,6 @@ const PetTipModal = ({
         throw new Error('Invalid publication status ID');
       }
 
-      console.log('All data validated, calling onSave...');
       onSave(submitData);
 
     } catch (error) {
@@ -408,13 +344,11 @@ const PetTipModal = ({
   };
 
   const handleIconSelect = (iconId) => {
-    console.log('Icon selected:', iconId);
     setSelectedIcon(iconId);
     setFormData(prev => ({ ...prev, iconID: iconId }));
   };
 
   const handleStatusChange = (statusId) => {
-    console.log('Status changed to:', statusId);
     setFormData(prev => ({ ...prev, pubStatusID: statusId }));
   };
 
@@ -462,20 +396,12 @@ const PetTipModal = ({
       );
     }
 
-    console.log('Rendering icon grid - selectedIcon:', selectedIcon);
-    console.log('Available icons for grid:', icons.map(i => ({ 
-      id: i.id, 
-      name: i.iconName, 
-      selected: parseInt(selectedIcon) === i.id 
-    })));
-
     return (
       <div className="grid grid-cols-5 gap-3">
         {icons.map((icon) => {
           const IconComponent = getIconComponent(icon.iconKey);
           const isSelected = parseInt(selectedIcon) === icon.id;
           
-          console.log(`Icon ${icon.id} (${icon.iconName}): selected=${isSelected}, current selected=${selectedIcon}`);
           
           return (
             <button
@@ -514,19 +440,11 @@ const PetTipModal = ({
       );
     }
 
-    console.log('Rendering status buttons - current pubStatusID:', formData.pubStatusID);
-    console.log('Available statuses:', publicationStatuses.map(s => ({ 
-      id: s.id, 
-      name: s.name, 
-      selected: formData.pubStatusID === s.id 
-    })));
-
     return (
       <div className="grid grid-cols-3 gap-3">
         {publicationStatuses.map((status) => {
           const isSelected = formData.pubStatusID === status.id;
           
-          console.log(`Status ${status.id}: ${status.name}, selected: ${isSelected}, current status: ${formData.pubStatusID}`);
           
           return (
             <button
@@ -564,13 +482,6 @@ const PetTipModal = ({
 
   // Category rendering with toggle
   const renderCategorySelect = () => {
-    console.log('Rendering category select - current categoryID:', formData.petCareCategoryID);
-    console.log('Available categories:', categories?.map(c => ({ 
-      id: c.id, 
-      name: c.name, 
-      selected: formData.petCareCategoryID === c.id.toString() 
-    })));
-
     return (
       <div className="flex space-x-2">
         {showNewCategory ? (
@@ -593,7 +504,6 @@ const PetTipModal = ({
             <option value="">Select category</option>
             {categories?.map((cat) => {
               const isSelected = formData.petCareCategoryID === cat.id.toString();
-              console.log(`Category ${cat.id} (${cat.name}): selected=${isSelected}`);
               return (
                 <option key={cat.id} value={cat.id}>
                   {cat.name}

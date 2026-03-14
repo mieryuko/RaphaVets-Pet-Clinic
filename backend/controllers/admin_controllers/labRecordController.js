@@ -167,7 +167,6 @@ export const uploadMedicalRecord = async (req, res) => {
           // Emit to the specific user room
           io.to(`user_${petOwnerId}`).emit('new_medical_record', recordData);
           
-          console.log(`📡 Socket event emitted to user_${petOwnerId}:`, recordData);
         }
       }
     } catch (socketError) {
@@ -178,7 +177,6 @@ export const uploadMedicalRecord = async (req, res) => {
     // 🔔 TRIGGER NOTIFICATION for new medical record
     // ===========================================
     try {
-      console.log('🔔 [uploadMedicalRecord] Triggering notification for pet owner:', petOwnerId);
       
       const notifReq = {
         body: {
@@ -193,13 +191,11 @@ export const uploadMedicalRecord = async (req, res) => {
       const notifRes = {
         status: (code) => ({
           json: (data) => {
-            console.log(`🔔 [uploadMedicalRecord] Notification response (${code}):`, data);
           }
         })
       };
 
       await createMedicalRecordNotification(notifReq, notifRes);
-      console.log('✅ [uploadMedicalRecord] Notification triggered successfully for pet owner:', petOwnerId);
       
     } catch (notifError) {
       console.error('⚠️ [uploadMedicalRecord] Failed to send notification:', notifError);
@@ -534,7 +530,6 @@ export const updateMedicalRecord = async (req, res) => {
 
         if (updatedRecord.length > 0) {
           io.to(`user_${petOwnerId}`).emit('medical_record_updated', updatedRecord[0]);
-          console.log(`📡 Socket update event emitted to user_${petOwnerId}`);
         }
       }
     } catch (socketError) {
@@ -622,7 +617,6 @@ export const deleteMedicalRecord = async (req, res) => {
       
       if (io) {
         io.to(`user_${petOwnerId}`).emit('medical_record_deleted', { id: parseInt(id) });
-        console.log(`📡 Socket delete event emitted to user_${petOwnerId} for record ${id}`);
       }
     } catch (socketError) {
       console.error('Failed to emit socket event:', socketError);
@@ -654,7 +648,6 @@ export const serveMedicalRecord = async (req, res) => {
     const filename = decodeURIComponent(req.params.filename || '');
     const numericFileId = Number.parseInt(filename, 10);
     
-    console.log('Serving medical record file:', filename);
     
     let fileRecords = [];
     if (Number.isFinite(numericFileId) && String(numericFileId) === filename) {

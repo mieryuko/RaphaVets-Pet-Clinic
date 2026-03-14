@@ -94,12 +94,23 @@ function Header({ darkMode, setDarkMode, toggleMenu, isMenuOpen, animateIcon }) 
   // 🔗 Get navigation link based on notification type and metadata
   // ===========================================
   const getNotificationLink = (type, notificationData = {}) => {
-    console.log('🔗 Getting link for notification type:', type, 'data:', notificationData);
-    
+    // Reject invalid IDs like undefined/null strings to prevent /pet/undefined.
+    const resolvePetId = (...values) => {
+      for (const value of values) {
+        if (value === undefined || value === null) continue;
+        const text = String(value).trim();
+        if (!text || text === 'undefined' || text === 'null') continue;
+        return text;
+      }
+      return null;
+    };
+
     // Extract petId from various possible locations in the notification data
-    const petId = notificationData.petId || 
-                  notificationData.data?.petId || 
-                  notificationData.petID;
+    const petId = resolvePetId(
+      notificationData.petId,
+      notificationData.data?.petId,
+      notificationData.petID
+    );
     
     switch (type) {
       case 'forum_update':
@@ -116,8 +127,8 @@ function Header({ darkMode, setDarkMode, toggleMenu, isMenuOpen, animateIcon }) 
         if (petId) {
           return `/pet/${petId}`;
         }
-        // If no pet ID, go to general page
-        return type === 'appointment_update' ? '/appointments' : '/medical-records';
+        return '/profile';
+
       
       default:
         return '#';
@@ -155,7 +166,6 @@ function Header({ darkMode, setDarkMode, toggleMenu, isMenuOpen, animateIcon }) 
     setLoading(true);
     try {
       const response = await api.get('/notifications');
-      console.log('📥 [fetchNotifications] Response:', response.data);
       
       // Get current user ID
       const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -167,7 +177,6 @@ function Header({ darkMode, setDarkMode, toggleMenu, isMenuOpen, animateIcon }) 
           .filter(notif => {
             // 🔴 FILTER OUT OWN NOTIFICATIONS
             if (notif.createdBy && notif.createdBy === currentUserId) {
-              console.log('⏭️ [fetchNotifications] Filtering out own notification:', notif.notificationID);
               return false;
             }
             return true;
@@ -205,8 +214,7 @@ function Header({ darkMode, setDarkMode, toggleMenu, isMenuOpen, animateIcon }) 
               statusBadgeColor: getStatusBadgeColor(notificationData.status)
             };
           });
-        
-        console.log('📥 [fetchNotifications] Formatted notifications:', formattedNotifications);
+
         setNotifications(formattedNotifications);
         
         // Update unread count
@@ -240,28 +248,22 @@ function Header({ darkMode, setDarkMode, toggleMenu, isMenuOpen, animateIcon }) 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     const userId = user?.id;
-    console.log('👤 [Socket] Current user:', userId);
 
     if (userId) {
       if (!socket.connected) {
-        console.log('🔌 [Socket] Connecting...');
         socket.connect();
       }
       
-      console.log('🎯 [Socket] Joining room for user:', userId);
       socket.emit('join', userId);
 
       // Listen for new notifications
       socket.on('new_notification', (notification) => {
-        console.log('📨 [Socket] RAW notification received:', notification);
-        
         // Get current user ID from localStorage
         const user = JSON.parse(localStorage.getItem('user') || '{}');
         const currentUserId = user?.id;
         
         // 🔴 SKIP IF THIS IS THE CURRENT USER'S OWN NOTIFICATION
         if (notification.createdBy && notification.createdBy === currentUserId) {
-          console.log('⏭️ [Socket] Skipping own notification');
           return;
         }
         
@@ -286,9 +288,7 @@ function Header({ darkMode, setDarkMode, toggleMenu, isMenuOpen, animateIcon }) 
           status: notificationData.status,
           statusBadgeColor: getStatusBadgeColor(notificationData.status)
         };
-        
-        console.log('📨 [Socket] Adding notification to state:', formattedNotification);
-        
+
         // Update state with the new notification
         setNotifications(prev => {
           // Check if notification already exists
@@ -305,7 +305,6 @@ function Header({ darkMode, setDarkMode, toggleMenu, isMenuOpen, animateIcon }) 
 
       // Listen for notification read updates
       socket.on('notification_read', ({ notificationId }) => {
-        console.log('📖 [Socket] Notification marked read:', notificationId);
         setNotifications(prev =>
           prev.map(notif =>
             notif.notificationId === notificationId ? { ...notif, read: true } : notif
@@ -316,7 +315,6 @@ function Header({ darkMode, setDarkMode, toggleMenu, isMenuOpen, animateIcon }) 
 
       // Listen for all read event
       socket.on('all_read', () => {
-        console.log('📚 [Socket] All notifications marked read');
         setNotifications(prev =>
           prev.map(notif => ({ ...notif, read: true }))
         );
@@ -325,23 +323,13 @@ function Header({ darkMode, setDarkMode, toggleMenu, isMenuOpen, animateIcon }) 
 
       // Listen for notification deleted
       socket.on('notification_deleted', ({ notificationId }) => {
-        console.log('🗑️ [Socket] Notification deleted:', notificationId);
         setNotifications(prev => 
           prev.filter(notif => notif.notificationId !== notificationId)
         );
       });
 
       socket.on('unread_count_update', ({ unread }) => {
-        console.log('🔢 [Socket] Unread count update:', unread);
         setUnreadCount(typeof unread === 'number' ? unread : 0);
-      });
-
-      socket.on('connect', () => {
-        console.log('✅ [Socket] Connected:', socket.id);
-      });
-
-      socket.on('disconnect', () => {
-        console.log('❌ [Socket] Disconnected');
       });
 
       socket.on('connect_error', (error) => {
@@ -351,14 +339,11 @@ function Header({ darkMode, setDarkMode, toggleMenu, isMenuOpen, animateIcon }) 
 
     return () => {
       if (userId) {
-        console.log('🧹 [Socket] Cleaning up listeners');
         socket.off('new_notification');
         socket.off('notification_read');
         socket.off('all_read');
         socket.off('notification_deleted');
         socket.off('unread_count_update');
-        socket.off('connect');
-        socket.off('disconnect');
         socket.off('connect_error');
       }
     };
@@ -402,8 +387,6 @@ function Header({ darkMode, setDarkMode, toggleMenu, isMenuOpen, animateIcon }) 
   };
 
   const handleNotificationItemClick = async (notification) => {
-    console.log('👆 Clicked notification:', notification);
-    
     // Update local state optimistically
     setNotifications(prev =>
       prev.map(notif =>
@@ -418,7 +401,6 @@ function Header({ darkMode, setDarkMode, toggleMenu, isMenuOpen, animateIcon }) 
     // Mark as read on server
     try {
       await api.post(`/notifications/${notification.notificationId}/read`);
-      console.log('✅ Marked as read on server');
       
       // Emit read event through socket
       const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -436,7 +418,6 @@ function Header({ darkMode, setDarkMode, toggleMenu, isMenuOpen, animateIcon }) 
 
     // Navigate based on notification link
     if (notification.link && notification.link !== '#') {
-      console.log('🚀 Navigating to:', notification.link);
       navigate(notification.link);
     }
     
@@ -454,7 +435,6 @@ function Header({ darkMode, setDarkMode, toggleMenu, isMenuOpen, animateIcon }) 
 
     try {
       await api.post('/notifications/mark-all-read');
-      console.log('✅ All marked as read on server');
       
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       if (user?.id) {

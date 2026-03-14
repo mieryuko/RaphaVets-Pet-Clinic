@@ -43,9 +43,6 @@ const cancelPastPendingAppointments = async () => {
       [today]
     );
     
-    if (result.affectedRows > 0) {
-      console.log(`✅ Auto-cancelled ${result.affectedRows} past pending appointments`);
-    }
   } catch (err) {
     console.error("❌ Error auto-cancelling past appointments:", err);
   }
@@ -145,9 +142,6 @@ export const getBookedSlots = async (req, res) => {
         .filter(time => time < currentTimeStr);
     }
     
-    console.log('Returning booked slots:', bookedSlots);
-    console.log('Past slots for today:', pastSlots);
-    
     res.json({
       bookedSlots,
       pastSlots: isToday ? pastSlots : [] // Only return past slots if it's today
@@ -178,26 +172,12 @@ export const getAllTime = async (req, res) => {
 
 export const bookAppointment = async (req, res) => {
   try {
-    console.log("📦 Booking request received:", {
-      body: req.body,
-      user: req.user
-    });
-
     if (!req.user) {
-      console.log("❌ No user in request");
       return res.status(401).json({ message: "Authentication required" });
     }
 
     const userId = req.user.id;
     const { petID, serviceID, appointmentDate, startTime } = req.body;
-
-    console.log("📋 Parsed data:", {
-      userId,
-      petID,
-      serviceID,
-      appointmentDate,
-      startTime // This should be in "08:00:00" format now
-    });
 
     // Validate required fields
     const missingFields = [];
@@ -207,20 +187,16 @@ export const bookAppointment = async (req, res) => {
     if (!startTime) missingFields.push('startTime');
 
     if (missingFields.length > 0) {
-      console.log("❌ Missing fields:", missingFields);
       return res.status(400).json({ 
         message: "Missing required fields",
         missingFields 
       });
     }
 
-    console.log("🔍 Looking up time slot:", startTime);
     const [timeRows] = await db.query(
       "SELECT scheduledTimeID FROM scheduletime_tbl WHERE scheduleTime = ?",
       [startTime] // Use scheduleTime field
     );
-
-    console.log("⏰ Time lookup results:", timeRows);
 
     if (timeRows.length === 0) {
       return res.status(400).json({ 
@@ -237,14 +213,6 @@ export const bookAppointment = async (req, res) => {
       VALUES (?, ?, ?, ?, ?, "Scheduled", 1, 0)
     `;
 
-    console.log("💾 Inserting appointment with:", {
-      userId,
-      petID,
-      serviceID,
-      appointmentDate,
-      scheduledTimeID
-    });
-
     const [result] = await db.query(sql, [
       userId,
       petID,
@@ -252,8 +220,6 @@ export const bookAppointment = async (req, res) => {
       appointmentDate,
       scheduledTimeID,
     ]);
-
-    console.log("✅ Appointment booked successfully, ID:", result.insertId);
 
     res.status(201).json({
       message: "Appointment booked successfully",
@@ -367,8 +333,6 @@ export const cancelAppointment = async (req, res) => {
     if (result.affectedRows === 0) {
       return res.status(500).json({ message: "Failed to cancel appointment" });
     }
-
-    console.log(`✅ Appointment ${appointmentId} cancelled by user ${userId}`);
 
     res.status(200).json({ 
       message: "Appointment cancelled successfully",

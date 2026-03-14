@@ -6,7 +6,6 @@ import { UPLOADS_ROOT } from "../utils/uploadPaths.js";
 const createFileFilter = (allowedTypes) => {
   return (req, file, cb) => {
     if (allowedTypes.includes(file.mimetype)) {
-      console.log(`✅ Accepted file type: ${file.mimetype}`);
       cb(null, true);
     } else {
       console.error(`❌ Invalid file type attempted: ${file.mimetype}`);

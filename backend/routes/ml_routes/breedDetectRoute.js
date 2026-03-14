@@ -9,7 +9,6 @@ const upload = multer(); // memory storage
 
 router.post("/predict/breed", upload.single("file"), async (req, res) => {
   try {
-    console.log("Incoming file:", req.file); // debug
 
     const formData = new FormData();
     formData.append("file", req.file.buffer, req.file.originalname);

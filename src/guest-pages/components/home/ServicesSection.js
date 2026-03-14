@@ -101,7 +101,6 @@ const ServicesSection = () => {
 
       try {
         const response = await api.get("/appointment/services");
-        console.log("Services API response:", response.data);
 
         const rows =
           Array.isArray(response.data)

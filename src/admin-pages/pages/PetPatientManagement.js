@@ -223,11 +223,9 @@ const PetPatientManagement = () => {
   // Handle medical record deletion
   const handleDeleteRecord = async (recordId) => {
     try {
-      console.log("🗑️ Deleting record with ID:", recordId);
       
       const response = await api.delete(`/admin/pet-records/${recordId}`);
       
-      console.log("✅ Delete response:", response.data);
       
       // Even if the response says "not found", if we got a 200 status, consider it successful
       if (response.status === 200 || response.status === 204) {
@@ -251,7 +249,6 @@ const PetPatientManagement = () => {
       
       // If it's a 404 but the record was actually deleted, treat it as success
       if (error.response?.status === 404) {
-        console.log("⚠️ Record not found - may have been already deleted");
         setSuccessMessage("Medical record deleted successfully!");
         if (selectedRecord && selectedRecord.id === recordId) {
           setSelectedRecord(null);
@@ -308,7 +305,6 @@ const PetPatientManagement = () => {
     try {
       if (editingItem) {
         const res = await api.put(`/admin/update-owner/${editingItem.id}`, newData);
-        console.log("Owner updated:", res.data);
 
         const updatedOwner = {
           ...editingItem,
@@ -338,7 +334,6 @@ const PetPatientManagement = () => {
         
       } else {
         const res = await api.post("/admin/add-owner", newData);
-        console.log("Owner created:", res.data);
 
         setSuccessMessage(`Account created and credentials were sent to ${newData.email}.`);
         

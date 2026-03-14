@@ -197,7 +197,6 @@ const AppointmentsTab = ({
                               handleCancelAppointment(item);
                             } else {
                               // This would typically update the appointment status
-                              console.log("Update status to:", e.target.value);
                               handleUpdateStatus(item.id, e.target.value);
                             }
                           }}

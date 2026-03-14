@@ -47,14 +47,12 @@ const ContentManagement = () => {
 
   // Handle new video category creation
   const handleNewVideoCategoryCreated = async (newCategory) => {
-    console.log('New video category created:', newCategory);
     await fetchVideoCategories();
     showToast('Video category created successfully!', 'success');
   };
 
   // Handle new category creation
   const handleNewCategoryCreated = (newCategory) => {
-    console.log('New category created:', newCategory);
     setCategories(prev => [...prev, newCategory]);
     showToast('Category created successfully!', 'success');
   };

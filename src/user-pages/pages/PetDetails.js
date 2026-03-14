@@ -62,17 +62,14 @@ function PetDetails() {
 
     // Socket connection events
     socket.on('connect', () => {
-      console.log('✅ Socket connected in PetDetails:', socket.id);
       
       // Join user room for targeted notifications
       if (userId) {
         socket.emit('join', userId);
-        console.log(`👤 Joined room: user_${userId}`);
       }
     });
 
     socket.on('disconnect', () => {
-      console.log('❌ Socket disconnected in PetDetails');
     });
 
     socket.on('connect_error', (error) => {
@@ -95,7 +92,6 @@ function PetDetails() {
     // 📨 LISTEN FOR NEW MEDICAL RECORDS
     // ===========================================
     socket.on('new_medical_record', (newRecord) => {
-      console.log('📨 New medical record received in PetDetails:', newRecord);
       
       // Only update if this record belongs to the current pet
       if (newRecord.petID === parseInt(id)) {
@@ -123,7 +119,6 @@ function PetDetails() {
     // 📨 LISTEN FOR UPDATED MEDICAL RECORDS
     // ===========================================
     socket.on('medical_record_updated', (updatedRecord) => {
-      console.log('📨 Medical record updated in PetDetails:', updatedRecord);
       
       // Only update if this record belongs to the current pet
       if (updatedRecord.petID === parseInt(id)) {
@@ -148,7 +143,6 @@ function PetDetails() {
     // 📨 LISTEN FOR DELETED MEDICAL RECORDS
     // ===========================================
     socket.on('medical_record_deleted', ({ id: deletedId }) => {
-      console.log('📨 Medical record deleted in PetDetails:', deletedId);
       
       // Check if the deleted record belongs to current pet by looking in state
       const deletedMedical = medicalRecords.find(r => r.id === deletedId);
@@ -177,7 +171,6 @@ function PetDetails() {
 
   // Simple notification function
   const showNotification = (title, message) => {
-    console.log(`🔔 ${title}: ${message}`);
     setToastMessage(`${title}: ${message}`);
     setShowSuccessToast(true);
   };
@@ -186,13 +179,11 @@ function PetDetails() {
   const fetchMedicalRecords = async () => {
     try {
       const token = localStorage.getItem("token");
-      console.log("🔍 Fetching medical records for pet:", id);
       
       const res = await api.get(`/medical-records/pet/${id}?recordType=medical`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       
-      console.log("✅ Medical records response:", res.data);
       setMedicalRecords(res.data.data || []);
       setLoading(prev => ({ ...prev, medical: false }));
     } catch (err) {
@@ -206,13 +197,11 @@ function PetDetails() {
   const fetchLabRecords = async () => {
     try {
       const token = localStorage.getItem("token");
-      console.log("🔍 Fetching lab records for pet:", id);
       
       const res = await api.get(`/medical-records/pet/${id}?recordType=lab`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       
-      console.log("✅ Lab records response:", res.data);
       setLabRecords(res.data.data || []);
       setLoading(prev => ({ ...prev, lab: false }));
     } catch (err) {
@@ -342,7 +331,6 @@ function PetDetails() {
         },
       });
 
-      console.log("📤 Upload Response:", res.data);
 
       setPet(prev => ({
         ...prev,
@@ -371,7 +359,6 @@ function PetDetails() {
 
   // Handle appointment cancellation
   const handleCancelAppointment = (appointment) => {
-    console.log("Cancelling appointment:", appointment.id);
   };
 
   // Handle view details
@@ -419,7 +406,6 @@ function PetDetails() {
         displayDate: formatAppointmentDate(appt)
       }));
       
-      console.log("✅ Refreshed Appointments:", mappedAppointments);
       setAppointments(mappedAppointments);
     } catch (err) {
       console.error("❌ Error refreshing appointments:", err);
@@ -435,7 +421,6 @@ function PetDetails() {
         });
 
         const petData = res.data;
-        console.log("📊 Pet Data from API:", petData);
 
         const mappedPet = {
           id: petData.petID || petData.id,
@@ -451,7 +436,6 @@ function PetDetails() {
           note: petData.note
         };
         
-        console.log("🔄 Mapped Pet:", mappedPet);
         
         if (previewImage) {
           setPet(prev => ({
@@ -469,7 +453,6 @@ function PetDetails() {
           displayDate: formatAppointmentDate(appt)
         }));
        
-        console.log("📅 Mapped Appointments:", mappedAppointments);
         setAppointments(mappedAppointments);
         setLoading(prev => ({ ...prev, pet: false }));
 

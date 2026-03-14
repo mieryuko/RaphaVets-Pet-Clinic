@@ -67,7 +67,6 @@ const db = mysql.createPool({
 (async () => {
   try {
     const connection = await db.getConnection();
-    console.log("✅ Connected to MySQL database!");
     connection.release();
   } catch (err) {
     console.error("❌ Database connection failed:", {

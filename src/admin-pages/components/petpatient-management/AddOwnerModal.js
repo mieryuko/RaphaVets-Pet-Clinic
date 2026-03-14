@@ -42,7 +42,6 @@ const AddOwnerModal = ({ isOpen, onClose, onSave, initialData }) => {
 
   // Enhanced date formatting function
   const formatDateForInput = (dateString) => {
-    console.log("Formatting date:", dateString);
     
     if (!dateString || dateString === "Invalid Date" || dateString === "null") return "";
     
@@ -56,7 +55,6 @@ const AddOwnerModal = ({ isOpen, onClose, onSave, initialData }) => {
       date = new Date(dateString);
       
       if (isNaN(date.getTime())) {
-        console.log("Invalid date:", dateString);
         return "";
       }
       
@@ -105,15 +103,12 @@ const AddOwnerModal = ({ isOpen, onClose, onSave, initialData }) => {
 
   useEffect(() => {
     if (isOpen) {
-      console.log("Initial data received:", initialData);
       
       if (initialData) {
         // Editing existing owner - use direct fields to avoid incorrect name splitting
         const firstName = initialData.firstName || '';
         const lastName = initialData.lastName || '';
         
-        console.log("Owner DOB from initialData:", initialData.dateOfBirth);
-        console.log("Formatted DOB:", formatDateForInput(initialData.dateOfBirth));
         
         setOwnerData({
           firstName: firstName,
@@ -127,7 +122,6 @@ const AddOwnerModal = ({ isOpen, onClose, onSave, initialData }) => {
 
         if (initialData.pets && initialData.pets[0]) {
           const pet = initialData.pets[0];
-          console.log("Pet DOB:", pet.petDateOfBirth || pet.dob);
           
           setPetData({
             type: pet.petType || pet.type || "",

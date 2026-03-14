@@ -82,7 +82,6 @@ function App() {
 
     // Listen once
     socket.on("connect", () => {
-      console.log("Connected to WebSocket:", socket.id);
     });
 
     // Cleanup (VERY IMPORTANT)

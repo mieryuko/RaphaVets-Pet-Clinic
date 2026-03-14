@@ -16,54 +16,29 @@ import db from "../config/db.js";
 
 const router = express.Router();
 
-console.log('🔧 [notificationRoutes] Initializing notification routes...');
-
 // ===========================================
 // USER NOTIFICATION ROUTES
 // ===========================================
 
 // Get user's notifications
-router.get("/", verifyToken, (req, res, next) => {
-    console.log('📨 [GET /] Request received for user:', req.user?.id); // CHANGED: accId -> id
-    next();
-}, getUserNotifications);
+router.get("/", verifyToken, getUserNotifications);
 
 // Get unread count
-router.get("/unread-count", verifyToken, (req, res, next) => {
-    console.log('📨 [GET /unread-count] Request received for user:', req.user?.id); // CHANGED: accId -> id
-    next();
-}, getUnreadCount);
+router.get("/unread-count", verifyToken, getUnreadCount);
 
 // Mark specific notification as read
-router.post("/:notificationId/read", verifyToken, (req, res, next) => {
-    console.log('📨 [POST /:notificationId/read] Request received:', { 
-        userId: req.user?.id, // CHANGED: accId -> id
-        notificationId: req.params.notificationId 
-    });
-    next();
-}, markAsRead);
+router.post("/:notificationId/read", verifyToken, markAsRead);
 
 // Mark all notifications as read
-router.post("/mark-all-read", verifyToken, (req, res, next) => {
-    console.log('📨 [POST /mark-all-read] Request received for user:', req.user?.id); // CHANGED: accId -> id
-    next();
-}, markAllAsRead);
+router.post("/mark-all-read", verifyToken, markAllAsRead);
 
 // Delete notification
-router.delete("/:notificationId", verifyToken, (req, res, next) => {
-    console.log('📨 [DELETE /:notificationId] Request received:', {
-        userId: req.user?.id, // CHANGED: accId -> id
-        notificationId: req.params.notificationId
-    });
-    next();
-}, deleteNotification);
+router.delete("/:notificationId", verifyToken, deleteNotification);
 
 // ===========================================
 // TEST ENDPOINT - REMOVE IN PRODUCTION
 // ===========================================
 router.post("/test", verifyToken, async (req, res) => {
-    console.log('🧪 [TEST] Creating test notification for user:', req.user?.id); // CHANGED: accId -> id
-    
     try {
         const userId = req.user?.id; // CHANGED: accId -> id
         
@@ -72,12 +47,9 @@ router.post("/test", verifyToken, async (req, res) => {
         }
         
         // Check if tables exist
-        console.log('🧪 [TEST] Checking if notification tables exist...');
         const [tables] = await db.query("SHOW TABLES LIKE '%notification%'");
-        console.log('🧪 [TEST] Found tables:', tables.map(t => Object.values(t)[0]));
 
         // Insert a test notification
-        console.log('🧪 [TEST] Inserting test notification...');
         const [result] = await db.query(
             `INSERT INTO notifications_tbl 
             (notifTypeID, title, message, data, targetType, createdBy) 
@@ -93,17 +65,14 @@ router.post("/test", verifyToken, async (req, res) => {
         );
 
         const notificationId = result.insertId;
-        console.log('✅ [TEST] Notification inserted with ID:', notificationId);
 
         // Link to user
-        console.log('🧪 [TEST] Linking to user...');
         await db.query(
             `INSERT INTO user_notifications_tbl (accID, notificationID) VALUES (?, ?)`,
             [userId, notificationId]
         );
 
         // Emit via socket
-        console.log('🧪 [TEST] Emitting via socket...');
         const io = req.app.get('io');
         io.to(`user_${userId}`).emit('new_notification', {
             notificationId,
@@ -113,8 +82,6 @@ router.post("/test", verifyToken, async (req, res) => {
             data: { test: true },
             createdAt: new Date()
         });
-
-        console.log('✅ [TEST] Test notification created successfully');
         res.json({ success: true, message: "Test notification created", notificationId });
 
     } catch (error) {
@@ -128,31 +95,14 @@ router.post("/test", verifyToken, async (req, res) => {
 // NOTIFICATION CREATION ROUTES
 // ===========================================
 
-router.post("/forum", verifyToken, (req, res, next) => {
-    console.log('📨 [POST /forum] Request received:', req.body);
-    next();
-}, createForumPostNotification);
+router.post("/forum", verifyToken, createForumPostNotification);
 
-router.post("/pet-tips", verifyToken, (req, res, next) => {
-    console.log('📨 [POST /pet-tips] Request received:', req.body);
-    next();
-}, createPetTipsNotification);
+router.post("/pet-tips", verifyToken, createPetTipsNotification);
 
-router.post("/video", verifyToken, (req, res, next) => {
-    console.log('📨 [POST /video] Request received:', req.body);
-    next();
-}, createVideoNotification);
+router.post("/video", verifyToken, createVideoNotification);
 
-router.post("/appointment", verifyToken, (req, res, next) => {
-    console.log('📨 [POST /appointment] Request received:', req.body);
-    next();
-}, createAppointmentNotification);
+router.post("/appointment", verifyToken, createAppointmentNotification);
 
-router.post("/medical-record", verifyToken, (req, res, next) => {
-    console.log('📨 [POST /medical-record] Request received:', req.body);
-    next();
-}, createMedicalRecordNotification);
-
-console.log('✅ [notificationRoutes] Routes initialized');
+router.post("/medical-record", verifyToken, createMedicalRecordNotification);
 
 export default router;

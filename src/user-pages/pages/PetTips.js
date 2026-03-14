@@ -40,7 +40,6 @@ export default function PetTips() {
 
     // Tip event handlers
     const onNewTip = (newTip) => {
-      console.log('📨 Received new tip via WebSocket:', newTip);
       
       // Add to tips list (avoid duplicates)
       setTips(prevTips => {
@@ -63,7 +62,6 @@ export default function PetTips() {
     };
 
     const onTipUpdated = (updatedTip) => {
-      console.log('📨 Received updated tip via WebSocket:', updatedTip);
       
       setTips(prevTips => 
         prevTips.map(tip => 
@@ -73,7 +71,6 @@ export default function PetTips() {
     };
 
     const onTipDeleted = ({ id }) => {
-      console.log('📨 Received deleted tip via WebSocket:', id);
       
       setTips(prevTips => prevTips.filter(tip => tip.id !== id));
       

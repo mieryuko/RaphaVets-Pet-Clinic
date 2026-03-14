@@ -84,7 +84,6 @@ export const getAllFAQCategories = async (req, res) => {
     `;
     const [rows] = await db.execute(query);
     res.status(200).json(rows);
-    console.log('✅ Fetched FAQ categories:', rows.data);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching FAQ categories', error: error.message });
   }

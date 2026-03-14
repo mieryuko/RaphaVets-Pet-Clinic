@@ -181,7 +181,6 @@ const AddPetModal = ({ isOpen, onClose, onSave, owners, initialData, refreshPets
     }
 
     if (initialData) {
-      console.log("Initial Data for editing:", initialData);
       
       const ownerId = owners.find((o) => o.name === initialData.owner)?.id || "";
       
@@ -249,14 +248,12 @@ const AddPetModal = ({ isOpen, onClose, onSave, owners, initialData, refreshPets
           ...petData,
           type: petData.type
         });
-        console.log("Pet updated:", res.data);
       } else {
         // For adding new pet
         const res = await api.post("/admin/add-pets", { 
           ...petData,
           type: petData.type
         });
-        console.log("Pet saved:", res.data);
 
         onSave({
           ...petData,

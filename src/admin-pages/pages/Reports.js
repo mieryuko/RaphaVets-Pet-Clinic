@@ -50,7 +50,6 @@ const Reports = () => {
 
   const handleDateRangeChange = (range) => {
     setDateRange(range);
-    console.log('Date range changed:', range);
   };
 
   const exportToPDF = async () => {

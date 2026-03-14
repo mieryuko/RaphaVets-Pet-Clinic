@@ -161,7 +161,6 @@ export const sendSupportMessage = async (req, res) => {
 `
     });
 
-    console.log('✅ Support email sent:', info?.id);
 
     return res.json({ success: true, message: 'Support message sent' });
   } catch (err) {

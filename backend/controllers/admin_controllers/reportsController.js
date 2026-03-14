@@ -3,10 +3,8 @@ import db from "../../config/db.js";
 export const getReportsData = async (req, res) => {
     try {
         const { startDate, endDate } = req.query;
-        console.log('📊 Reports API called with:', { startDate, endDate });
         
         // Fetch all reports data in parallel
-        console.log('1️⃣ Starting to fetch reports...');
         
         const [
             appointmentsData,
@@ -24,7 +22,6 @@ export const getReportsData = async (req, res) => {
             getLostPetsReport(startDate, endDate)
         ]);
         
-        console.log('2️⃣ All reports fetched successfully');
 
         res.json({
             success: true,

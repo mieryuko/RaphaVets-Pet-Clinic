@@ -43,18 +43,15 @@ function Home() {
 
     // Socket connection events
     socket.on('connect', () => {
-      console.log('✅ Socket connected:', socket.id);
       setSocketConnected(true);
       
       // Join user room when connected
       if (userId) {
         socket.emit('join', userId);
-        console.log(`👤 Joined room: user_${userId}`);
       }
     });
 
     socket.on('disconnect', () => {
-      console.log('❌ Socket disconnected');
       setSocketConnected(false);
     });
 
@@ -75,7 +72,6 @@ function Home() {
     });
 
     socket.on('new_medical_record', (newRecord) => {
-      console.log('📨 New medical record received:', newRecord);
       
       // Show a notification or toast (optional)
       showNotification('New Record Added', `A new ${newRecord.recordCategory} record has been added for ${newRecord.petName}`);
@@ -99,7 +95,6 @@ function Home() {
 
     // Listen for updated medical records
     socket.on('medical_record_updated', (updatedRecord) => {
-      console.log('📨 Medical record updated:', updatedRecord);
       
       showNotification('Record Updated', `The ${updatedRecord.recordCategory} record for ${updatedRecord.petName} has been updated`);
       
@@ -119,7 +114,6 @@ function Home() {
 
     // Listen for deleted medical records
     socket.on('medical_record_deleted', ({ id }) => {
-      console.log('📨 Medical record deleted:', id);
       
       // Find the record to show which pet it belonged to (optional)
       const deletedMedical = medicalRecords.find(r => r.id === id);
@@ -149,7 +143,6 @@ function Home() {
   // Simple notification function (you can replace with your preferred toast library)
   const showNotification = (title, message) => {
     // You can implement a toast notification here
-    console.log(`🔔 ${title}: ${message}`);
   };
   const [socketConnected, setSocketConnected] = useState(false);
   

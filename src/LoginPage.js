@@ -115,7 +115,6 @@ function LoginPage() {
     
     try {
       const res = await api.post("/auth/login", loginData);
-      console.log("Login response:", res.data);
 
       // Store all necessary data
       localStorage.setItem("token", res.data.token);
@@ -128,7 +127,6 @@ function LoginPage() {
 
       // 🔌 CONNECT SOCKET AFTER LOGIN
       const userId = res.data.user.id || res.data.user.accId;
-      console.log('🔌 Connecting socket for user:', userId);
       
       if (!socket.connected) {
         socket.connect();
@@ -136,16 +134,13 @@ function LoginPage() {
       
       // Set up one-time listener for join confirmation
       socket.once('joined_room', (data) => {
-        console.log('✅ Socket room joined:', data);
       });
       
       // Emit join after a short delay to ensure connection
       setTimeout(() => {
         if (socket.connected) {
           socket.emit('join', userId);
-          console.log('🎯 Join emitted for user:', userId);
         } else {
-          console.log('⚠️ Socket not connected yet, will retry on connect');
           // Set up listener for connect event
           const onConnect = () => {
             socket.emit('join', userId);

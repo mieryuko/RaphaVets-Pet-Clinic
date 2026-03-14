@@ -34,7 +34,6 @@ export const initializeSocket = (server) => {
     if (allowedOrigins.length === 0) {
         console.warn('⚠️ No socket CORS origins configured; allowing any origin. Set FRONTEND_URL/CLINIC_URL/SOCKET_ALLOWED_ORIGINS in production.');
     } else {
-        console.log('✅ Socket CORS allowed origins:', allowedOrigins.join(', '));
     }
 
     io = new Server(server, {
@@ -56,7 +55,6 @@ export const initializeSocket = (server) => {
     });
 
     io.on('connection', (socket) => {
-        console.log('New client connected:', socket.id);
 
         // Get client info for database
         const userAgent = socket.handshake.headers['user-agent'];
@@ -66,12 +64,10 @@ export const initializeSocket = (server) => {
         socket.on('join', async (userId) => {
             if (userId) {
                 socket.join(`user_${userId}`);
-                console.log(`User ${userId} joined room user_${userId}`);
                 
                 // 🔴 ADD THIS - Register in database
                 try {
                     await registerSocketSession(userId, socket.id, userAgent, ipAddress);
-                    console.log(`✅ Session saved to database for user ${userId}`);
                     
                     // Send confirmation back to client
                     socket.emit('joined_room', { success: true, userId });
@@ -88,12 +84,10 @@ export const initializeSocket = (server) => {
 
             socket.join('admin-room');
             socket.emit('admin_room_joined', { success: true });
-            console.log(`Admin socket ${socket.id} joined admin-room`);
         });
 
         socket.on('leave_admin_room', () => {
             socket.leave('admin-room');
-            console.log(`Socket ${socket.id} left admin-room`);
         });
 
         // Handle notification read
@@ -110,12 +104,10 @@ export const initializeSocket = (server) => {
 
         // Handle disconnection
         socket.on('disconnect', async () => {
-            console.log('Client disconnected:', socket.id);
             
             // 🔴 ADD THIS - Remove from database
             try {
                 await removeSocketSession(socket.id);
-                console.log(`✅ Session removed from database for socket ${socket.id}`);
             } catch (error) {
                 console.error(`❌ Failed to remove session:`, error);
             }

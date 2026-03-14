@@ -16,7 +16,6 @@ import bcrypt from "bcryptjs";
 export const getVetDashboardStats = async (req, res) => {
   try {
     const vetId = req.user.id;
-    console.log("🔍 Fetching vet dashboard stats for ID:", vetId);
 
     // Get the logged-in vet's name
     const [vetRows] = await db.execute(
@@ -170,7 +169,6 @@ export const getVetDashboardStats = async (req, res) => {
       totalPets: totalPets[0]?.totalPets || 0
     };
 
-    console.log("✅ Vet dashboard stats:", response);
     res.json(response);
 
   } catch (error) {
@@ -333,7 +331,6 @@ export const getUpcomingAppointments = async (req, res) => {
 // GET /vet/dashboard/recent-activities - Get recent activities
 export const getRecentActivities = async (req, res) => {
   try {
-    console.log("🔍 Fetching recent activities for vet dashboard...");
 
     // Get recent appointments
     const [appointmentActivities] = await db.execute(`
@@ -521,7 +518,6 @@ export const changeVetPassword = async (req, res) => {
     const vetId = req.user.id;
     const { currentPassword, newPassword, confirmPassword } = req.body;
 
-    console.log("🔐 Password change request for vet ID:", vetId);
 
     if (newPassword !== confirmPassword) {
       return res.status(400).json({ 
@@ -567,7 +563,6 @@ export const changeVetPassword = async (req, res) => {
       [hashedNewPassword, vetId]
     );
 
-    console.log("✅ Password changed successfully for vet ID:", vetId);
     res.json({ message: "Password changed successfully" });
 
   } catch (error) {

@@ -34,7 +34,6 @@ export default function Videos() {
 
     // Listen for new videos
     const onNewVideo = (newVideo) => {
-      console.log('📨 Received new video via WebSocket:', newVideo);
       
       // Add to videos list (avoid duplicates)
       setVideos(prevVideos => {
@@ -58,7 +57,6 @@ export default function Videos() {
 
     // Listen for updated videos
     const onVideoUpdated = (updatedVideo) => {
-      console.log('📨 Received updated video via WebSocket:', updatedVideo);
       
       setVideos(prevVideos => 
         prevVideos.map(video => 
@@ -69,24 +67,14 @@ export default function Videos() {
 
     // Listen for deleted videos
     const onVideoDeleted = ({ dbId }) => {
-      console.log('📨 Received deleted video via WebSocket dbId:', dbId);
-      console.log('📨 Current videos in state:', videos.map(v => ({ 
-        id: v.id, 
-        dbId: v.dbId,
-        title: v.title 
-      })));
-      
       setVideos(prevVideos => {
-        console.log('📨 Filtering with dbId:', dbId);
         const filtered = prevVideos.filter(video => video.dbId !== dbId);
-        console.log('📨 Videos after filter:', filtered.length);
         return filtered;
       });
       
       // Find and close modal if the deleted video was playing
       const deletedVideo = videos.find(v => v.dbId === dbId);
       if (deletedVideo && openVideoId === deletedVideo.id) {
-        console.log('📨 Closing modal for deleted video:', deletedVideo.id);
         setOpenVideoId(null);
       }
     };
@@ -108,15 +96,12 @@ export default function Videos() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      console.log('🔄 Fetching videos data...');
       
       const [videosResponse, categoriesResponse] = await Promise.all([
         api.get('/videos'),
         api.get('/videos/categories')
       ]);
 
-      console.log('✅ Videos data:', videosResponse.data);
-      console.log('✅ Categories data:', categoriesResponse.data);
 
       if (videosResponse.data.success) {
         setVideos(videosResponse.data.data);

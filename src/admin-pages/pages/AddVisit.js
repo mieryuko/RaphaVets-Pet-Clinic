@@ -91,9 +91,6 @@ const AddVisit = () => {
 
   const canSubmitVisit = isWithinClinicHours(visitData.date, visitData.time);
 
-  useEffect(() => console.log("Fetched owners: ", owners), [owners]);
-  useEffect(() => console.log("Fetched pets: ", pets), [pets]);
-  useEffect(() => console.log("Fetched appointments: ", appointments), [appointments])
 
   const fetchOwnerDetails = async () => {
     try {
@@ -194,7 +191,6 @@ const AddVisit = () => {
       })) || []
     };
 
-    console.log("Sending owner payload:", formData);
 
     const res = await api.post("/admin/add-owner", formData);
 
@@ -237,8 +233,6 @@ const AddVisit = () => {
   };
 
   const handleAppointmentSelect = (appointment) => {
-    console.log("APPOINTMENT petId:", appointment.petId, typeof appointment.petId);
-    pets.forEach(p => console.log("PET id:", p.id, typeof p.id));
     const selectedPet = pets.find(pet => pet.id === appointment.petId);
     setVisitData(prev => ({ 
       ...prev, 
@@ -278,7 +272,6 @@ const AddVisit = () => {
   };
 
   const handleFinalSubmit = async () => {
-    console.log("Final visit data:", visitData);
 
     if (!visitData.user?.id || !visitData.pet?.id || !visitData.serviceType) {
       console.error("Missing required fields:", visitData);
@@ -293,7 +286,6 @@ const AddVisit = () => {
     };
 
     const res = await api.post("/admin/appointments/make-visit", payload);
-    console.log("Visit created successfully:", res.data);
     
     setCurrentStep(4); // Go to success page
   };

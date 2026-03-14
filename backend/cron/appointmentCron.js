@@ -43,7 +43,6 @@ const markMissedAppointments = async () => {
     );
 
     if (result.affectedRows > 0) {
-      console.log(`✅ Marked ${result.affectedRows} appointments as missed`);
     }
     await connection.commit();
   } catch (err) {

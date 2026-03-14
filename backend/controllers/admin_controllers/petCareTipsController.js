@@ -216,7 +216,6 @@ export const createPetCareTip = async (req, res) => {
     // ===========================================
     if (parseInt(pubStatusID) === 2) {
       try {
-        console.log('🔔 [createPetCareTip] Triggering notification and WebSocket update');
         
         // Send notification
         const notifReq = {
@@ -233,7 +232,6 @@ export const createPetCareTip = async (req, res) => {
         const notifRes = {
           status: (code) => ({
             json: (data) => {
-              console.log(`🔔 Notification response (${code}):`, data);
             }
           })
         };
@@ -260,7 +258,6 @@ export const createPetCareTip = async (req, res) => {
             timestamp: new Date()
           });
           
-          console.log('✅ [createPetCareTip] WebSocket events emitted');
         } catch (wsError) {
           console.error('⚠️ [createPetCareTip] WebSocket emission failed:', wsError.message);
         }
@@ -442,7 +439,6 @@ export const updatePetCareTip = async (req, res) => {
       try {
         // Send notification only when first published
         if (isChangingToPublished) {
-          console.log('🔔 [updatePetCareTip] Triggering notification for newly published tip');
           
           const notifReq = {
             body: {
@@ -458,7 +454,6 @@ export const updatePetCareTip = async (req, res) => {
           const notifRes = {
             status: (code) => ({
               json: (data) => {
-                console.log(`🔔 Notification response (${code}):`, data);
               }
             })
           };
@@ -468,7 +463,6 @@ export const updatePetCareTip = async (req, res) => {
 
         if (isUnpublished) {
           const cleanupResult = await removeNotificationsByReference('pet_care_tips_content_tbl', parseInt(id));
-          console.log('🧹 [updatePetCareTip] Notification cleanup result:', cleanupResult);
         }
         
         // 🌐 WEBSOCKET EMISSION
@@ -511,7 +505,6 @@ export const updatePetCareTip = async (req, res) => {
             });
           }
           
-          console.log(`✅ [updatePetCareTip] WebSocket ${isChangingToPublished ? 'new' : isPublishedUpdate ? 'update' : 'unpublished'} emitted`);
         } catch (wsError) {
           console.error('⚠️ [updatePetCareTip] WebSocket emission failed:', wsError.message);
         }
@@ -583,7 +576,6 @@ export const deletePetCareTip = async (req, res) => {
     if (wasPublished) {
       try {
         const cleanupResult = await removeNotificationsByReference('pet_care_tips_content_tbl', parseInt(id));
-        console.log('🧹 [deletePetCareTip] Notification cleanup result:', cleanupResult);
 
         const io = getIO();
         io.emit('pet_care_tip_deleted', { id: parseInt(id) });
@@ -595,7 +587,6 @@ export const deletePetCareTip = async (req, res) => {
           timestamp: new Date(),
           reason: 'deleted'
         });
-        console.log('✅ [deletePetCareTip] WebSocket deletion emitted');
       } catch (wsError) {
         console.error('⚠️ [deletePetCareTip] WebSocket emission failed:', wsError.message);
       }

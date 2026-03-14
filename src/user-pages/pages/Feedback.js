@@ -82,10 +82,8 @@ export default function Feedback() {
 
   const fetchFeedbacks = async () => {
     try{
-      console.log("Fetching feedbacks from API...");
       const res = await api.get('/feedback');
       const data = await res.data.feedbacks;
-      console.log("Fetched feedbacks:", data);
       setFeedbacks(data);
       setLoading(false);
     } catch (error) {
@@ -124,7 +122,6 @@ export default function Feedback() {
 
     try {
       const res = await api.post('/feedback', formData);
-      console.log("Feedback submitted:", res.data);
       fetchFeedbacks();
       
       setNewFeedback({

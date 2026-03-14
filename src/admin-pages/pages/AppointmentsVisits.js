@@ -68,7 +68,6 @@ const AppointmentsVisits = () => {
       setAppointments(Array.isArray(appointments) ? appointments : []);
       setVisits(Array.isArray(visits) ? visits : []);
     } catch (err) {
-      console.log(err.message);
       setAppointments([]);
       setVisits([]);
     }
@@ -350,7 +349,6 @@ const AppointmentsVisits = () => {
           data: { idsToDelete: idsToDelete},
         });
       } catch (err) {
-        console.log(err.message);
       }
 
       setAppointments(prev => prev.filter(app => !idsToDelete.includes(app.id)));
@@ -375,7 +373,6 @@ const AppointmentsVisits = () => {
           data: { idsToDelete: idsToDelete},
         });
       } catch (err) {
-        console.log(err.message);
       }
       
       setVisits(prev => prev.filter(visit => !idsToDelete.includes(visit.id)));

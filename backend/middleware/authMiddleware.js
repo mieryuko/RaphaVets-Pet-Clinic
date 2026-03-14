@@ -30,7 +30,6 @@ export const verifyToken = (req, res, next) => {
       email: decoded.email,   // optional but useful
     };
 
-    console.log("✅ Token verified for user:", req.user);
     next();
   } catch (error) {
     console.error("❌ Token verification failed:", error);

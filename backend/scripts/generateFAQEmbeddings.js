@@ -23,11 +23,9 @@ async function generateEmbeddings() {
     const faqs = await getAllFAQs();
 
     if (faqs.length === 0) {
-      console.log("No FAQs found in the database.");
       return;
     }
 
-    console.log(`Generating embeddings for ${faqs.length} FAQs...`);
 
     for (const faq of faqs) {
       if (!faq.question) continue;
@@ -43,10 +41,8 @@ async function generateEmbeddings() {
       // Save embedding to database
       await updateFAQEmbedding(faq.id, embedding);
 
-      console.log(`✅ Updated embedding for FAQ ID ${faq.id}`);
     }
 
-    console.log("✅ All FAQ embeddings updated successfully.");
     process.exit(0);
 
   } catch (err) {

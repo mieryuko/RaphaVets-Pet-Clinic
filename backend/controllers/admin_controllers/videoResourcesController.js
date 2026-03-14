@@ -181,7 +181,6 @@ export const createVideo = async (req, res) => {
     // ===========================================
     if (parseInt(pubStatusID) === 2) { // 2 = Published
       try {
-        console.log('🔔 [createVideo] Triggering notification for new video');
         
         const notifReq = {
           body: {
@@ -197,13 +196,11 @@ export const createVideo = async (req, res) => {
         const notifRes = {
           status: (code) => ({
             json: (data) => {
-              console.log(`🔔 [createVideo] Notification response (${code}):`, data);
             }
           })
         };
 
         await createVideoNotification(notifReq, notifRes);
-        console.log('✅ [createVideo] Notification triggered successfully');
         
         // 🌐 WEBSOCKET EMISSION
         const io = getIO();
@@ -224,7 +221,6 @@ export const createVideo = async (req, res) => {
           timestamp: new Date()
         });
         
-        console.log('✅ [createVideo] WebSocket events emitted');
         
       } catch (notifError) {
         console.error('⚠️ [createVideo] Failed to send notification:', notifError);
@@ -257,9 +253,6 @@ export const updateVideo = async (req, res) => {
       pubStatusID
     } = req.body;
 
-    console.log('========== UPDATE VIDEO DEBUG ==========');
-    console.log('1. Update request received for video ID:', id);
-    console.log('2. Request body:', { videoTitle, videoURL, videoCategoryID, pubStatusID });
 
     // First, get the current record to check if status is changing
     const [currentRecord] = await db.execute(
@@ -270,35 +263,17 @@ export const updateVideo = async (req, res) => {
     );
 
     if (currentRecord.length === 0) {
-      console.log('❌ Video not found');
       return res.status(404).json({
         success: false,
         message: 'Video not found'
       });
     }
 
-    console.log('3. Current record in DB:', {
-      pubStatusID: currentRecord[0].pubStatusID,
-      videoTitle: currentRecord[0].videoTitle,
-      status: currentRecord[0].pubStatusID === 2 ? 'Published' : 
-              currentRecord[0].pubStatusID === 1 ? 'Draft' : 'Archived'
-    });
-
     const wasPublished = currentRecord[0].pubStatusID === 2;
     const willBePublished = pubStatusID !== undefined ? parseInt(pubStatusID) === 2 : wasPublished;
     const isChangingToPublished = !wasPublished && willBePublished;
     const isPublishedUpdate = wasPublished && willBePublished;
     const isUnpublished = wasPublished && pubStatusID !== undefined && parseInt(pubStatusID) !== 2;
-
-    console.log('4. Status change analysis:', {
-      wasPublished,
-      willBePublished,
-      isChangingToPublished,
-      isPublishedUpdate,
-      isUnpublished,
-      newStatus: pubStatusID,
-      newStatusText: pubStatusID === 2 ? 'Published' : pubStatusID === 1 ? 'Draft' : 'Archived'
-    });
 
     // Build dynamic query based on provided fields
     let query = `UPDATE video_content_tbl SET `;
@@ -341,15 +316,11 @@ export const updateVideo = async (req, res) => {
     query += updates.join(', ') + ' WHERE videoID = ? AND isDeleted = 0';
     params.push(parseInt(id));
 
-    console.log('5. Executing update query:', query);
-    console.log('6. Query params:', params);
 
     const [result] = await db.execute(query, params);
 
-    console.log('7. Update result:', result);
 
     if (result.affectedRows === 0) {
-      console.log('❌ No rows affected - video not found or already deleted');
       return res.status(404).json({
         success: false,
         message: 'Video not found or already deleted'
@@ -367,17 +338,14 @@ export const updateVideo = async (req, res) => {
       [id]
     );
 
-    console.log('8. Updated record:', updatedRecord[0]);
 
     // ===========================================
     // 🔔 TRIGGER NOTIFICATION AND WEBSOCKET for all status changes
     // ===========================================
     if (isChangingToPublished || isPublishedUpdate || isUnpublished) {
-      console.log('9. 🔔 Entering WebSocket emission block');
       
       try {
         if (isChangingToPublished) {
-          console.log('🔔 [updateVideo] Triggering notification for published video');
           
           const notifReq = {
             body: {
@@ -393,24 +361,19 @@ export const updateVideo = async (req, res) => {
           const notifRes = {
             status: (code) => ({
               json: (data) => {
-                console.log(`🔔 [updateVideo] Notification response (${code}):`, data);
               }
             })
           };
 
           await createVideoNotification(notifReq, notifRes);
-          console.log('✅ [updateVideo] Publication notification triggered successfully');
         }
 
         if (isUnpublished) {
           const cleanupResult = await removeNotificationsByReference('video_content_tbl', parseInt(id));
-          console.log('🧹 [updateVideo] Notification cleanup result:', cleanupResult);
         }
         
         // 🌐 WEBSOCKET EMISSION
-        console.log('10. Getting IO instance...');
         const io = getIO();
-        console.log('11. IO instance obtained');
 
         const formattedVideo = formatVideoForClient({
           ...updatedRecord[0],
@@ -418,14 +381,11 @@ export const updateVideo = async (req, res) => {
           videoURL: videoURL || currentRecord[0].videoURL
         });
 
-        console.log('12. Formatted video for client:', formattedVideo);
         
         if (isChangingToPublished) {
           // Newly published - treat as new video
-          console.log(`13. Emitting 'new_video' to users with data:`, formattedVideo);
           io.emit('new_video', formattedVideo);
           
-          console.log(`14. Emitting 'admin_video_created' to admin room`);
           io.to('admin-room').emit('admin_video_created', {
             video: formattedVideo,
             adminName: req.user?.name || 'Another Admin',
@@ -434,10 +394,8 @@ export const updateVideo = async (req, res) => {
           });
         } else if (isPublishedUpdate) {
           // Update to existing published video
-          console.log(`13. Emitting 'video_updated' to users with data:`, formattedVideo);
           io.emit('video_updated', formattedVideo);
           
-          console.log(`14. Emitting 'admin_video_updated' to admin room`);
           io.to('admin-room').emit('admin_video_updated', {
             video: formattedVideo,
             adminName: req.user?.name || 'Another Admin',
@@ -446,12 +404,9 @@ export const updateVideo = async (req, res) => {
           });
         } else if (isUnpublished) {
           // Video was unpublished (changed to Draft or Archived)
-          console.log(`13. 🎬 UNPUBLISHING video ID: ${id}`);
-          console.log(`14. Emitting 'video_deleted' to users with ID:`, { id: parseInt(id) });
           
           io.emit('video_deleted', { dbId: parseInt(id) });
           
-          console.log(`15. Emitting 'admin_video_deleted' to admin room`);
           io.to('admin-room').emit('admin_video_deleted', {
             videoId: parseInt(id),
             videoTitle: videoTitle || currentRecord[0].videoTitle,
@@ -462,17 +417,14 @@ export const updateVideo = async (req, res) => {
           });
         }
         
-        console.log(`✅ [updateVideo] WebSocket ${isChangingToPublished ? 'new' : isPublishedUpdate ? 'update' : 'unpublished'} emitted successfully`);
         
       } catch (notifError) {
         console.error('⚠️ [updateVideo] WebSocket emission failed:', notifError);
         console.error('⚠️ Error stack:', notifError.stack);
       }
     } else {
-      console.log('9. ❌ No WebSocket emission needed (no status change affecting users)');
     }
 
-    console.log('16. Sending success response to client');
     res.json({
       success: true,
       message: 'Video updated successfully',
@@ -523,7 +475,6 @@ export const deleteVideo = async (req, res) => {
     if (wasPublished) {
       try {
         const cleanupResult = await removeNotificationsByReference('video_content_tbl', parseInt(id));
-        console.log('🧹 [deleteVideo] Notification cleanup result:', cleanupResult);
 
         const io = getIO();
         
@@ -540,7 +491,6 @@ export const deleteVideo = async (req, res) => {
           reason: 'deleted'
         });
         
-        console.log('✅ [deleteVideo] WebSocket deletion emitted');
       } catch (error) {
         console.error('⚠️ [deleteVideo] WebSocket emission failed:', error);
       }

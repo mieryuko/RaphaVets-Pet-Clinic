@@ -49,7 +49,6 @@ export const getDashboardStats = async (req, res) => {
     `);
 
     const adminName = `${adminRows[0].firstName} ${adminRows[0].lastName}`;
-    console.log(adminName);
 
     const stats = {
       adminName,
@@ -119,7 +118,6 @@ export const getAppointmentsGraphData = async (req, res) => {
 // Method for recent activities (admin dashboard)
 export const getRecentActivities = async (req, res) => {
   try {
-    console.log("🔍 Fetching recent activities...");
     
     // Get recent pet additions
     const [petActivities] = await db.query(`

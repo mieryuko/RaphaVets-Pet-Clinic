@@ -184,9 +184,7 @@ const cleanupArchivedContent = async () => {
     }
 
     if (tipIds.length || videoIds.length || forumIds.length) {
-      console.log(
-        `🧹 Content lifecycle cleanup removed ${tipIds.length} tip(s), ${videoIds.length} video(s), and ${forumIds.length} forum post(s).`
-      );
+      // Cleanup completed with at least one deleted record.
     }
   } catch (error) {
     if (connection) {

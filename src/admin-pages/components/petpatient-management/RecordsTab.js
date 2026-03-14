@@ -11,7 +11,6 @@ const RecordsTab = ({
   const handleViewRecord = (record, e) => {
     e.stopPropagation();
     // This would open the PDF viewer
-    console.log('View record:', record);
     // You can implement PDF viewing logic here
   };
 

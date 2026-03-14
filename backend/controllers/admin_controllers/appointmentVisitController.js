@@ -89,14 +89,6 @@ export const assignAppointment = async (req, res) => {
   try {
     const { userID, petID, serviceID, date, time } = req.body;
 
-    console.log(`Parsed data: `, {
-      userID,
-      petID,
-      serviceID,
-      date,
-      time,
-    });
-
     const missingFields = [];
     if (!petID) missingFields.push("petID");
     if (!serviceID) missingFields.push("serviceID");
@@ -104,7 +96,6 @@ export const assignAppointment = async (req, res) => {
     if (!time) missingFields.push("time");
 
     if (missingFields.length > 0) {
-      console.log("❌ Missing fields:", missingFields);
       return res.status(400).json({
         message: "Missing required fields",
         missingFields,
@@ -123,8 +114,6 @@ export const assignAppointment = async (req, res) => {
 
     const dbTimeFormat = convertTo24Hour(time);
 
-    console.log("24Hour Time: ", dbTimeFormat);
-
     const [timeRow] = await db.execute(
       `
          SELECT
@@ -135,8 +124,6 @@ export const assignAppointment = async (req, res) => {
       [dbTimeFormat],
     );
 
-    console.log("TimeRow extracted: ", timeRow);
-
     if (timeRow.length === 0) {
       return res.status(400).json({
         message: "Invalid time slot",
@@ -145,7 +132,6 @@ export const assignAppointment = async (req, res) => {
     }
 
     const scheduledTimeID = timeRow[0].scheduledTimeID;
-    console.log("Time ID:", scheduledTimeID);
 
     // Prevent double-booking of a date/time slot for active scheduled appointments.
     const [conflictRows] = await db.execute(
@@ -206,15 +192,10 @@ export const assignAppointment = async (req, res) => {
       };
 
       const notifRes = {
-        status: (code) => ({
-          json: (data) => {
-            console.log(`🔔 Notification response (${code}):`, data);
-          },
-        }),
+        status: () => ({ json: () => {} }),
       };
 
       await createAppointmentNotification(notifReq, notifRes);
-      console.log("✅ Appointment notification sent to user:", userID);
     } catch (notifError) {
       console.error("⚠️ Failed to send appointment notification:", notifError);
     }
@@ -453,7 +434,6 @@ export const updateStatus = async (req, res) => {
 
   try {
     await connection.beginTransaction();
-    await console.log(status);
     const [statusRow] = await connection.execute(
       `
          SELECT statusID from appointment_status_tbl
@@ -527,20 +507,10 @@ export const updateStatus = async (req, res) => {
           };
 
           const notifRes = {
-            status: (code) => ({
-              json: (data) => {
-                console.log(
-                  `🔔 Notification for appointment ${apt.appointmentID}:`,
-                  data,
-                );
-              },
-            }),
+            status: () => ({ json: () => {} }),
           };
 
           await createAppointmentNotification(notifReq, notifRes);
-          console.log(
-            `✅ Notification sent for appointment ${apt.appointmentID}`,
-          );
         } catch (notifError) {
           console.error(
             `⚠️ Failed to send notification for appointment ${apt.appointmentID}:`,
@@ -605,20 +575,10 @@ async function completeAppointment(ids, statusID, connection) {
       };
 
       const notifRes = {
-        status: (code) => ({
-          json: (data) => {
-            console.log(
-              `🔔 Completion notification for appointment ${apt.appointmentID}:`,
-              data,
-            );
-          },
-        }),
+        status: () => ({ json: () => {} }),
       };
 
       await createAppointmentNotification(notifReq, notifRes);
-      console.log(
-        `✅ Completion notification sent for appointment ${apt.appointmentID}`,
-      );
     } catch (notifError) {
       console.error(
         `⚠️ Failed to send completion notification for appointment ${apt.appointmentID}:`,
@@ -632,8 +592,6 @@ export const deleteAppointment = async (req, res) => {
   const { idsToDelete } = req.body;
 
   let ids = Array.isArray(idsToDelete) ? idsToDelete : [idsToDelete];
-
-  console.log("Ids to delete: ", idsToDelete);
 
   ids = ids.filter((id) => id !== undefined && id !== null);
 
@@ -679,7 +637,6 @@ export const deleteAppointment = async (req, res) => {
 //update visit info, create visit records
 //
 export const createVisit = async (req, res) => {
-  console.log("Creating visit");
   try {
     const { userID, petID, serviceType } = req.body;
 

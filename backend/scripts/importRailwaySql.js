@@ -49,4 +49,3 @@ const targetConnection = await mysql.createConnection({
 await targetConnection.query(sql);
 await targetConnection.end();
 
-console.log(`✅ SQL import complete into database: ${sanitizedDatabaseName}`);

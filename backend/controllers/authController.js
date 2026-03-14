@@ -113,10 +113,6 @@ export const forgotPassword = async (req, res) => {
         </div>
       `
     });
-    console.log('✅ Forgot password email send result', {
-      to: normalizedEmail,
-      emailId: info?.id,
-    });
 
     res.status(200).json({
       success: true,
@@ -288,9 +284,7 @@ export const logoutUser = async (req, res) => {
         [userId]
       );
       
-      console.log(`✅ Logout processed for user ID: ${userId}`);
     } else {
-      console.log("⚠️ No userId found. Proceeding with logout without timestamp update.");
     }
 
     return res.json({ message: "Logged out successfully" });

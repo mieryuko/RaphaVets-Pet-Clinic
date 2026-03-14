@@ -59,7 +59,6 @@ function SignupPage() {
 
       // ✅ Step 3: Send verification code
       await api.post("/auth/send-code", { email });
-      console.log("✅ Verification code sent to:", email);
 
     } catch (err) {
       console.error("❌ Error during signup:", err);
@@ -164,7 +163,6 @@ function SignupPage() {
 
       if (res.data.success) {
         const registerRes = await api.post("/auth/register", pendingUser);
-        console.log("✅ User registered:", registerRes.data);
         setFormMessage({ message: "Account created successfully.", type: "success" });
         setVerifyModalOpen(false);
       } else {

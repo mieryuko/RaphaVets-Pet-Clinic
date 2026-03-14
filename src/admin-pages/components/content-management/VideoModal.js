@@ -80,10 +80,6 @@ const VideoModal = ({
 
   // Initialize form data
   useEffect(() => {
-    console.log('=== INITIALIZING VIDEO MODAL ===');
-    console.log('Video item:', item);
-    console.log('Video categories:', categories);
-    console.log('Publication statuses:', publicationStatuses);
 
     if (item) {
       const initialPubStatusID = getStatusIdFromItem(item);
@@ -117,16 +113,13 @@ const VideoModal = ({
   const createNewVideoCategory = async (categoryName) => {
     try {
       setCategoryLoading(true);
-      console.log('Creating new video category:', categoryName);
       
       const response = await api.post('/admin/content/videos/createCategory', {
         videoCategory: categoryName.trim()
       });
 
-      console.log('Video category creation response:', response.data);
 
       if (response.data.success) {
-        console.log('New video category created:', response.data.data);
         if (onNewCategoryCreated) {
           onNewCategoryCreated(response.data.data);
         }
@@ -147,9 +140,6 @@ const VideoModal = ({
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    console.log('=== SUBMITTING VIDEO DATA ===');
-    console.log('Form data:', formData);
-    console.log('Show new category:', showNewCategory);
 
     // Validate required fields
     if (!formData.videoTitle.trim()) {
@@ -186,7 +176,6 @@ const VideoModal = ({
 
       // If creating a new category, create it first
       if (showNewCategory && formData.newCategory.trim()) {
-        console.log('Creating new video category:', formData.newCategory);
         const newCategory = await createNewVideoCategory(formData.newCategory);
         
         if (!newCategory || !newCategory.id) {
@@ -194,10 +183,8 @@ const VideoModal = ({
         }
         
         finalCategoryID = newCategory.id;
-        console.log('Using new video category ID:', finalCategoryID);
       } else {
         finalCategoryID = formData.videoCategoryID;
-        console.log('Using existing video category ID:', finalCategoryID);
       }
 
       // Validate finalCategoryID
@@ -214,7 +201,6 @@ const VideoModal = ({
         pubStatusID: parseInt(formData.pubStatusID)
       };
 
-      console.log('Final video submit data:', submitData);
       onSave(submitData);
 
     } catch (error) {
